@@ -13,6 +13,8 @@ Description: The 'JSON' format is ubiquitous for data interchange, and
  at present only a very thin and incomplete wrapper and does not aim to replace
  the existing and excellent 'JSON' packages for R. But it does already validate
  orders of magnitude faster.
+SystemRequirements: C++17
+OS_type: unix
 License: GPL (>= 2)
 Imports: Rcpp
 LinkingTo: Rcpp

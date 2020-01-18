@@ -1,2 +1,7 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^inst/jsonexamples/gsoc-2018.json$
+^inst/jsonexamples/marine_ik.json$
+^inst/jsonexamples/canada.json$
+^inst/jsonexamples/citm_catalog.json$
+^inst/jsonexamples/mesh.pretty.json$

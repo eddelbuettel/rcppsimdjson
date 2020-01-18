@@ -1,4 +1,10 @@
 2020-01-18  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version,Date): Initial and very raw version 0.0.1
+	(SystemRequirements): Declare C++17
+	(OS_type): Restrict to unix (due to older C++ compiler on Windows)
+
+	* README.md: Added
+
+	* .Rbuildignore: Exclude the largers example JSON files
 
