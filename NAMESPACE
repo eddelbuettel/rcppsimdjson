@@ -1,0 +1,3 @@
+useDynLib(RcppSimdJson, .registration=TRUE)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)

@@ -1,0 +1,19 @@
+Package: RcppSimdJson
+Type: Package
+Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
+Version: 0.0.1
+Date: 2020-01-18
+Author: Dirk Eddelbuettel
+Maintainer: Dirk Eddelbuettel <edd@debian.org>
+Description: The 'JSON' format is ubiquitous for data interchange, and
+ the 'simdjson' library written by Geoff Langdale and Daniel Lemire provides a
+ highly-performant parser for these file which by relying on parallel 'SIMD'
+ instruction manages to parse these files as faster than disk speed. See the
+ <arXiv:1902.08318> paper for more details about 'simdjson'.  This papackage is
+ at present only a very thin and incomplete wrapper and does not aim to replace
+ the existing and excellent 'JSON' packages for R. But it does already validate
+ orders of magnitude faster.
+License: GPL (>= 2)
+Imports: Rcpp
+LinkingTo: Rcpp
+RoxygenNote: 7.0.2
