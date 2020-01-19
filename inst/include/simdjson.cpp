@@ -1,6 +1,9 @@
 /* auto-generated on Wed Jan 15 15:50:50 EST 2020. Do not edit! */
 #include "simdjson.h"
 
+#define STRICT_R_HEADERS
+#include <Rcpp.h>
+
 /* used for http://dmalloc.com/ Dmalloc - Debug Malloc Library */
 #ifdef DMALLOC
 #include "dmalloc.h"
@@ -1129,7 +1132,7 @@ int json_parse_dispatch(const uint8_t *buf, size_t len, ParsedJson &pj,
     break;
 #endif
   default:
-    std::cerr << "The processor is not supported by simdjson." << std::endl;
+    Rcpp::Rcerr << "The processor is not supported by simdjson." << std::endl;
     return simdjson::UNEXPECTED_ERROR;
   }
 
@@ -1146,7 +1149,7 @@ ParsedJson build_parsed_json(const uint8_t *buf, size_t len,
   if (ok) {
     json_parse(buf, len, pj, realloc);
   } else {
-    std::cerr << "failure during memory allocation " << std::endl;
+    Rcpp::Rcerr << "failure during memory allocation " << std::endl;
   }
   return pj;
 }
@@ -1384,7 +1387,7 @@ void find_the_best_supported_implementation() {
         return;
     }
 #endif
-    std::cerr << "The processor is not supported by simdjson." << std::endl;
+    Rcpp::Rcerr << "The processor is not supported by simdjson." << std::endl;
     // we throw an exception since this should not be recoverable
     throw new std::runtime_error("unsupported architecture");
 }
@@ -5371,7 +5374,7 @@ really_inline void json_structural_scanner::scan(const uint8_t *buf, const size_
 template<size_t STEP_SIZE>
 int find_structural_bits(const uint8_t *buf, size_t len, simdjson::ParsedJson &pj, bool streaming) {
   if (unlikely(len > pj.byte_capacity)) {
-    std::cerr << "Your ParsedJson object only supports documents up to "
+    Rcpp::Rcerr << "Your ParsedJson object only supports documents up to "
               << pj.byte_capacity << " bytes but you are trying to process "
               << len << " bytes" << std::endl;
     return simdjson::CAPACITY;
@@ -6258,7 +6261,7 @@ really_inline void json_structural_scanner::scan(const uint8_t *buf, const size_
 template<size_t STEP_SIZE>
 int find_structural_bits(const uint8_t *buf, size_t len, simdjson::ParsedJson &pj, bool streaming) {
   if (unlikely(len > pj.byte_capacity)) {
-    std::cerr << "Your ParsedJson object only supports documents up to "
+    Rcpp::Rcerr << "Your ParsedJson object only supports documents up to "
               << pj.byte_capacity << " bytes but you are trying to process "
               << len << " bytes" << std::endl;
     return simdjson::CAPACITY;
@@ -7150,7 +7153,7 @@ really_inline void json_structural_scanner::scan(const uint8_t *buf, const size_
 template<size_t STEP_SIZE>
 int find_structural_bits(const uint8_t *buf, size_t len, simdjson::ParsedJson &pj, bool streaming) {
   if (unlikely(len > pj.byte_capacity)) {
-    std::cerr << "Your ParsedJson object only supports documents up to "
+    Rcpp::Rcerr << "Your ParsedJson object only supports documents up to "
               << pj.byte_capacity << " bytes but you are trying to process "
               << len << " bytes" << std::endl;
     return simdjson::CAPACITY;
@@ -9628,7 +9631,7 @@ bool ParsedJson::allocate_capacity(size_t len, size_t max_depth) {
   if (!string_buf || !tape ||
       !containing_scope_offset || !ret_address ||
       !structural_indexes) {
-    std::cerr << "Could not allocate memory" << std::endl;
+    Rcpp::Rcerr << "Could not allocate memory" << std::endl;
     return false;
   }
   /*
@@ -9685,13 +9688,11 @@ bool ParsedJson::print_json(std::ostream &os) const {
   if (type == 'r') {
     how_many = tape_val & JSON_VALUE_MASK;
   } else {
-    fprintf(stderr, "Error: no starting root node?");
+    REprintf("Error: no starting root node?");
     return false;
   }
   if (how_many > tape_capacity) {
-    fprintf(
-        stderr,
-        "We may be exceeding the tape capacity. Is this a valid document?\n");
+    REprintf("We may be exceeding the tape capacity. Is this a valid document?\n");
     return false;
   }
   tape_idx++;
@@ -9778,10 +9779,10 @@ bool ParsedJson::print_json(std::ostream &os) const {
       os << ']';
       break;
     case 'r': // we start and end with the root node
-      fprintf(stderr, "should we be hitting the root node?\n");
+      REprintf("should we be hitting the root node?\n");
       return false;
     default:
-      fprintf(stderr, "bug %c\n", type);
+      REprintf("bug %c\n", type);
       return false;
     }
   }
@@ -9803,7 +9804,7 @@ bool ParsedJson::dump_raw_tape(std::ostream &os) const {
   if (type == 'r') {
     how_many = tape_val & JSON_VALUE_MASK;
   } else {
-    fprintf(stderr, "Error: no starting root node?");
+    REprintf("Error: no starting root node?");
     return false;
   }
   os << "\t// pointing to " << how_many << " (right after last node)\n";
@@ -9871,7 +9872,7 @@ bool ParsedJson::dump_raw_tape(std::ostream &os) const {
          << " (start of the scope) \n";
       break;
     case 'r': // we start and end with the root node
-      fprintf(stderr, "should we be hitting the root node?\n");
+      REprintf("should we be hitting the root node?\n");
       return false;
     default:
       return false;
