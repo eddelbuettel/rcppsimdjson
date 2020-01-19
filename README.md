@@ -1,4 +1,4 @@
-## RcppSimdJSON: Rcpp Bindings for the [simdjson](https://github.com/lemire/simdjson) Header Library
+## RcppSimdJSON: Rcpp Bindings for the simdjson Header Library
 
 [![Build
 Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/simdjson)
@@ -10,12 +10,12 @@ Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.
 
 [simdjson](https://github.com/lemire/simdjson) by [Geoff
 Langdale](https://twitter.com/geofflangdale) and [Daniel Lemire](https://lemire.me/en/) is an
-engineering marvel.  But very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
+engineering marvel.  Through very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
 it manages to parse JSON file faster than disc access. Wut? Yes you read that right: parallel
 processing with so little overhead that the net throughput is limited only by disk speed.
 
-Moreover, it is implemented in neat modern C++ and be accessed as a header-only library. (Well, two
-of them, really.)  Which makes R packaging easy and convenient and compelling. So here are.
+Moreover, it is implemented in neat modern C++ and can be accessed as a header-only library. (Well, two
+of them, really.)  Which makes R packaging easy and convenient and compelling. So here we are.
 
 For further introduction, see the [arXiv paper](https://arxiv.org/abs/1902.08318) (out/to appear in VLDB
 Journal 28(6) as well) and/or the video of the [recent talk by Daniel Lemire at
