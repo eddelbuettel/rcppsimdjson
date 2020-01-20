@@ -2,6 +2,7 @@
 
 	* demo/simpleBenchmark.R: Add benchmark comparing JSON validation
 	* docs/rcppsimdjson_benchmark.png: Autoplot of benchmark results
+	* README.md: Added benchmark result and plot
 
 2020-01-19  Dirk Eddelbuettel  <edd@debian.org>
 
