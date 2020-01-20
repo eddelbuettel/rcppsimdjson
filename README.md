@@ -1,7 +1,6 @@
 ## RcppSimdJSON: Rcpp Bindings for the simdjson Header Library
 
-[![Build
-Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/simdjson)
+[![Build Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/rcppsimdjson)
 [![License](https://eddelbuettel.github.io/badges/GPL2+.svg)](http://www.gnu.org/licenses/gpl-2.0.html)
 [![CRAN](http://www.r-pkg.org/badges/version/rcppsimdjson)](https://cran.r-project.org/package=rcppsimdjson)
 [![Dependencies](https://tinyverse.netlify.com/badge/rcppsimdjson)](https://cran.r-project.org/package=rcppsimdjson)
