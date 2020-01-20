@@ -5,3 +5,5 @@
 ^inst/jsonexamples/canada.json$
 ^inst/jsonexamples/citm_catalog.json$
 ^inst/jsonexamples/mesh.pretty.json$
+^.*\.tar\.gz$
+^docs

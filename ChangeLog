@@ -1,3 +1,8 @@
+2020-01-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* demo/simpleBenchmark.R: Add benchmark comparing JSON validation
+	* docs/rcppsimdjson_benchmark.png: Autoplot of benchmark results
+
 2020-01-19  Dirk Eddelbuettel  <edd@debian.org>
 
 	* inst/include/simdjson.cpp: Replace std::cerr and fprintf(stderr,
