@@ -11,11 +11,12 @@ Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.
 [simdjson](https://github.com/lemire/simdjson) by [Geoff
 Langdale](https://twitter.com/geofflangdale) and [Daniel Lemire](https://lemire.me/en/) is an
 engineering marvel.  Through very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
-it manages to parse JSON file faster than disc access. Wut? Yes you read that right: parallel
+it manages to parse JSON files faster than disc access. Wut? Yes you read that right: parallel
 processing with so little overhead that the net throughput is limited only by disk speed.
 
-Moreover, it is implemented in neat modern C++ and can be accessed as a header-only library. (Well, two
-of them, really.)  Which makes R packaging easy and convenient and compelling. So here we are.
+Moreover, it is implemented in neat modern C++ and can be accessed as a header-only library. (Well,
+one library in two files, really.)  Which makes R packaging easy and convenient and compelling. So
+here we are.
 
 For further introduction, see the [arXiv paper](https://arxiv.org/abs/1902.08318) (out/to appear in VLDB
 Journal 28(6) as well) and/or the video of the [recent talk by Daniel Lemire at
@@ -60,8 +61,9 @@ Or in chart form:
 
 ### Status
 
-Minimally viable. Right now it builds, and wraps the validation test.  So highly incomplete.  Expect
-changes.  Feel free to contribute.
+Minimally viable. Right now it builds, wraps the validation test, and checks cleanly as an R
+package.  So still highly incomplete.  Requires a C++17 compiler. Expect changes. But please feel
+free to contribute.
 
 ### Contributing
 
@@ -74,7 +76,6 @@ an issue ticket.  See the file
 [Rcpp](https://github.com/RcppCore/Rcpp) repo) for a brief discussion.
 
 
-
 ### See Also
 
 For standard JSON work on R, as well as for other nicely done C++ libraries, consider these:
@@ -85,7 +86,7 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
   Cooley](https://twitter.com/_davecooley) bringing [RapidJSON](https://rapidjson.org/) to R;
 - [ndjson](https://cran.r-project.org/package=ndjson) by [Bob Rudis](https://rud.is/b/) builds on the
   [JSON for Modern C++](https://github.com/nlohmann/json) library by [Niels
-  Lohmanm](https://github.com/nlohmann);
+  Lohmann](https://github.com/nlohmann);
 - [RJSONIO](https://cran.r-project.org/package=RJSONIO) by [Duncan Temple
   Lang](http://www.stat.ucdavis.edu/~duncan/) started all this but could use a little love.
 

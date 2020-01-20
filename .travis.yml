@@ -1,0 +1,33 @@
+# Run Travis CI for R via Docker
+#
+# Made by Dirk Eddelbuettel in August 2018 and released under GPL (>=2)
+
+os: linux
+dist: trusty
+sudo: required
+services: docker
+
+env:
+  global:
+    - DOCKER_OPTS="--rm -ti -v $(pwd):/mnt -w /mnt"
+      DOCKER_CNTR="rcpp/run"
+      R_BLD_OPTS="--no-build-vignettes --no-manual"
+      R_CHK_OPTS="--no-vignettes --no-manual"
+
+before_install:
+  - docker pull ${DOCKER_CNTR}
+  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} r -p -e 'sessionInfo()'
+
+install:
+  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD build ${R_BLD_OPTS} .
+
+script:
+  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD check ${R_CHK_OPTS} Rcpp_*.tar.gz
+
+after_success:
+  - docker run ${DOCKER_OPTS} -e CODECOV_TOKEN ${DOCKER_CNTR} r -l covr -e 'codecov()'
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
