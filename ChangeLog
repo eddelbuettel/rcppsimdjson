@@ -5,7 +5,7 @@
 	* DESCRIPTION: Added Suggests: for tinytest
 
 	* README.md: Reworded contributions a little (GH issue #2)
-	* DESCRIPTION: Ditto
+	* DESCRIPTION: Ditto, also rolled Date
 
 2020-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
