@@ -7,8 +7,8 @@
 
 ### Motivation
 
-[simdjson](https://github.com/lemire/simdjson) by [Geoff
-Langdale](https://twitter.com/geofflangdale) and [Daniel Lemire](https://lemire.me/en/) is an
+[simdjson](https://github.com/lemire/simdjson) by [Daniel Lemire](https://lemire.me/en/) (with contributions by [Geoff
+Langdale](https://twitter.com/geofflangdale),  [John Keiser](https://github.com/jkeiser) and  [many others](https://github.com/lemire/simdjson/graphs/contributors)) is an
 engineering marvel.  Through very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
 it manages to parse JSON files faster than disc access. Wut? Yes you read that right: parallel
 processing with so little overhead that the net throughput is limited only by disk speed.
@@ -17,7 +17,7 @@ Moreover, it is implemented in neat modern C++ and can be accessed as a header-o
 one library in two files, really.)  Which makes R packaging easy and convenient and compelling. So
 here we are.
 
-For further introduction, see the [arXiv paper](https://arxiv.org/abs/1902.08318) (out/to appear in VLDB
+For further introduction, see the [arXiv paper](https://arxiv.org/abs/1902.08318) by Langdale and Lemire (out/to appear in VLDB
 Journal 28(6) as well) and/or the video of the [recent talk by Daniel Lemire at
 QCon](http://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
 
@@ -93,5 +93,4 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
 
 For the R package wrapper, [Dirk Eddelbuettel](http://github.com/eddelbuettel).
 
-For everything pertaining to simdjson, [Geoff
-Langdale](https://twitter.com/geofflangdale) and [Daniel Lemire](https://lemire.me/en/).
+For everything pertaining to simdjson, [Daniel Lemire](https://lemire.me/en/) (and [many  contributors](https://github.com/lemire/simdjson/graphs/contributors)) .

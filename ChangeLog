@@ -1,3 +1,8 @@
+2020-01-25  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Reworded contributions a little (GH issue #2)
+	* DESCRIPTION: Ditto
+
 2020-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
 	* demo/simpleBenchmark.R: Add benchmark comparing JSON validation
