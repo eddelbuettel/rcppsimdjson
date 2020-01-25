@@ -3,7 +3,7 @@ library(RcppSimdJson)
 
 jsonfiles <- list.files("../jsonexamples", pattern="\\.json$", recursive=TRUE, full.names=TRUE)
 
-expect_equal(length(jsonfiles), 23)
+expect_true(length(jsonfiles) >= 23)
 
 sapply(jsonfiles, function(jf) expect_true(validateJSON(jf), info=jf))
 
