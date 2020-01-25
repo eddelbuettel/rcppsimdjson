@@ -7,3 +7,4 @@
 ^inst/jsonexamples/mesh.pretty.json$
 ^.*\.tar\.gz$
 ^docs
+\.travis\.yml
