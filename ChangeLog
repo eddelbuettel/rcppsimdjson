@@ -1,5 +1,8 @@
 2020-01-25  Dirk Eddelbuettel  <edd@debian.org>
 
+	* inst/include/simdjson.h: Comment-out #define for
+	SIMDJSON_USE_COMPUTED_GOTO to suppress one -pedantic message
+
 	* tests/tinytest.R: Added tinytest support
 	* inst/tinytest/test_validation.R: Ditt
 	* DESCRIPTION: Added Suggests: for tinytest

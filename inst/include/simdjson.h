@@ -586,11 +586,11 @@ const std::string &error_message(const int);
 #define DEBUG_BLOCK(name, block)
 #endif
 
-#ifndef _MSC_VER
-// Implemented using Labels as Values which works in GCC and CLANG (and maybe
-// also in Intel's compiler), but won't work in MSVC.
-#define SIMDJSON_USE_COMPUTED_GOTO
-#endif
+// #ifndef _MSC_VER
+// // Implemented using Labels as Values which works in GCC and CLANG (and maybe
+// // also in Intel's compiler), but won't work in MSVC.
+// #define SIMDJSON_USE_COMPUTED_GOTO
+// #endif
 
 // Align to N-byte boundary
 #define ROUNDUP_N(a, n) (((a) + ((n)-1)) & ~((n)-1))
