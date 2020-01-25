@@ -1,5 +1,5 @@
 
-if (requireNamespace("tinytest", quietly=TRUE) {
+if (requireNamespace("tinytest", quietly=TRUE)) {
 
     ## Set a seed to make the test deterministic
     set.seed(42)

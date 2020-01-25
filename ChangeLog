@@ -1,5 +1,9 @@
 2020-01-25  Dirk Eddelbuettel  <edd@debian.org>
 
+	* tests/tinytest.R: Added tinytest support
+	* inst/tinytest/test_validation.R: Ditt
+	* DESCRIPTION: Added Suggests: for tinytest
+
 	* README.md: Reworded contributions a little (GH issue #2)
 	* DESCRIPTION: Ditto
 
