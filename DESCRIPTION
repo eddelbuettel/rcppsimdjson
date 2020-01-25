@@ -18,4 +18,5 @@ OS_type: unix
 License: GPL (>= 2)
 Imports: Rcpp
 LinkingTo: Rcpp
+Suggests: tinytest
 RoxygenNote: 7.0.2
