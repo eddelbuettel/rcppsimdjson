@@ -2,8 +2,8 @@
 
 [![Build Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/rcppsimdjson)
 [![License](https://eddelbuettel.github.io/badges/GPL2+.svg)](http://www.gnu.org/licenses/gpl-2.0.html)
-[![CRAN](http://www.r-pkg.org/badges/version/rcppsimdjson)](https://cran.r-project.org/package=RcppSimdJson)
-[![Dependencies](https://tinyverse.netlify.com/badge/rcppsimdjson)](https://cran.r-project.org/package=RcppSimdJson)
+[![CRAN](http://www.r-pkg.org/badges/version/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
+[![Dependencies](https://tinyverse.netlify.com/badge/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 
 ### Motivation
 
@@ -56,7 +56,11 @@ Or in chart form:
 
 ![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_benchmark.png)
 
-
+Note that these timings came from the very beginnings of the package.
+Admittance to CRAN meant turning off one particular optimisation ('computed
+GOTOs') by default resulting in slightly slower performance. You can get the
+behaviour back locally by removing the `#define` from
+[src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars#L5).
 
 ### Status
 
