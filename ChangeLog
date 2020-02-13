@@ -1,12 +1,25 @@
 2020-02-13  Dirk Eddelbuettel  <edd@debian.org>
 
+	* DESCRIPTION (Version, Date): Roll minor version and date
+
 	* inst/include/simdjson.cpp: Synced with upstream
 	* inst/include/simdjson.h: Idem
+
+	* inst/NEWS.Rd: Added
 
 2020-02-12  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Correct two badge URLs now that the package is on CRAN,
 	mention performance impact of turning computed GOTOs off
+
+2020-01-27  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll minor version and date
+
+	* src/Makevars: Use #define to deactivate compiled GOTO
+
+	* inst/include/simdjson.cpp: Synced with upstream
+	* inst/include/simdjson.h: Idem
 
 2020-01-25  Dirk Eddelbuettel  <edd@debian.org>
 

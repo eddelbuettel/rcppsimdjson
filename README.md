@@ -64,9 +64,10 @@ behaviour back locally by removing the `#define` from
 
 ### Status
 
-Minimally viable. Right now it builds, wraps the validation test, and checks cleanly as an R
-package.  So still highly incomplete.  Requires a C++17 compiler. Expect changes. But please feel
-free to contribute.
+Minimally viable. Right now it builds, wraps the validation test, and checks
+cleanly as an R package.  And while on CRAN it is still highly incomplete.
+Requires a C++17 compiler. Expect changes. But please feel free to
+contribute.
 
 ### Contributing
 
