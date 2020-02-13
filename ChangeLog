@@ -1,3 +1,8 @@
+2020-02-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.cpp: Synced with upstream
+	* inst/include/simdjson.h: Idem
+
 2020-02-12  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Correct two badge URLs now that the package is on CRAN,
