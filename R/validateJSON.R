@@ -13,5 +13,5 @@ validateJSON <- function(jsonfile) {
     if (!file.exists(jsonfile))
         stop("No file '", jsonfile, "' found.", call.=FALSE)
 
-    .validateJSON(jsonfile)
+    .validateJSON(Sys.glob(jsonfile))
 }
