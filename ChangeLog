@@ -1,3 +1,11 @@
+2020-02-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/simdjson_example.cpp (validateJSON): Protect function body by
+	#define for sufficient C++17 standard
+	(cppVersion): New (internal) helper function returning C++ standard
+
+	* R/init.R (.onAttach): Flag older compiler on startup
+
 2020-02-13  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll minor version and date
