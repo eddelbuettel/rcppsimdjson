@@ -5,6 +5,16 @@
 
 using namespace Rcpp;
 
+// cppVersion
+int cppVersion();
+RcppExport SEXP _RcppSimdJson_cppVersion() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(cppVersion());
+    return rcpp_result_gen;
+END_RCPP
+}
 // validateJSON
 bool validateJSON(const std::string filename);
 RcppExport SEXP _RcppSimdJson_validateJSON(SEXP filenameSEXP) {
@@ -18,6 +28,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
     {NULL, NULL, 0}
 };
