@@ -1,3 +1,8 @@
+2020-02-22  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.cpp: Synced with upstream
+	* inst/include/simdjson.h: Synced with upstream
+
 2020-02-21  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.0.2
