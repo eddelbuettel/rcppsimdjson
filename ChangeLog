@@ -1,5 +1,7 @@
 2020-02-25  Dirk Eddelbuettel  <edd@debian.org>
 
+	* DESCRIPTION (Version, Date): Roll minor version and date
+
 	* configure: Add simple check for C++17 based on the R configuration
 	* src/Makevars.in: Configure C++17 if seen with R
 
