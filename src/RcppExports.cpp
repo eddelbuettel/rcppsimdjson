@@ -26,10 +26,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// unsupportedArchitecture
+bool unsupportedArchitecture();
+RcppExport SEXP _RcppSimdJson_unsupportedArchitecture() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(unsupportedArchitecture());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
     {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
+    {"_RcppSimdJson_unsupportedArchitecture", (DL_FUNC) &_RcppSimdJson_unsupportedArchitecture, 0},
     {NULL, NULL, 0}
 };
 

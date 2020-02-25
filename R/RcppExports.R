@@ -9,3 +9,7 @@
     .Call(`_RcppSimdJson_cppVersion`)
 }
 
+.unsupportedArchitecture <- function() {
+    .Call(`_RcppSimdJson_unsupportedArchitecture`)
+}
+

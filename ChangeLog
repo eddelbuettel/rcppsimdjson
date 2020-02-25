@@ -1,3 +1,10 @@
+2020-02-25  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/simdjson_example.cpp (unsupportedArchitecture): Check for CPU
+	architectures by relying in simdjson active_implemenation->name()
+
+	* R/init.R (.onAttach): Flag unsupported architectures on startup
+
 2020-02-22  Dirk Eddelbuettel  <edd@debian.org>
 
 	* inst/include/simdjson.cpp: Synced with upstream
