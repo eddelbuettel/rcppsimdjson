@@ -1,5 +1,8 @@
 2020-02-25  Dirk Eddelbuettel  <edd@debian.org>
 
+	* configure: Add simple check for C++17 based on the R configuration
+	* src/Makevars.in: Configure C++17 if seen with R
+
 	* src/simdjson_example.cpp (unsupportedArchitecture): Check for CPU
 	architectures by relying in simdjson active_implemenation->name()
 

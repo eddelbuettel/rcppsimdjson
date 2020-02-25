@@ -1,0 +1,36 @@
+#!/bin/sh
+
+: ${R_HOME=`R RHOME`}
+if test -z "${R_HOME}"; then
+    echo Could not determine R_HOME.
+    exit -1
+fi
+
+## These work
+#
+#CXX=`${R_HOME}/bin/R CMD config CXX`
+#CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
+#
+#CXX17=`${R_HOME}/bin/R CMD config CXX17`
+#CXX17FLAGS=`"${R_HOME}/bin/R" CMD config CXX17FLAGS`
+#
+## But this errors (in early 2020 with R 3.6.2)
+#CXX20=`${R_HOME}/bin/R CMD config CXX20`
+#CXX20FLAGS=`"${R_HOME}/bin/R" CMD config CXX20FLAGS`
+#
+#echo "${CXX} ${CXXFLAGS}"
+#echo "${CXX17} ${CXX17FLAGS}"
+##echo "${CXX20} ${CXX20FLAGS}"
+#
+## so do this instead
+#ALL=`${R_HOME}/bin/R CMD config --all | awk '{print $1}'`
+CXX17=`${R_HOME}/bin/R CMD config --all | awk '{print $1}' | grep "^CXX17$"`
+
+if test "x${CXX17}" = "x"; then
+   echo "** this is not a system on which RcppSimdJson can be built"
+   echo "** setting C++11 as a fallback"
+   sed -e 's/@CXXSTD@/CXX11/' src/Makevars.in > src/Makevars
+else
+   echo "** setting up C++17"
+   sed -e 's/@CXXSTD@/CXX17/' src/Makevars.in > src/Makevars
+fi   
