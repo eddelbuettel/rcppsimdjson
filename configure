@@ -3,7 +3,7 @@
 : ${R_HOME=`R RHOME`}
 if test -z "${R_HOME}"; then
     echo Could not determine R_HOME.
-    exit -1
+    exit 1
 fi
 
 ## These work
@@ -33,4 +33,6 @@ if test "x${CXX17}" = "x"; then
 else
    echo "** setting up C++17"
    sed -e 's/@CXXSTD@/CXX17/' src/Makevars.in > src/Makevars
-fi   
+fi
+
+exit 0
