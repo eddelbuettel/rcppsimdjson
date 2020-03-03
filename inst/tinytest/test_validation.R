@@ -1,4 +1,6 @@
 
+if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
+
 library(RcppSimdJson)
 
 jsonfiles <- list.files("../jsonexamples", pattern="\\.json$", recursive=TRUE, full.names=TRUE)

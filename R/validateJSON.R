@@ -7,8 +7,10 @@
 ##' @return A boolean value indicating whether the JSON content was
 ##'     parsed successfully
 ##' @examples
-##' jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
-##' validateJSON(jsonfile)
+##' if (!RcppSimdJson:::.unsupportedArchitecture()) {
+##'     jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
+##'     validateJSON(jsonfile)
+##' }
 validateJSON <- function(jsonfile) {
     if (!file.exists(jsonfile))
         stop("No file '", jsonfile, "' found.", call.=FALSE)

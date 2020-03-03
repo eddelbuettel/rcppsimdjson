@@ -18,6 +18,8 @@ By relying on simd-parallel 'simdjson' header-only library JSON
 files can be parsed very quickly.
 }
 \examples{
-jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
-validateJSON(jsonfile)
+if (!RcppSimdJson:::.unsupportedArchitecture()) {
+    jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
+    validateJSON(jsonfile)
+}
 }
