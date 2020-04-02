@@ -1,3 +1,8 @@
+2020-04-02  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.h: Upgraded to simdjson 0.3
+	* inst/include/simdjson.cpp: Idem
+
 2020-03-25  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Add a last-commit badge
