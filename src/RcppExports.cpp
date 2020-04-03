@@ -16,6 +16,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// parseExample
+void parseExample();
+RcppExport SEXP _RcppSimdJson_parseExample() {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    parseExample();
+    return R_NilValue;
+END_RCPP
+}
 // cppVersion
 int cppVersion();
 RcppExport SEXP _RcppSimdJson_cppVersion() {
@@ -39,6 +48,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
+    {"_RcppSimdJson_parseExample", (DL_FUNC) &_RcppSimdJson_parseExample, 0},
     {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
     {"_RcppSimdJson_unsupportedArchitecture", (DL_FUNC) &_RcppSimdJson_unsupportedArchitecture, 0},
     {NULL, NULL, 0}

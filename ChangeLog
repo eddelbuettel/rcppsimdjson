@@ -4,6 +4,9 @@
 
 	* src/simdjson_example.cpp (validateJSON): Updated
 
+	* src/simdjson_example.cpp (parseExample): Added simple example (but
+	only after shipping 0.0.4 to CRAN)
+
 2020-04-02  Dirk Eddelbuettel  <edd@debian.org>
 
 	* inst/include/simdjson.h: Upgraded to simdjson 0.3 and 0.3.1
