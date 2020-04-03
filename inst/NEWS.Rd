@@ -3,6 +3,14 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.0.4 (2020-04-03)}{
+  \itemize{
+    \item Upgraded to new upstream releases 0.3 and 0.3.1 (Dirk in \ghpr{9}
+    closing \ghit{8})
+    \item Updated example \code{validateJSON} to API changes.
+  }
+}
+
 \section{Changes in version 0.0.3 (2020-03-03)}{
   \itemize{
     \item Sychronized once more with upstream.

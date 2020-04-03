@@ -1,7 +1,15 @@
+2020-04-03  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.4
+
+	* src/simdjson_example.cpp (validateJSON): Updated
+
 2020-04-02  Dirk Eddelbuettel  <edd@debian.org>
 
-	* inst/include/simdjson.h: Upgraded to simdjson 0.3
+	* inst/include/simdjson.h: Upgraded to simdjson 0.3 and 0.3.1
 	* inst/include/simdjson.cpp: Idem
+
+	* inst/include/simdjson.h: Removed four ';', also sent upstream
 
 2020-03-25  Dirk Eddelbuettel  <edd@debian.org>
 

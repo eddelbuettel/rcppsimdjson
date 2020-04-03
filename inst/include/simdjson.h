@@ -1810,7 +1810,7 @@ namespace dom {
  * @param value The value to print.
  * @throw if there is an error with the underlying output stream. simdjson itself will not throw.
  */
-inline std::ostream& operator<<(std::ostream& out, const element &value) { return out << minify(value); };
+inline std::ostream& operator<<(std::ostream& out, const element &value) { return out << minify(value); }
 /**
  * Print JSON to an output stream.
  *
@@ -3492,7 +3492,7 @@ inline void array::iterator::operator++() noexcept {
 // object inline implementation
 //
 really_inline object::object() noexcept : internal::tape_ref() {}
-really_inline object::object(const document *_doc, size_t _json_index) noexcept : internal::tape_ref(_doc, _json_index) { };
+really_inline object::object(const document *_doc, size_t _json_index) noexcept : internal::tape_ref(_doc, _json_index) { }
 inline object::iterator object::begin() const noexcept {
   return iterator(doc, json_index + 1);
 }
@@ -4394,13 +4394,13 @@ template<typename T>
 really_inline T& simdjson_result_base<T>::value() noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
   return this->first;
-};
+}
 
 template<typename T>
 really_inline T&& simdjson_result_base<T>::take_value() && noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
   return std::forward<T>(this->first);
-};
+}
 
 template<typename T>
 really_inline simdjson_result_base<T>::operator T&&() && noexcept(false) {

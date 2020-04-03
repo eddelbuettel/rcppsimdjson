@@ -10,11 +10,11 @@
 // [[Rcpp::export(.validateJSON)]]
 bool validateJSON(const std::string filename) {
 #if __cplusplus >= 201703L
-  simdjson::padded_string p = simdjson::get_corpus(filename.c_str());
-  simdjson::ParsedJson pj = simdjson::build_parsed_json(p); // do the parsing
-  if ( !pj.is_valid() ) {
+  simdjson::dom::parser parser;
+  auto [doc, error] = parser.load(filename.c_str()); // do the parsing
+  if ( error ) {
     // something went wrong
-    Rcpp::stop(pj.get_error_message());
+    Rcpp::stop(error_message(error));
   }
   return true;
 #else

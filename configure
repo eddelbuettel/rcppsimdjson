@@ -26,6 +26,9 @@ fi
 #ALL=`${R_HOME}/bin/R CMD config --all | awk '{print $1}'`
 CXX17=`${R_HOME}/bin/R CMD config --all | awk '{print $1}' | grep "^CXX17$"`
 
+## Also check for host. Maybe. Do we know what Solaris returns?
+SYSNAME=`${R_HOME}/bin/R --slave -q -e 'cat(Sys.info()[["sysname"]])'`
+
 if test "x${CXX17}" = "x"; then
    echo "** this is not a system on which RcppSimdJson can be built"
    echo "** setting C++11 as a fallback"
