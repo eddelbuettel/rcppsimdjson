@@ -66,9 +66,9 @@ behaviour back locally by removing the `#define` from
 ### Status
 
 Minimally viable. Right now it builds, wraps the validation test, and checks
-cleanly as an R package.  And while on CRAN it is still highly incomplete.
-Requires a C++17 compiler. Expect changes. But please feel free to
-contribute.
+cleanly as an R package. As of version 0.0.4, basic parsing is supported, see
+`parseExample()`.  Requires a C++17 compiler. Expect changes. But please feel
+free to contribute.
 
 ### Contributing
 
