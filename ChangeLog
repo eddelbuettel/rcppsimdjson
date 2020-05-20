@@ -1,3 +1,11 @@
+2020-05-20  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* inst/include/simdjson.h: Synced with upstream
+	* inst/include/simdjson.cpp: Synced with upstream
+	
+	* src/simdjson_example.cpp (parseExample): Added simdjson namespace to 
+	dom::array so that it still compiles following simdjson sync
+
 2020-04-03  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.0.4
