@@ -37,7 +37,7 @@ void parseExample() {
          "tire_pressure": [ 29.8, 30.0 ] }
   ] )"_padded;
   simdjson::dom::parser parser;
-  simdjson::dom::array cars = parser.parse(cars_json).get<dom::array>();
+  simdjson::dom::array cars = parser.parse(cars_json).get<simdjson::dom::array>();
 
   // Iterating through an array of objects
   for (simdjson::dom::object car : cars) {
