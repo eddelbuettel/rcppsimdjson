@@ -23,6 +23,16 @@ bool validateJSON(const std::string filename) {
 #endif
 }
 
+//' Simple JSON Parsing Example
+//'
+//' This example is adapted from a blogpost announcing an earlier \sQuote{simdjson}
+//' release. It is of interest mostly for the elegance and conciseness of its C++
+//' code rather than for any functionality exported to R.
+//'
+//' The function takes no argument and returns nothing.
+//'
+//' @examples
+//' parseExample()
 // [[Rcpp::export]]
 void parseExample() {
   // from the blogpost announcing version 0.3
