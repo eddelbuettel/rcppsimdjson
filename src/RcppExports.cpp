@@ -5,6 +5,18 @@
 
 using namespace Rcpp;
 
+// check_int64
+SEXP check_int64(const bool is_signed, const int integer64);
+RcppExport SEXP _RcppSimdJson_check_int64(SEXP is_signedSEXP, SEXP integer64SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const bool >::type is_signed(is_signedSEXP);
+    Rcpp::traits::input_parameter< const int >::type integer64(integer64SEXP);
+    rcpp_result_gen = Rcpp::wrap(check_int64(is_signed, integer64));
+    return rcpp_result_gen;
+END_RCPP
+}
 // validateJSON
 bool validateJSON(const std::string filename);
 RcppExport SEXP _RcppSimdJson_validateJSON(SEXP filenameSEXP) {
@@ -47,6 +59,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppSimdJson_check_int64", (DL_FUNC) &_RcppSimdJson_check_int64, 2},
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
     {"_RcppSimdJson_parseExample", (DL_FUNC) &_RcppSimdJson_parseExample, 0},
     {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
