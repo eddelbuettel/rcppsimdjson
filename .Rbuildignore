@@ -8,3 +8,4 @@
 ^.*\.tar\.gz$
 ^docs
 \.travis\.yml
+^\.vscode$
