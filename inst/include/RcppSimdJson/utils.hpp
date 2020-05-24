@@ -16,11 +16,6 @@ enum class Int64_R_Type : int {
 };
 
 
-template <typename... Args>
-inline SEXP as_integer64(Args... args);
-
-
-template <>
 inline SEXP as_integer64(int64_t x) {
   auto out = Rcpp::NumericVector(1);
   std::memcpy(&(out[0]), &x, sizeof(double));
@@ -35,7 +30,7 @@ inline constexpr bool is_castable_int64(int_T);
 
 template <>
 inline constexpr bool is_castable_int64<int64_t>(int64_t x) {
-  return x <= std::numeric_limits<int>::max() && x > NA_INTEGER;
+  return x <= std::numeric_limits<int>::max() && x > std::numeric_limits<int>::min();
 }
 
 
@@ -111,10 +106,8 @@ inline constexpr SEXP resolve_int64_vec(std::vector<int64_t>& x) {
       return Rcpp::NumericVector(std::begin(x), std::end(x));
 
     case Int64_R_Type::String: {
-      Rcpp::CharacterVector out(std::size(x));
-      std::transform(std::begin(x), std::end(x), std::begin(out),
-                     [](auto val) { return std::to_string(val); });
-      return out;
+      return Rcpp::CharacterVector(std::begin(x), std::end(x),
+                                   [](auto val) { return std::to_string(val); });
     }
 
     case Int64_R_Type::Integer64: {
@@ -132,10 +125,8 @@ inline constexpr SEXP resolve_int64_vec(std::vector<int64_t>& x) {
 
 template <Int64_R_Type int64_opt>
 inline constexpr SEXP resolve_int64_vec(std::vector<uint64_t>& x) {
-  Rcpp::CharacterVector out(std::size(x));
-  std::transform(std::begin(x), std::end(x), std::begin(out),
-                 [](auto val) { return std::to_string(val); });
-  return out;
+  return Rcpp::CharacterVector(std::begin(x), std::end(x),
+                               [](auto val) { return std::to_string(val); });
 }
 
 

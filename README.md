@@ -60,8 +60,8 @@ Or in chart form:
 Note that these timings came from the very beginnings of the package.
 Admittance to CRAN meant turning off one particular optimisation ('computed
 GOTOs') by default resulting in slightly slower performance. You can get the
-behaviour back locally by removing the `#define` from
-[src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars#L5).
+behaviour back locally by removing the `-DSIMDJSON_NO_COMPUTED_GOTO` term from
+[src/Makevars.in](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars.in#L5).
 
 ### Status
 
