@@ -37,6 +37,8 @@ template <>
 inline constexpr bool is_castable_int64<int64_t>(int64_t x) {
   return x <= std::numeric_limits<int>::max() && x > NA_INTEGER;
 }
+
+
 template <>
 inline constexpr bool is_castable_int64<uint64_t>(uint64_t x) {
   return false;
