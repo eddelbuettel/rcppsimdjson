@@ -52,6 +52,7 @@ inline constexpr SEXP resolve_int64(uint64_t x) {
   return Rcpp::wrap(std::to_string(x));
 }
 
+
 template <Int64_R_Type int64_opt>
 inline constexpr SEXP resolve_int64(int64_t x) {
 #if __cplusplus >= 201402L
