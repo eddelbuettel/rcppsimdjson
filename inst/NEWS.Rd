@@ -3,6 +3,14 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.0.X (2020-XX-XX)}{
+  \itemize{
+    \item Created C++ integer-handling utilities (Brendan in \ghpr{16}) closing \ghit{13}
+      \itemize{\item{safe downcasting}
+              \item{options to control how big integers are returned to R}}
+  }
+}
+
 \section{Changes in version 0.0.5 (2020-05-23)}{
   \itemize{
     \item Add \code{parseExample} from earlier upstream announcement (Dirk).
