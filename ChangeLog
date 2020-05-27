@@ -1,19 +1,23 @@
-2020-05-20  Brendan Knapp  <brendan.g.knapp@gmail.com>
+2020-05-26  Dirk Eddelbuettel  <edd@debian.org>
 
-	* DESCRIPTION (Added Suggests: bit64, RoxygenNote)
-	
-	* inst/include/RcppSimdJson.hpp: Created main C++ API entry-point
+	* DESCRIPTION (Author): Add Brendan
+	* DESCRIPTION (Version, Date): Roll version and date
+
+2020-05-26  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* DESCRIPTION: Added Suggests: bit64
+
+	* inst/include/RcppSimdJson.hpp: Created new C++ API entry-point
 	* inst/include/RcppSimdJson/utils.hpp: Added integer-handler utilities
-	
+
 	* src/rcppsimdjson_utils_check.cpp: Added testable integer-handler checks
-	
 	* inst/tinytest/test_int64.R Added test for integer-handlers
 
 2020-05-22  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.0.5
 
-g2020-05-21  Dirk Eddelbuettel  <edd@debian.org>
+2020-05-21  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll version and date
 

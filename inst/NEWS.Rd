@@ -5,9 +5,8 @@
 
 \section{Changes in version 0.0.X (2020-XX-XX)}{
   \itemize{
-    \item Created C++ integer-handling utilities (Brendan in \ghpr{16}) closing \ghit{13}
-      \itemize{\item{safe downcasting}
-              \item{options to control how big integers are returned to R}}
+    \item Created C++ integer-handling utilities for safe downcasting
+    and integer return(Brendan in \ghpr{16}) closing \ghit{13}
   }
 }
 
