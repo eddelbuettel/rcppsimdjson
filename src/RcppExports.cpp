@@ -5,6 +5,16 @@
 
 using namespace Rcpp;
 
+// check_int64
+SEXP check_int64();
+RcppExport SEXP _RcppSimdJson_check_int64() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(check_int64());
+    return rcpp_result_gen;
+END_RCPP
+}
 // validateJSON
 bool validateJSON(const std::string filename);
 RcppExport SEXP _RcppSimdJson_validateJSON(SEXP filenameSEXP) {
@@ -47,6 +57,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RcppSimdJson_check_int64", (DL_FUNC) &_RcppSimdJson_check_int64, 0},
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
     {"_RcppSimdJson_parseExample", (DL_FUNC) &_RcppSimdJson_parseExample, 0},
     {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
