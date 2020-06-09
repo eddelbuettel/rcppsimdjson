@@ -184,8 +184,9 @@ inline auto deserialize(const simdjson::dom::element parsed,
                                       Simplify_To::vector>(parsed);
 
             case Simplify_To::list:
-              return simplify_element<Type_Policy::strict, Int64_R_Type::Double, Simplify_To::list>(
-                  parsed);
+              return simplify_element<Type_Policy::strict, //
+                                      Int64_R_Type::Double,
+                                      Simplify_To::list>(parsed);
           } // simplify_to
         }   // Int64_R_Type::Double
         case Int64_R_Type::String: {
@@ -206,8 +207,9 @@ inline auto deserialize(const simdjson::dom::element parsed,
                                       Simplify_To::vector>(parsed);
 
             case Simplify_To::list:
-              return simplify_element<Type_Policy::strict, Int64_R_Type::String, Simplify_To::list>(
-                  parsed);
+              return simplify_element<Type_Policy::strict, //
+                                      Int64_R_Type::String,
+                                      Simplify_To::list>(parsed);
           } // simplify_to
         }   // Int64_R_Type::String
         case Int64_R_Type::Integer64: {
