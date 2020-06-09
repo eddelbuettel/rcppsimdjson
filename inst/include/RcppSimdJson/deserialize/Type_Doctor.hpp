@@ -1,168 +1,210 @@
-#ifndef RCPPSIMDJSON_TYPE_DOCTOR_HPP
-#define RCPPSIMDJSON_TYPE_DOCTOR_HPP
+#ifndef RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
+#define RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 
 
 namespace rcppsimdjson {
 namespace deserialize {
 
 
+enum class Type_Policy : int {
+  anything_goes = 0,
+  ints_as_dbls = 1,
+  strict = 2,
+};
+
+
 template <Type_Policy type_policy> class Type_Doctor {
-  // clang-format off
-   std::array<bool, 16> type_matrix{
-      /*    simdjson::dom::element_type     |     rcpp_T                         */
-      /* ___________________________________|___________________________________ */
-      /*        ARRAY      | */  false,  /* | */  false,        /* | array       */
-      /*       OBJECT      | */  false,  /* | */  false,        /* | object      */
-      /*       STRING      | */  false,  /* | */  false,        /* | chr         */
-      /*       DOUBLE      | */  false,  /* | */  false,        /* | dbl         */
-      /*        INT64      | */  false,  /* | */  false,        /* | i64         */
-      /*            _      |     _          | */  false,        /* | i32         */
-      /*         BOOL      | */  false,  /* | */  false,        /* | lgl         */
-      /*   NULL_VALUE      | */  false,  /* | */  false,        /* | null        */
-      /*       UINT64      | */  false,  /* |     _                | _           */ };
-   enum index : int{ /*     |  ============  |  ============        |             */
-                ARRAY   /* | */  = 0,    /* | */  array  = 1,   /* |             */
-               OBJECT   /* | */  = 2,    /* | */  object = 3,   /* |             */
-               STRING   /* | */  = 4,    /* | */  chr    = 5,   /* |             */
-               DOUBLE   /* | */  = 6,    /* | */  dbl    = 7,   /* |             */
-                INT64   /* | */  = 8,    /* | */  i64    = 9,   /* |             */
-      /*            _      |     _          | */  i32    = 10,  /* |             */
-                 BOOL   /* | */  = 11,   /* | */  lgl    = 12,  /* |             */
-           NULL_VALUE   /* | */  = 13,   /* | */  null   = 14,  /* |             */
-               UINT64   /* | */  = 15,   /* |     _                | _           */
-  };
-  // clang-format on
+  bool ARRAY_ = false;
+  bool array_ = false;
 
-  constexpr auto has_ARRAY() const noexcept -> bool { return type_matrix[index::ARRAY]; };
-  constexpr auto has_OBJECT() const noexcept -> bool { return type_matrix[index::OBJECT]; };
-  constexpr auto has_STRING() const noexcept -> bool { return type_matrix[index::STRING]; };
-  constexpr auto has_DOUBLE() const noexcept -> bool { return type_matrix[index::DOUBLE]; };
-  constexpr auto has_INT64() const noexcept -> bool { return type_matrix[index::INT64]; };
-  constexpr auto has_BOOL() const noexcept -> bool { return type_matrix[index::BOOL]; };
-  constexpr auto has_NULL_VALUE() const noexcept -> bool { return type_matrix[index::NULL_VALUE]; };
-  constexpr auto has_UINT64() const noexcept -> bool { return type_matrix[index::UINT64]; };
+  bool OBJECT_ = false;
+  bool object_ = false;
 
+  bool STRING_ = false;
+  bool chr_ = false;
+
+  bool DOUBLE_ = false;
+  bool dbl_ = false;
+
+  bool INT64_ = false;
+  bool i64_ = false;
+  bool i32_ = false;
+
+  bool BOOL_ = false;
+  bool lgl_ = false;
+
+  bool NULL_VALUE_ = false;
+  bool null_ = false;
+
+  bool UINT64_ = false;
+  bool u64_ = false;
 
 public:
   Type_Doctor() = default;
-  Type_Doctor<type_policy>(simdjson::dom::array) noexcept;
+  explicit Type_Doctor<type_policy>(simdjson::dom::array) noexcept;
 
   constexpr auto reset() noexcept -> void {
-    // clang-format off
-    type_matrix = std::array<bool, 16>{false, false, false, false, false, false,
-                                       false, false, false, false, false, false,
-                                       false, false, false, false};
-    // clang-format on
+    ARRAY_ = false;
+    array_ = false;
+
+    OBJECT_ = false;
+    object_ = false;
+
+    STRING_ = false;
+    chr_ = false;
+
+    DOUBLE_ = false;
+    dbl_ = false;
+
+    INT64_ = false;
+    i64_ = false;
+    i32_ = false;
+
+    BOOL_ = false;
+    lgl_ = false;
+
+    NULL_VALUE_ = false;
+    null_ = false;
+
+    UINT64_ = false;
+    u64_ = false;
   };
 
-  constexpr auto is_homogeneous() const noexcept -> bool {
-    return 1 == static_cast<int>(type_matrix[index::ARRAY])         //
-                    + static_cast<int>(type_matrix[index::OBJECT])  //
-                    + static_cast<int>(type_matrix[index::STRING])  //
-                    + static_cast<int>(type_matrix[index::DOUBLE])  //
-                    + static_cast<int>(type_matrix[index::INT64])   //
-                    + static_cast<int>(type_matrix[index::BOOL])    //
-                    + static_cast<int>(type_matrix[index::UINT64]); //
-  };
+  [[nodiscard]] constexpr auto has_ARRAY() const noexcept -> bool { return ARRAY_; };
+  [[nodiscard]] constexpr auto has_OBJECT() const noexcept -> bool { return OBJECT_; };
+  [[nodiscard]] constexpr auto has_STRING() const noexcept -> bool { return STRING_; };
+  [[nodiscard]] constexpr auto has_DOUBLE() const noexcept -> bool { return DOUBLE_; };
+  [[nodiscard]] constexpr auto has_INT64() const noexcept -> bool { return INT64_; };
+  [[nodiscard]] constexpr auto has_BOOL() const noexcept -> bool { return BOOL_; };
+  [[nodiscard]] constexpr auto has_NULL_VALUE() const noexcept -> bool { return NULL_VALUE_; };
+  [[nodiscard]] constexpr auto has_UINT64() const noexcept -> bool { return UINT64_; };
 
-  constexpr auto has_array() const noexcept -> bool { return type_matrix[index::array]; };
-  constexpr auto has_object() const noexcept -> bool { return type_matrix[index::OBJECT]; };
-  constexpr auto has_chr() const noexcept -> bool { return type_matrix[index::chr]; };
-  constexpr auto has_dbl() const noexcept -> bool { return type_matrix[index::dbl]; };
-  constexpr auto has_i64() const noexcept -> bool { return type_matrix[index::i64]; };
-  constexpr auto has_i32() const noexcept -> bool { return type_matrix[index::i32]; };
-  constexpr auto has_lgl() const noexcept -> bool { return type_matrix[index::lgl]; };
-  constexpr auto has_null() const noexcept -> bool { return type_matrix[index::null]; };
-  constexpr auto has_u64() const noexcept -> bool { return type_matrix[index::UINT64]; };
+  [[nodiscard]] constexpr auto has_array() const noexcept -> bool { return array_; };
+  [[nodiscard]] constexpr auto has_object() const noexcept -> bool { return OBJECT_; };
+  [[nodiscard]] constexpr auto has_chr() const noexcept -> bool { return chr_; };
+  [[nodiscard]] constexpr auto has_dbl() const noexcept -> bool { return dbl_; };
+  [[nodiscard]] constexpr auto has_i64() const noexcept -> bool { return i64_; };
+  [[nodiscard]] constexpr auto has_i32() const noexcept -> bool { return i32_; };
+  [[nodiscard]] constexpr auto has_lgl() const noexcept -> bool { return lgl_; };
+  [[nodiscard]] constexpr auto has_null() const noexcept -> bool { return null_; };
+  [[nodiscard]] constexpr auto has_u64() const noexcept -> bool { return u64_; };
 
-  constexpr auto common_R_type() const noexcept -> rcpp_T;
-  constexpr auto common_element_type() const noexcept -> simdjson::dom::element_type;
-  constexpr auto is_vectorizable() const noexcept -> bool;
+  [[nodiscard]] constexpr auto common_R_type() const noexcept -> rcpp_T;
+  [[nodiscard]] constexpr auto common_element_type() const noexcept -> simdjson::dom::element_type;
 
-  static auto from_set(const std::set<rcpp_T>& type_set) noexcept -> Type_Doctor<type_policy>;
-  static auto from_object(simdjson::dom::object type_set) noexcept -> Type_Doctor<type_policy>;
+  [[nodiscard]] constexpr auto is_homogeneous() const noexcept -> bool;
+  [[nodiscard]] constexpr auto is_vectorizable() const noexcept -> bool;
 
   auto add_element(simdjson::dom::element) noexcept -> void;
+
+  constexpr auto update(Type_Doctor<type_policy>&& type_doctor) noexcept -> void;
 };
 
 
 template <Type_Policy type_policy>
 inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcept {
+
   for (auto element : array) {
     switch (element.type()) {
       case simdjson::dom::element_type::ARRAY:
-        type_matrix[index::ARRAY] = true;
-        type_matrix[index::array] = true;
+        ARRAY_ = true;
+        array_ = true;
         break;
 
       case simdjson::dom::element_type::OBJECT:
-        type_matrix[index::OBJECT] = true;
-        type_matrix[index::object] = true;
+        OBJECT_ = true;
+        object_ = true;
         break;
 
       case simdjson::dom::element_type::STRING:
-        type_matrix[index::STRING] = true;
-        type_matrix[index::chr] = true;
+        STRING_ = true;
+        chr_ = true;
         break;
 
       case simdjson::dom::element_type::DOUBLE:
-        type_matrix[index::DOUBLE] = true;
-        type_matrix[index::dbl] = true;
+        DOUBLE_ = true;
+        dbl_ = true;
         break;
 
       case simdjson::dom::element_type::INT64: {
-        type_matrix[index::INT64] = true;
-        if (rcppsimdjson::utils::is_castable_int64(element.get<int64_t>().first)) {
-          type_matrix[index::i32] = true;
+        INT64_ = true;
+        if (utils::is_castable_int64(element.get<int64_t>().first)) {
+          i32_ = true;
         } else {
-          type_matrix[index::i64] = true;
+          i64_ = true;
         }
         break;
       }
 
       case simdjson::dom::element_type::BOOL:
-        type_matrix[index::BOOL] = true;
-        type_matrix[index::lgl] = true;
+        BOOL_ = true;
+        lgl_ = true;
         break;
 
       case simdjson::dom::element_type::NULL_VALUE:
-        type_matrix[index::NULL_VALUE] = true;
-        type_matrix[index::null] = true;
+        NULL_VALUE_ = true;
+        null_ = true;
         break;
 
       case simdjson::dom::element_type::UINT64:
-        type_matrix[index::UINT64] = true;
+        UINT64_ = true;
+        u64_ = true;
         break;
     }
   }
 }
 
 
+template <Type_Policy type_policy>
+constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool {
+  if (ARRAY_) {
+    return !(OBJECT_ || STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_);
+  }
+  if (OBJECT_) {
+    return !(STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_);
+  }
+  if (STRING_) {
+    return !(DOUBLE_ || INT64_ || BOOL_ || UINT64_);
+  }
+  if (DOUBLE_) {
+    return !(INT64_ || BOOL_ || UINT64_);
+  }
+  if (INT64_) {
+    return !(BOOL_ || UINT64_);
+  }
+  if (BOOL_) {
+    return !UINT64_;
+  }
+
+  return UINT64_;
+}
+
+
 template <>
 inline constexpr auto Type_Doctor<Type_Policy::strict>::common_R_type() const noexcept -> rcpp_T {
-  if (has_object()) {
+  if (object_) {
     return rcpp_T::object;
   }
-  if (has_array()) {
+  if (array_) {
     return rcpp_T::array;
   }
 
-  if (has_chr() && !(has_dbl() || has_i64() || has_i32() || has_lgl() || has_u64())) {
+  if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::chr;
   }
-  if (has_dbl() && !(has_i64() || has_i32() || has_lgl() || has_u64())) {
+  if (dbl_ && !(i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::dbl;
   }
-  if (has_i64() && !(has_i32() || has_lgl() || has_u64())) {
+  if (i64_ && !(i32_ || lgl_ || u64_)) {
     return rcpp_T::i64;
   }
-  if (has_i32() && !(has_lgl() || has_u64())) {
+  if (i32_ && !(lgl_ || u64_)) {
     return rcpp_T::i32;
   }
-  if (has_lgl() && !has_u64()) {
+  if (lgl_ && !u64_) {
     return rcpp_T::lgl;
   }
-  if (has_u64()) {
+  if (u64_) {
     return rcpp_T::u64;
   }
 

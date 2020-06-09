@@ -1,5 +1,5 @@
-#ifndef RCPPSIMDJSON_MATRIX_HPP
-#define RCPPSIMDJSON_MATRIX_HPP
+#ifndef RCPPSIMDJSON__DESERIALIZE__MATRIX_HPP
+#define RCPPSIMDJSON__DESERIALIZE__MATRIX_HPP
 
 #include "vector.hpp"
 
@@ -7,80 +7,48 @@ namespace rcppsimdjson {
 namespace deserialize {
 
 
-/**
- * Whether or not an array-of-arrays can be mapped to an R matrix along with all
- * the pieces of information necessary to do so downstream.
- */
 struct Matrix_Diagnosis {
-  bool is_matrix_ish;  /**  whether an array can be mapped to an R matrix */
-  bool has_nulls;      /** whether `nulls`s are present */
-  bool is_homogeneous; /** whether `dom::element_type`s all the same, besides `NULL_VALUE`*/
-  simdjson::dom::element_type common_element_type; /** common `element_type when `is_homogeneous` */
-  rcpp_T common_R_type; /** common R type to which non-homogeneous values are casted */
-  std::size_t n_cols;   /**  shared length of sub arrays */
+  bool is_matrix_ish = false;
+  bool has_nulls = false;
+  bool is_homogeneous = false;
+  simdjson::dom::element_type common_element_type = simdjson::dom::element_type::NULL_VALUE;
+  rcpp_T common_R_type = rcpp_T::null;
+  std::size_t n_cols = 0;
 };
 
 
 template <Type_Policy type_policy>
-inline auto diagnose_matrix(simdjson::dom::array array) noexcept(SIMDJSON_NOEXCEPT)
+inline auto diagnose_matrix(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
     -> Matrix_Diagnosis {
-  auto mat_has_nulls = false;
-  std::set<rcpp_T> mat_R_types;
-  std::set<std::size_t> n_cols;
+
+  auto n_cols = std::set<std::size_t>();
+  auto matrix_doctor = Type_Doctor<type_policy>();
 
   for (auto element : array) {
-    // matrices are made from arrays-of-arrays, so return early if any elements
-    // are not arrays
     if (element.type() != simdjson::dom::element_type::ARRAY) {
-      return Matrix_Diagnosis{false,                                   // early return:
-                              HAS_NULLS,                               // throw...
-                              false,                                   // all...
-                              simdjson::dom::element_type::NULL_VALUE, // of...
-                              rcpp_T::null,                            // this...
-                              0UL};                                    // away
+      return Matrix_Diagnosis(); // return early
     }
 
-    auto type_doc = Type_Doctor<type_policy>();
-    if constexpr (SIMDJSON_EXCEPTIONS) {
-      type_doc = Type_Doctor<type_policy>(element);
-    } else {
-      type_doc = Type_Doctor<type_policy>(element.get<simdjson::dom::array>().first);
-    }
+#if RCPPSIMDJSON_EXCEPTIONS
+    matrix_doctor.update(Type_Doctor<type_policy>(element));
+    n_cols.insert(std::size(simdjson::dom::array(element)));
+#else
+    matrix_doctor.update(Type_Doctor<type_policy>(element.get<simdjson::dom::array>().first));
+    n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
+#endif
 
-    const auto vec_common_element_type = type_doc.common_element_type();
-
-    // if common elements aren't scalars, return early
-    if (vec_common_element_type == simdjson::dom::element_type::ARRAY ||
-        vec_common_element_type == simdjson::dom::element_type::OBJECT) {
-      return Matrix_Diagnosis{false,                   // early return:
-                              HAS_NULLS,               // throw...
-                              false,                   // all...
-                              vec_common_element_type, // of...
-                              rcpp_T::null,            // this...
-                              0UL};                    // away
-    }
-
-    // `mat_has_nulls` will be true if `vec_has_nulls` is ever true
-    mat_has_nulls = mat_has_nulls || type_doc.has_null();
-    // track R types
-    mat_R_types.insert(type_doc.common_R_type());
-
-    if constexpr (SIMDJSON_EXCEPTIONS) {
-      n_cols.insert(std::size(simdjson::dom::array(element)));
-    } else {
-      n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
-    }
+    if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
+      return Matrix_Diagnosis(); // return early
+    };
   }
 
-  const auto mat_type_doc = Type_Doctor<type_policy>::from_set(mat_R_types);
-
   return Matrix_Diagnosis{
-      mat_type_doc.is_vectorizable() && std::size(n_cols) == 1,     // only 1 rcpp_T and 1 n_cols
-      mat_has_nulls,                                                //
-      mat_type_doc.is_homogeneous() && std::size(mat_R_types) == 1, //
-      mat_type_doc.common_element_type(),                           //
-      mat_type_doc.common_R_type(),                                 //
-      *std::begin(n_cols)                                           // only 1 if `is_matrix_ish`
+      matrix_doctor.is_vectorizable(),     //
+      matrix_doctor.has_null(),            //
+      matrix_doctor.is_homogeneous(),      //
+      matrix_doctor.common_element_type(), //
+      matrix_doctor.common_R_type(),       //
+      *std::begin(n_cols)                  //
   };
 }
 
@@ -90,30 +58,28 @@ inline auto build_matrix_typed(simdjson::dom::array array, const std::size_t n_c
     -> Rcpp::Vector<RTYPE> {
 
   const auto n_rows = std::size(array);
-  Rcpp::Matrix<RTYPE> out(n_rows, n_cols);
-  R_xlen_t j = 0;
+  auto out = Rcpp::Matrix<RTYPE>(n_rows, n_cols);
+  auto j = R_xlen_t(0);
 
-  if constexpr (SIMDJSON_EXCEPTIONS) {
-    for (simdjson::dom::array sub_array : array) {
-      R_xlen_t i = 0;
-      for (auto element : sub_array) {
-        out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
-        i += n_rows;
-      }
-      j++;
+#if RCPPSIMDJSON_EXCEPTIONS
+  for (simdjson::dom::array sub_array : array) {
+    auto i = R_xlen_t(0);
+    for (auto element : sub_array) {
+      out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
+      i += n_rows;
     }
-
-  } else {
-
-    for (auto sub_array : array) {
-      R_xlen_t i = 0;
-      for (auto element : sub_array.get<simdjson::dom::array>().first) {
-        out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
-        i += n_rows;
-      }
-      j++;
-    }
+    j++;
   }
+#else
+  for (auto sub_array : array) {
+    auto i = R_xlen_t(0);
+    for (auto element : sub_array.get<simdjson::dom::array>().first) {
+      out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
+      i += n_rows;
+    }
+    j++;
+  }
+#endif
 
   return out;
 }
@@ -123,41 +89,40 @@ inline auto build_matrix_integer64_typed(simdjson::dom::array array, const std::
     -> Rcpp::Vector<REALSXP> {
 
   const auto n_rows = std::size(array);
-  std::vector<int64_t> stl_vec_int64(n_rows * n_cols);
-  std::size_t j = 0;
+  auto stl_vec_int64 = std::vector<int64_t>(n_rows * n_cols);
+  auto j = std::size_t(0);
 
-  if constexpr (SIMDJSON_EXCEPTIONS) {
-    for (simdjson::dom::array sub_array : array) {
-      std::size_t i = 0;
-      for (auto element : sub_array) {
-        stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
-        i += n_rows;
-      }
-      j++;
+#if RCPPSIMDJSON_EXCEPTIONS
+  for (simdjson::dom::array sub_array : array) {
+    auto i = std::size_t(0);
+    for (auto element : sub_array) {
+      stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+      i += n_rows;
     }
-
-  } else {
-
-    for (auto sub_array : array) {
-      std::size_t i = 0;
-      for (auto element : sub_array.get<simdjson::dom::array>().first) {
-        stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
-        i += n_rows;
-      }
-      j++;
-    }
+    j++;
   }
+#else
+  for (auto sub_array : array) {
+    auto i = std::size_t(0);
+    for (auto element : sub_array.get<simdjson::dom::array>().first) {
+      stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+      i += n_rows;
+    }
+    j++;
+  }
+#endif
 
-  Rcpp::NumericVector out = rcppsimdjson::utils::as_integer64(stl_vec_int64);
+  auto out = Rcpp::NumericVector(utils::as_integer64(stl_vec_int64));
   out.attr("dim") = Rcpp::IntegerVector::create(n_rows, n_cols);
 
   return out;
 }
 
 
-template <rcppsimdjson::utils::Int64_R_Type int64_opt>
-inline auto dispatch_matrix_typed(simdjson::dom::array array,
-                                  simdjson::dom::element_type element_type,
+template <utils::Int64_R_Type int64_opt>
+inline auto dispatch_matrix_typed(const simdjson::dom::array array,
+                                  const simdjson::dom::element_type element_type,
+                                  const rcpp_T R_Type,
                                   const bool has_nulls,
                                   const std::size_t n_cols) -> SEXP {
 

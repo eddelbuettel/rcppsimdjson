@@ -1,5 +1,5 @@
-#ifndef RCPP_SIMDJSON_VECTOR_HPP
-#define RCPP_SIMDJSON_VECTOR_HPP
+#ifndef RCPPSIMDJSON__DESERIALIZE__VECTOR_HPP
+#define RCPPSIMDJSON__DESERIALIZE__VECTOR_HPP
 
 #include "scalar.hpp"
 
@@ -9,9 +9,9 @@ namespace deserialize {
 
 template <int RTYPE, typename in_T, rcpp_T R_Type, bool has_nulls>
 inline auto build_vector_typed(const simdjson::dom::array array) -> Rcpp::Vector<RTYPE> {
-  Rcpp::Vector<RTYPE> out(std::size(array));
+  auto out = Rcpp::Vector<RTYPE>(std::size(array));
   R_xlen_t i = 0;
-  for (const auto element : array) {
+  for (auto element : array) {
     out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);
   }
   return out;
@@ -21,66 +21,21 @@ inline auto build_vector_typed(const simdjson::dom::array array) -> Rcpp::Vector
 template <bool has_nulls>
 inline auto build_vector_integer64_typed(const simdjson::dom::array array)
     -> Rcpp::Vector<REALSXP> {
-  std::vector<int64_t> stl_vec_int64(std::size(array));
+
+  auto stl_vec_int64 = std::vector<int64_t>(std::size(array));
   std::size_t i = 0;
-  for (const auto element : array) {
+  for (auto element : array) {
     stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
   }
 
-  return rcppsimdjson::utils::as_integer64(stl_vec_int64);
+  return utils::as_integer64(stl_vec_int64);
 }
 
 
-template <rcppsimdjson::utils::Int64_R_Type int64_opt>
+template <utils::Int64_R_Type int64_opt>
 inline auto dispatch_vector_typed(const simdjson::dom::array array,
-                                  const simdjson::dom::element_type element_type,
+                                  const rcpp_T R_Type,
                                   const bool has_nulls) -> SEXP {
-  switch (element_type) {
-    case simdjson::dom::element_type::STRING:
-      return has_nulls ? build_vector_typed<STRSXP, std::string, rcpp_T::chr, HAS_NULLS>(array)
-                       : build_vector_typed<STRSXP, std::string, rcpp_T::chr, NO_NULLS>(array);
-
-    case simdjson::dom::element_type::DOUBLE:
-      return has_nulls ? build_vector_typed<REALSXP, double, rcpp_T::dbl, HAS_NULLS>(array)
-                       : build_vector_typed<REALSXP, double, rcpp_T::dbl, NO_NULLS>(array);
-
-    case simdjson::dom::element_type::INT64: {
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Double) {
-        return has_nulls ? build_vector_typed<REALSXP, int64_t, rcpp_T::dbl, HAS_NULLS>(array)
-                         : build_vector_typed<REALSXP, int64_t, rcpp_T::dbl, NO_NULLS>(array);
-      }
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::String) {
-        return has_nulls ? build_vector_typed<STRSXP, int64_t, rcpp_T::chr, HAS_NULLS>(array)
-                         : build_vector_typed<STRSXP, int64_t, rcpp_T::chr, NO_NULLS>(array);
-      }
-
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Integer64) {
-        return has_nulls ? build_vector_integer64_typed<HAS_NULLS>(array)
-                         : build_vector_integer64_typed<NO_NULLS>(array);
-      }
-    }
-
-    case simdjson::dom::element_type::BOOL:
-      return has_nulls ? build_vector_typed<LGLSXP, bool, rcpp_T::lgl, HAS_NULLS>(array)
-                       : build_vector_typed<LGLSXP, bool, rcpp_T::lgl, NO_NULLS>(array);
-
-    case simdjson::dom::element_type::NULL_VALUE:
-      return Rcpp::LogicalVector(std::size(array), NA_LOGICAL);
-
-    case simdjson::dom::element_type::UINT64:
-      return has_nulls ? build_vector_typed<STRSXP, uint64_t, rcpp_T::chr, HAS_NULLS>(array)
-                       : build_vector_typed<STRSXP, uint64_t, rcpp_T::chr, NO_NULLS>(array);
-
-    default:
-      return R_NilValue;
-  }
-}
-
-
-template <rcppsimdjson::utils::Int64_R_Type int64_opt>
-inline auto dispatch_vector_typed2(const simdjson::dom::array array,
-                                   const rcpp_T R_Type,
-                                   const bool has_nulls) -> SEXP {
   switch (R_Type) {
     case rcpp_T::chr:
       return has_nulls ? build_vector_typed<STRSXP, std::string, rcpp_T::chr, HAS_NULLS>(array)

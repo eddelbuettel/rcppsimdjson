@@ -1,10 +1,11 @@
-#ifndef RCPPSIMDJSON_SCALAR_HPP
-#define RCPPSIMDJSON_SCALAR_HPP
+#ifndef RCPPSIMDJSON__DESERIALIZE__SCALAR_HPP
+#define RCPPSIMDJSON__DESERIALIZE__SCALAR_HPP
 
 #include "Type_Doctor.hpp"
 
 namespace rcppsimdjson {
 namespace deserialize {
+
 
 template <typename in_T, rcpp_T R_Type>
 inline auto get_scalar_(simdjson::dom::element) noexcept(is_no_except(R_Type));

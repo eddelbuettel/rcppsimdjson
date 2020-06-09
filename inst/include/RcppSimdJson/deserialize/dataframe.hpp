@@ -1,5 +1,5 @@
-#ifndef RCPPSIMDJSON_DATAFRAME_HPP
-#define RCPPSIMDJSON_DATAFRAME_HPP
+#ifndef RCPPSIMDJSON__DESERIALIZE__DATAFRAME_HPP
+#define RCPPSIMDJSON__DESERIALIZE__DATAFRAME_HPP
 
 #include "matrix.hpp"
 
@@ -10,12 +10,15 @@ namespace deserialize {
 
 template <Type_Policy type_policy> struct Data_Frame_Diagnosis {
   bool is_data_frame_ish = false;
-  std::map<std::string_view, Type_Doctor<type_policy>> cols;
+  std::map<std::string_view, Type_Doctor<type_policy>> cols = // TODO don't use map
+      std::map<std::string_view, Type_Doctor<type_policy>>();
 };
 
 
 template <Type_Policy type_policy>
-inline auto diagnose_data_frame(simdjson::dom::array array) -> Data_Frame_Diagnosis<type_policy> {
+inline auto
+diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
+    -> Data_Frame_Diagnosis<type_policy> {
 
   auto cols = std::map<std::string_view, Type_Doctor<type_policy>>();
 
