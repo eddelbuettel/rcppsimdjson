@@ -12,6 +12,13 @@ int64_opt <- list(
   integer64 = 2
 )
 
+simplify_lvl <- list(
+  data_frame = 0,
+  matrix = 1,
+  vector = 2,
+  list = 3
+)
+
 # scalar =======================================================================
 #* integer ---------------------------------------------------------------------
 test <- "1"
@@ -810,6 +817,108 @@ expect_identical(
   target
 )
 # objects ======================================================================
+#* simple named lists ----------------------------------------------------------
+test <- '{"a":[1.0,2.0]}'
+target <- list(a = c(1, 2))
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test),
+  target
+)
+#* deeply nested lists ---------------------------------------------------------
+test <-
+  '{
+    "a": [
+        1,
+        {
+            "b": [
+                2,
+                {
+                    "c": 3,
+                    "d": {
+                        "data_frame": [
+                            {
+                                "scalar_col": 4,
+                                "matrix_col": [
+                                    [
+                                        5,
+                                        6
+                                    ],
+                                    [
+                                        7,
+                                        8
+                                    ]
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}'
+target <- list(
+  a = list(
+    1L, list(
+      b = list(
+        2L,
+        list(
+          c = 3L,
+          d = list(
+            data_frame = structure(
+              list(
+                scalar_col = 4L,
+                matrix_col = list(
+                  structure(
+                    c(5L, 7L, 6L, 8L),
+                    .Dim = c(2L, 2L)
+                  )
+                )
+              ),
+              row.names = 1L,
+              class = "data.frame"
+            )
+          )
+        )
+      )
+    )
+  )
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test),
+  target
+)
+#* simple data frames ----------------------------------------------------------
+test <-
+  '[
+    {
+        "these": 1,
+        "names": null,
+        "arent": true,
+        "sorted": null
+    },
+    {
+        "these": null,
+        "names": "b",
+        "arent": null,
+        "sorted": 1.5,
+        "col_missing_from_first_row": "face"
+    }
+]'
+
+target <- data.frame(
+  these = c(1L, NA),
+  names = c(NA, "b"),
+  arent = c(TRUE, NA),
+  sorted = c(NA, 1.5),
+  col_missing_from_first_row = c(NA, "face"),
+  stringsAsFactors = FALSE
+)
+
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test),
+  target
+)
+#* nested data frames ----------------------------------------------------------
 test <-
   '[
     {
@@ -883,9 +992,88 @@ target <- list(
     data.frame(a = 2.2, b = FALSE, c = "b"),
     data.frame(a = NA, b = NA, c = NA)
   )
-); class(target) <- "data.frame"; rownames(target) <- 1:3
+)
+class(target) <- "data.frame"
+rownames(target) <- 1:3
 
 expect_identical(
   RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
   target
 )
+# other simplify levels ========================================================
+test <- '[{"a":[1,2],"g":[[3,4],[5,6]]}]'
+#* matrix ----------------------------------------------------------------------
+target <- list(
+  list(
+    a = 1:2,
+    g = matrix(
+      c(3L, 5L, 4L, 6L),
+      nrow = 2L, ncol = 2L
+    )
+  )
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, simplify_to = simplify_lvl$matrix),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$ints_as_dbls,
+    simplify_to = simplify_lvl$matrix
+  ),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$strict,
+    simplify_to = simplify_lvl$matrix
+  ),
+  target
+)
+#* vector ----------------------------------------------------------------------
+target <- list(list(a = 1:2, g = list(3:4, 5:6)))
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, simplify_to = simplify_lvl$vector),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$ints_as_dbls,
+    simplify_to = simplify_lvl$vector
+  ),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$strict,
+    simplify_to = simplify_lvl$vector
+  ),
+  target
+)
+#* list ------------------------------------------------------------------------
+target <- list(list(a = list(1L, 2L), g = list(list(3L, 4L), list(5L, 6L))))
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, simplify_to = simplify_lvl$list),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$ints_as_dbls,
+    simplify_to = simplify_lvl$list
+  ),
+  target
+)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(
+    test, 
+    type_policy = type_policy$strict,
+    simplify_to = simplify_lvl$list
+  ),
+  target
+)
+  
