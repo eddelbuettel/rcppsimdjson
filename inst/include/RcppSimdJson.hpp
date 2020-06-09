@@ -7,12 +7,8 @@
 
 namespace rcppsimdjson {
 
-// #define SIMDJSON_EXCEPTIONS 0
-#ifdef SIMDJSON_EXCEPTIONS
-static inline constexpr auto SIMDJSON_NOEXCEPT = SIMDJSON_EXCEPTIONS == 0;
-#else
-static inline constexpr auto SIMDJSON_NOEXCEPT = false;
-#endif
+static inline constexpr int64_t NA_INTEGER64 = LLONG_MIN;
+
 
 enum class rcpp_T : int {
   array = 0,
@@ -26,14 +22,6 @@ enum class rcpp_T : int {
   null = 8,
 };
 
-static inline constexpr auto is_no_except(rcpp_T R_Type) -> bool {
-  /* it looks like all scalars can be generically extracted w/o touching Rcpp API except
-   * for strings
-   */
-  return SIMDJSON_NOEXCEPT && R_Type != rcpp_T::chr;
-};
-
-static inline constexpr int64_t NA_INTEGER64 = LLONG_MIN;
 
 template <rcpp_T R_Type> static inline constexpr auto na_val() {
   if constexpr (R_Type == rcpp_T::chr) {
@@ -52,6 +40,23 @@ template <rcpp_T R_Type> static inline constexpr auto na_val() {
     return NA_LOGICAL;
   }
 }
+
+
+// #define SIMDJSON_EXCEPTIONS 0
+#ifdef SIMDJSON_EXCEPTIONS
+#define RCPPSIMDJSON_EXCEPTIONS SIMDJSON_EXCEPTIONS
+static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = SIMDJSON_EXCEPTIONS != 1;
+#else
+#define RCPPSIMDJSON_EXCEPTIONS 1
+static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = false;
+#endif
+
+
+static inline constexpr auto is_no_except(rcpp_T R_Type) -> bool {
+  // all scalars seem to be extractable w/o touching throwing code except for strings
+  return RCPPSIMDJSON_NO_EXCEPTIONS && R_Type != rcpp_T::chr;
+}
+
 
 } // namespace rcppsimdjson
 
