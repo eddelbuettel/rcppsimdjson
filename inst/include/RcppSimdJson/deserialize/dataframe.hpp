@@ -7,11 +7,19 @@
 namespace rcppsimdjson {
 namespace deserialize {
 
+template <Type_Policy type_policy> struct Column {
+  R_xlen_t index = 0;
+  Type_Doctor<type_policy> schema = Type_Doctor<type_policy>();
+};
+
+template <Type_Policy type_policy> struct Column_Schema {
+  std::map<std::string_view, Column<type_policy>> schema =
+      std::map<std::string_view, Column<type_policy>>();
+};
 
 template <Type_Policy type_policy> struct Data_Frame_Diagnosis {
   bool is_data_frame_ish = false;
-  std::map<std::string_view, Type_Doctor<type_policy>> cols = // TODO don't use map
-      std::map<std::string_view, Type_Doctor<type_policy>>();
+  Column_Schema<type_policy> cols = Column_Schema<type_policy>();
 };
 
 
@@ -20,7 +28,8 @@ inline auto
 diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
     -> Data_Frame_Diagnosis<type_policy> {
 
-  auto cols = std::map<std::string_view, Type_Doctor<type_policy>>();
+  auto cols = Column_Schema<type_policy>();
+  auto col_index = 0;
 
   if (std::size(array) == 0) {
     return Data_Frame_Diagnosis<type_policy>();
@@ -36,10 +45,10 @@ diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_E
     }
 
     for (auto [key, value] : object) {
-      if (cols.find(key) == std::end(cols)) {
-        cols[key] = Type_Doctor<type_policy>();
+      if (cols.schema.find(key) == std::end(cols.schema)) {
+        cols.schema[key] = Column<type_policy>{col_index++, Type_Doctor<type_policy>()};
       }
-      cols[key].add_element(value);
+      cols.schema[key].schema.add_element(value);
     }
 
     lengths.insert(std::size(object));

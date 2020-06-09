@@ -38,49 +38,53 @@ inline SEXP simplify_element(const simdjson::dom::element); // forward declarati
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_data_frame(const simdjson::dom::array array,
-                                const std::map<std::string_view, Type_Doctor<type_policy>>& cols)
-    -> SEXP {
+inline auto build_data_frame(const simdjson::dom::array array,
+                             const std::map<std::string_view, Column<type_policy>>& cols) -> SEXP {
 
   const auto n_rows = R_xlen_t(std::size(array));
-  Rcpp::List out(std::size(cols));
-  auto j_col = R_xlen_t(0);
+  auto out = Rcpp::List(std::size(cols));
+  auto out_names = Rcpp::CharacterVector(std::size(cols));
 
-  for (auto [key, value] : cols) {
-    switch (value.common_R_type()) {
+  for (auto [key, col] : cols) {
+    out_names[col.index] = std::string(key);
+
+    switch (col.schema.common_R_type()) {
       case rcpp_T::chr: {
-        out[j_col++] = build_col<STRSXP, std::string, rcpp_T::chr, type_policy>(array, key, value);
+        out[col.index] =
+            build_col<STRSXP, std::string, rcpp_T::chr, type_policy>(array, key, col.schema);
         break;
       }
 
       case rcpp_T::dbl: {
-        out[j_col++] = build_col<REALSXP, double, rcpp_T::dbl, type_policy>(array, key, value);
+        out[col.index] =
+            build_col<REALSXP, double, rcpp_T::dbl, type_policy>(array, key, col.schema);
         break;
       }
 
       case rcpp_T::i64: {
-        out[j_col++] = build_col_integer64<type_policy, int64_opt>(array, key, value);
+        out[col.index] = build_col_integer64<type_policy, int64_opt>(array, key, col.schema);
         break;
       }
 
       case rcpp_T::i32: {
-        out[j_col++] = build_col<INTSXP, int64_t, rcpp_T::i32, type_policy>(array, key, value);
+        out[col.index] =
+            build_col<INTSXP, int64_t, rcpp_T::i32, type_policy>(array, key, col.schema);
         break;
       }
 
       case rcpp_T::lgl: {
-        out[j_col++] = build_col<LGLSXP, bool, rcpp_T::lgl, type_policy>(array, key, value);
+        out[col.index] = build_col<LGLSXP, bool, rcpp_T::lgl, type_policy>(array, key, col.schema);
         break;
       }
 
       case rcpp_T::null: {
-        out[j_col++] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
+        out[col.index] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
         break;
       }
 
       default: {
         auto this_col = Rcpp::Vector<VECSXP>(n_rows);
-        R_xlen_t i_row = 0;
+        auto i_row = R_xlen_t(0);
         for (auto element : array) {
           auto [value, error] = element.get<simdjson::dom::object>().at_key(key);
           if (error) {
@@ -89,16 +93,12 @@ inline auto simplify_data_frame(const simdjson::dom::array array,
             this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(value);
           }
         }
-        out[j_col++] = this_col;
+        out[col.index] = this_col;
       }
     }
   }
 
-  out.attr("names") = Rcpp::CharacterVector( //
-      std::begin(cols),
-      std::end(cols),
-      [](auto key_value) { return Rcpp::String(std::string(key_value.first)); } //
-  );
+  out.attr("names") = out_names;
   out.attr("row.names") = Rcpp::seq(1, n_rows);
   out.attr("class") = "data.frame";
 
@@ -142,7 +142,6 @@ inline auto simplify_matrix(const simdjson::dom::array array) -> SEXP {
         mat_common_element_type,
         mat_common_R_type,
         n_cols] = diagnose_matrix<type_policy>(array);
-  // Rcpp::Rcout << "mat_is_homogeneous " << mat_is_homogeneous << std::endl;
 
   if (is_matrix_ish) {
     return mat_is_homogeneous
@@ -160,7 +159,7 @@ inline auto simplify_data_frame(const simdjson::dom::array& array) -> SEXP {
   auto [is_data_frame_ish, cols] = diagnose_data_frame<type_policy>(array);
 
   if (is_data_frame_ish) {
-    return simplify_data_frame<type_policy, int64_opt, simplify_to>(array, cols);
+    return build_data_frame<type_policy, int64_opt, simplify_to>(array, cols.schema);
   }
 
   return simplify_matrix<type_policy, int64_opt, simplify_to>(array);
