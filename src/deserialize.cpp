@@ -9,17 +9,19 @@ SEXP deserialize_json(const Rcpp::String& json,
   using namespace rcppsimdjson;
 
   simdjson::dom::parser parser;
-  simdjson::dom::element parsed;
 
-  if constexpr (SIMDJSON_EXCEPTIONS) {
-    parsed = json_pointer.empty() //
-                 ? parser.parse(json)
-                 : parser.parse(json).at(json_pointer);
-  } else {
-    parsed = json_pointer.empty() //
-                 ? parser.parse(json).first
-                 : parser.parse(json).at(json_pointer).first;
+#if RCPPSIMDJSON_EXCEPTIONS
+  simdjson::dom::element parsed = json_pointer.empty() //
+                                      ? parser.parse(json)
+                                      : parser.parse(json).at(json_pointer);
+#else
+  auto [parsed, error] = json_pointer.empty() //
+                             ? parser.parse(json).first
+                             : parser.parse(json).at(json_pointer);
+  if (error) {
+    Rcpp::stop(simdjson::error_message(error));
   }
+#endif
 
   return deserialize::deserialize(parsed,
                                   static_cast<deserialize::Simplify_To>(simplify_to),
@@ -30,9 +32,8 @@ SEXP deserialize_json(const Rcpp::String& json,
 
 // [[Rcpp::export(.exceptions_enabled)]]
 bool exceptions_enabled() {
-  if constexpr (SIMDJSON_EXCEPTIONS) {
-    return SIMDJSON_EXCEPTIONS == 1;
-  } else {
-    Rcpp::stop("SIMDJSON_EXCEPTIONS not defined");
-  }
+#ifndef SIMDJSON_EXCEPTIONS
+  Rcpp::stop("`SIMDJSON_EXCEPTIONS` not defined");
+#endif
+  return SIMDJSON_EXCEPTIONS == 1;
 }
