@@ -216,33 +216,32 @@ template <>
 inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() const noexcept
     -> rcpp_T {
 
-  if (has_object()) {
+  if (object_) {
     return rcpp_T::object;
   }
-  if (has_array()) {
+  if (array_) {
     return rcpp_T::array;
   }
 
-  if (has_chr() && !(has_dbl() || has_i64() || has_i32() || has_lgl() || has_u64())) {
+  if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::chr;
   }
 
-  if (has_dbl() && !(has_lgl() || has_u64())) { // any number will become double
+  if (dbl_ && !(lgl_ || u64_)) { // any number will become double
     return rcpp_T::dbl;
   }
-  if (has_i64() && !(has_i32() || has_lgl() || has_u64())) {
+  if (i64_ && !(i32_ || lgl_ || u64_)) {
     // only 64/32-bit integers: will follow selected Int64_R_Type option
     return rcpp_T::i64;
   }
-  if (has_i32() && !(has_lgl() || has_u64())) {
-    // only 32-bit integers remaining: will become int
+  if (i32_ && !(lgl_ || u64_)) { // only 32-bit integers remaining: will become int
     return rcpp_T::i32;
   }
 
-  if (has_lgl() && !has_u64()) {
+  if (lgl_ && !u64_) {
     return rcpp_T::lgl;
   }
-  if (has_u64()) {
+  if (u64_) {
     return rcpp_T::u64;
   }
 
@@ -254,72 +253,71 @@ template <>
 inline constexpr auto Type_Doctor<Type_Policy::anything_goes>::common_R_type() const noexcept
     -> rcpp_T {
 
-  return has_object()
-             ? rcpp_T::object
-             : has_array()
-                   ? rcpp_T::array
-                   : has_chr()
-                         ? rcpp_T::chr
-                         : has_dbl() ? rcpp_T::dbl
-                                     : has_i64() ? rcpp_T::i64
-                                                 : has_i32() ? rcpp_T::i32
-                                                             : has_lgl() ? rcpp_T::lgl
-                                                                         : has_u64() ? rcpp_T::chr
-                                                                                     : rcpp_T::null;
+  return object_ ? rcpp_T::object                                                   //
+                 : array_ ? rcpp_T::array                                           //
+                          : chr_ ? rcpp_T::chr                                      //
+                                 : dbl_ ? rcpp_T::dbl                               //
+                                        : i64_ ? rcpp_T::i64                        //
+                                               : i32_ ? rcpp_T::i32                 //
+                                                      : lgl_ ? rcpp_T::lgl          //
+                                                             : u64_ ? rcpp_T::u64   //
+                                                                    : rcpp_T::null; //
 }
 
 
 template <>
 inline constexpr auto Type_Doctor<Type_Policy::strict>::is_vectorizable() const noexcept -> bool {
-  if (has_object() || has_array()) {
+  if (object_ || array_) {
     return false;
   }
 
-  if (has_chr()) {
-    return !(has_dbl() || has_i64() || has_i32() || has_lgl() || has_u64());
+  if (chr_) {
+    return !(dbl_ || i64_ || i32_ || lgl_ || u64_);
   }
-  if (has_dbl()) {
-    return !(has_i64() || has_i32() || has_lgl() || has_u64());
+  if (dbl_) {
+    return !(i64_ || i32_ || lgl_ || u64_);
   }
-  if (has_i64()) {
-    return !(has_i32() || has_lgl() || has_u64());
+  if (i64_) {
+    return !(i32_ || lgl_ || u64_);
   }
-  if (has_i32()) {
-    return !(has_lgl() || has_u64());
+  if (i32_) {
+    return !(lgl_ || u64_);
   }
-  if (has_lgl()) {
-    return !has_u64();
+  if (lgl_) {
+    return !u64_;
   }
 
-  return true; // only u64 and null are left
+  return u64_;
 }
 
 
 template <>
 inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::is_vectorizable() const noexcept
     -> bool {
-  if (has_object() || has_array()) {
+
+  if (object_ || array_) {
     return false;
   }
 
-  if (has_chr()) {
-    return !(has_dbl() || has_i64() || has_i32() || has_lgl() || has_u64());
+  if (chr_) {
+    return !(dbl_ || i64_ || i32_ || lgl_ || u64_);
   }
-  if (has_dbl() || has_i64() || has_i32()) {
-    return !(has_lgl() || has_u64());
+  if (dbl_ || i64_ || i32_) {
+    return !(lgl_ || u64_);
   }
-  if (has_lgl()) {
-    return !has_u64();
+  if (lgl_) {
+    return !u64_;
   }
 
-  return true; // only u64 and null are left
+  return u64_;
 }
 
 
 template <>
 inline constexpr auto Type_Doctor<Type_Policy::anything_goes>::is_vectorizable() const noexcept
     -> bool {
-  return !has_object() && !has_array();
+
+  return !(object_ || array_);
 }
 
 
@@ -327,17 +325,16 @@ template <Type_Policy type_policy>
 inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noexcept
     -> simdjson::dom::element_type {
 
-  return
-      // has_ARRAY() ? simdjson::dom::element_type::ARRAY : has_OBJECT() ?
-      // simdjson::dom::element_type::OBJECT :
-      has_STRING()
-          ? simdjson::dom::element_type::STRING
-          : has_DOUBLE()
-                ? simdjson::dom::element_type::DOUBLE
-                : has_INT64() ? simdjson::dom::element_type::INT64
-                              : has_BOOL() ? simdjson::dom::element_type::BOOL
-                                           : has_UINT64() ? simdjson::dom::element_type::UINT64
-                                                          : simdjson::dom::element_type::NULL_VALUE;
+  using namespace simdjson::dom;
+
+  return ARRAY_ ? element_type::ARRAY
+                : OBJECT_ ? element_type::OBJECT
+                          : STRING_ ? element_type::STRING
+                                    : DOUBLE_ ? element_type::DOUBLE
+                                              : INT64_ ? element_type::INT64
+                                                       : BOOL_ ? element_type::BOOL
+                                                               : UINT64_ ? element_type::UINT64
+                                                                         : element_type::NULL_VALUE;
 }
 
 
@@ -345,104 +342,81 @@ template <Type_Policy type_policy>
 auto Type_Doctor<type_policy>::add_element(simdjson::dom::element element) noexcept -> void {
   switch (element.type()) {
     case simdjson::dom::element_type::ARRAY:
-      type_matrix[index::ARRAY] = true;
-      type_matrix[index::array] = true;
+      ARRAY_ = true;
+      array_ = true;
       break;
 
     case simdjson::dom::element_type::OBJECT:
-      type_matrix[index::OBJECT] = true;
-      type_matrix[index::object] = true;
+      OBJECT_ = true;
+      object_ = true;
       break;
 
     case simdjson::dom::element_type::STRING:
-      type_matrix[index::STRING] = true;
-      type_matrix[index::chr] = true;
+      STRING_ = true;
+      chr_ = true;
       break;
 
     case simdjson::dom::element_type::DOUBLE:
-      type_matrix[index::DOUBLE] = true;
-      type_matrix[index::dbl] = true;
+      DOUBLE_ = true;
+      dbl_ = true;
       break;
 
     case simdjson::dom::element_type::INT64: {
-      type_matrix[index::INT64] = true;
-      if (rcppsimdjson::utils::is_castable_int64(element.get<int64_t>().first)) {
-        type_matrix[index::i32] = true;
+      INT64_ = true;
+      if (utils::is_castable_int64(element.get<int64_t>().first)) {
+        i32_ = true;
       } else {
-        type_matrix[index::i64] = true;
+        i64_ = true;
       }
       break;
     }
 
     case simdjson::dom::element_type::BOOL:
-      type_matrix[index::BOOL] = true;
-      type_matrix[index::lgl] = true;
+      BOOL_ = true;
+      lgl_ = true;
       break;
 
     case simdjson::dom::element_type::NULL_VALUE:
-      type_matrix[index::NULL_VALUE] = true;
-      type_matrix[index::null] = true;
+      NULL_VALUE_ = true;
+      null_ = true;
       break;
 
     case simdjson::dom::element_type::UINT64:
-      type_matrix[index::UINT64] = true;
+      UINT64_ = true;
+      u64_ = true;
       break;
   }
 }
 
 
 template <Type_Policy type_policy>
-inline auto Type_Doctor<type_policy>::from_set(const std::set<rcpp_T>& type_set) noexcept
-    -> Type_Doctor<type_policy> {
-  auto out = Type_Doctor();
+inline constexpr auto
+Type_Doctor<type_policy>::update(Type_Doctor<type_policy>&& type_doctor2) noexcept -> void {
+  this->ARRAY_ = this->ARRAY_ || type_doctor2.ARRAY_;
+  this->array_ = this->array_ || type_doctor2.array_;
 
-  for (auto element_type : type_set) {
-    switch (element_type) {
-      case rcpp_T::array:
-        out.type_matrix[index::ARRAY] = true;
-        out.type_matrix[index::array] = true;
-        break;
+  this->OBJECT_ = this->OBJECT_ || type_doctor2.OBJECT_;
+  this->object_ = this->object_ || type_doctor2.object_;
 
-      case rcpp_T::object:
-        out.type_matrix[index::OBJECT] = true;
-        out.type_matrix[index::object] = true;
-        break;
+  this->STRING_ = this->STRING_ || type_doctor2.STRING_;
+  this->chr_ = this->chr_ || type_doctor2.chr_;
 
-      case rcpp_T::chr:
-        out.type_matrix[index::STRING] = true;
-        out.type_matrix[index::chr] = true;
-        break;
+  this->DOUBLE_ = this->DOUBLE_ || type_doctor2.DOUBLE_;
+  this->dbl_ = this->dbl_ || type_doctor2.dbl_;
 
-      case rcpp_T::dbl:
-        out.type_matrix[index::DOUBLE] = true;
-        out.type_matrix[index::dbl] = true;
-        break;
+  this->INT64_ = this->INT64_ || type_doctor2.INT64_;
+  this->i64_ = this->i64_ || type_doctor2.i64_;
 
-      case rcpp_T::i64:
-        out.type_matrix[index::INT64] = true;
-        out.type_matrix[index::i64] = true;
+  this->i32_ = this->i32_ || type_doctor2.i32_;
+  this->BOOL_ = this->BOOL_ || type_doctor2.BOOL_;
 
-      case rcpp_T::i32:
-        out.type_matrix[index::INT64] = true;
-        out.type_matrix[index::i32] = true;
+  this->lgl_ = this->lgl_ || type_doctor2.lgl_;
+  this->NULL_VALUE_ = this->NULL_VALUE_ || type_doctor2.NULL_VALUE_;
 
-      case rcpp_T::lgl:
-        out.type_matrix[index::BOOL] = true;
-        out.type_matrix[index::lgl] = true;
-        break;
+  this->null_ = this->null_ || type_doctor2.null_;
 
-      case rcpp_T::null:
-        out.type_matrix[index::NULL_VALUE] = true;
-        out.type_matrix[index::null] = true;
-        break;
-
-      case rcpp_T::u64:
-        out.type_matrix[index::UINT64] = true;
-        break;
-    }
-  }
-
-  return out;
+  this->UINT64_ = this->UINT64_ || type_doctor2.UINT64_;
+  this->u64_ = this->u64_ || type_doctor2.u64_;
 }
 
 
