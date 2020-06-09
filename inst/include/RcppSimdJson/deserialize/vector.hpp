@@ -50,17 +50,17 @@ inline auto dispatch_vector_typed(const simdjson::dom::array array,
                        : build_vector_typed<INTSXP, int64_t, rcpp_T::i32, NO_NULLS>(array);
 
     case rcpp_T::i64: {
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Double) {
+      if constexpr (int64_opt == utils::Int64_R_Type::Double) {
         return has_nulls ? build_vector_typed<REALSXP, int64_t, rcpp_T::dbl, HAS_NULLS>(array)
                          : build_vector_typed<REALSXP, int64_t, rcpp_T::dbl, NO_NULLS>(array);
       }
 
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::String) {
+      if constexpr (int64_opt == utils::Int64_R_Type::String) {
         return has_nulls ? build_vector_typed<STRSXP, int64_t, rcpp_T::chr, HAS_NULLS>(array)
                          : build_vector_typed<STRSXP, int64_t, rcpp_T::chr, NO_NULLS>(array);
       }
 
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Integer64) {
+      if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
         return has_nulls ? build_vector_integer64_typed<HAS_NULLS>(array)
                          : build_vector_integer64_typed<NO_NULLS>(array);
       }
@@ -70,43 +70,54 @@ inline auto dispatch_vector_typed(const simdjson::dom::array array,
       return has_nulls ? build_vector_typed<LGLSXP, bool, rcpp_T::lgl, HAS_NULLS>(array)
                        : build_vector_typed<LGLSXP, bool, rcpp_T::lgl, NO_NULLS>(array);
 
-    case rcpp_T::null:
-      return Rcpp::LogicalVector(std::size(array), NA_LOGICAL);
-
     case rcpp_T::u64:
       return has_nulls ? build_vector_typed<STRSXP, uint64_t, rcpp_T::chr, HAS_NULLS>(array)
                        : build_vector_typed<STRSXP, uint64_t, rcpp_T::chr, NO_NULLS>(array);
 
     default:
-      return R_NilValue;
+      return Rcpp::LogicalVector(std::size(array), NA_LOGICAL);
   }
 }
 
 
 template <int RTYPE>
 inline auto build_vector_untyped(const simdjson::dom::array array) -> Rcpp::Vector<RTYPE> {
-  Rcpp::Vector<RTYPE> out(std::size(array));
-  R_xlen_t i = 0;
+  auto out = Rcpp::Vector<RTYPE>(std::size(array));
+  auto i = R_xlen_t(0);
   for (auto element : array) {
     out[i++] = get_scalar_dispatch<RTYPE>(element);
   }
+
   return out;
 }
+
 
 inline auto build_vector_integer64_untyped(const simdjson::dom::array array)
     -> Rcpp::Vector<REALSXP> {
 
-  std::vector<int64_t> stl_vec_int64(std::size(array));
-  std::size_t i = 0;
+  auto stl_vec_int64 = std::vector<int64_t>(std::size(array));
+  auto i = std::size_t(0);
   for (auto element : array) {
-    stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
+    switch (element.type()) {
+      case simdjson::dom::element_type::INT64:
+        stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
+        break;
+
+      case simdjson::dom::element_type::BOOL:
+        stl_vec_int64[i++] = get_scalar<bool, rcpp_T::i64, HAS_NULLS>(element);
+        break;
+
+      default:
+        stl_vec_int64[i++] = NA_INTEGER64;
+        break;
+    }
   }
 
-  return rcppsimdjson::utils::as_integer64(stl_vec_int64);
+  return utils::as_integer64(stl_vec_int64);
 }
 
 
-template <rcppsimdjson::utils::Int64_R_Type int64_opt>
+template <utils::Int64_R_Type int64_opt>
 inline auto dispatch_vector_untyped(const simdjson::dom::array array, const rcpp_T common_R_type)
     -> SEXP {
 
@@ -118,15 +129,15 @@ inline auto dispatch_vector_untyped(const simdjson::dom::array array, const rcpp
       return build_vector_untyped<INTSXP>(array);
 
     case rcpp_T::i64: {
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Double) {
+      if constexpr (int64_opt == utils::Int64_R_Type::Double) {
         return build_vector_untyped<REALSXP>(array);
       }
 
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::String) {
+      if constexpr (int64_opt == utils::Int64_R_Type::String) {
         return build_vector_untyped<STRSXP>(array);
       }
 
-      if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Integer64) {
+      if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
         return build_vector_integer64_untyped(array);
       }
     }
@@ -137,8 +148,11 @@ inline auto dispatch_vector_untyped(const simdjson::dom::array array, const rcpp
     case rcpp_T::chr:
       return build_vector_untyped<STRSXP>(array);
 
+    case rcpp_T::u64:
+      return build_vector_untyped<STRSXP>(array);
+
     default:
-      return R_NilValue;
+      return Rcpp::LogicalVector(std::size(array), NA_LOGICAL);
   }
 }
 

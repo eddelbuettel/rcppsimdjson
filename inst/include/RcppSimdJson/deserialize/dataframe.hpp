@@ -45,31 +45,22 @@ diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_E
     lengths.insert(std::size(object));
   }
 
-  // for (auto [key, value] : cols) {
-  //   if (!value.is_vectorizable()) { // TODO how should nested values be handled?
-  //     cols.clear();
-  //     return Data_Frame_Diagnosis<type_policy>{false, cols};
-  //   }
-  // }
-
   return Data_Frame_Diagnosis<type_policy>{true, cols};
 }
 
 
 template <int RTYPE, typename scalar_T, rcpp_T R_Type, Type_Policy type_policy>
-inline auto build_col(simdjson::dom::array array,
+inline auto build_col(const simdjson::dom::array array,
                       const std::string_view key,
-                      const Type_Doctor<type_policy> type_doc) -> Rcpp::Vector<RTYPE> {
+                      const Type_Doctor<type_policy>& type_doc) -> Rcpp::Vector<RTYPE> {
 
-  Rcpp::Vector<RTYPE> out(std::size(array));
-  out.fill(na_val<R_Type>());
-
+  auto out = Rcpp::Vector<RTYPE>(std::size(array), na_val<R_Type>());
   auto i_row = R_xlen_t(0);
 
   if (type_doc.is_homogeneous()) {
     if (type_doc.has_null()) {
-      for (simdjson::dom::object object : array) {
-        auto [element, error] = object.at_key(key);
+      for (auto object : array) {
+        auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
         if (!error) {
           out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element);
         }
@@ -78,8 +69,8 @@ inline auto build_col(simdjson::dom::array array,
 
     } else {
 
-      for (simdjson::dom::object object : array) {
-        auto [element, error] = object.at_key(key);
+      for (auto object : array) {
+        auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
         if (!error) {
           out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element);
         }
@@ -89,8 +80,8 @@ inline auto build_col(simdjson::dom::array array,
 
   } else {
 
-    for (simdjson::dom::object object : array) {
-      auto [element, error] = object.at_key(key);
+    for (auto object : array) {
+      auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
       if (!error) {
         out[i_row] = get_scalar_dispatch<RTYPE>(element);
       }
@@ -102,27 +93,27 @@ inline auto build_col(simdjson::dom::array array,
 }
 
 
-template <Type_Policy type_policy, rcppsimdjson::utils::Int64_R_Type int64_opt>
-inline auto build_col_integer64(simdjson::dom::array array,
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline auto build_col_integer64(const simdjson::dom::array array,
                                 const std::string_view key,
                                 const Type_Doctor<type_policy> type_doc) -> SEXP {
 
-  if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Double) {
+  if constexpr (int64_opt == utils::Int64_R_Type::Double) {
     return build_col<REALSXP, int64_t, rcpp_T::dbl, type_policy>(array, key, type_doc);
   }
 
-  if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::String) {
+  if constexpr (int64_opt == utils::Int64_R_Type::String) {
     return build_col<STRSXP, int64_t, rcpp_T::chr, type_policy>(array, key, type_doc);
   }
 
-  if constexpr (int64_opt == rcppsimdjson::utils::Int64_R_Type::Integer64) {
-    std::vector<int64_t> stl_vec(std::size(array), NA_INTEGER64);
-    std::size_t i_row = 0;
+  if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+    auto stl_vec = std::vector<int64_t>(std::size(array), NA_INTEGER64);
+    auto i_row = std::size_t(0);
 
     if (type_doc.is_homogeneous()) {
       if (type_doc.has_null()) {
-        for (simdjson::dom::object object : array) {
-          auto [element, error] = object.at_key(key);
+        for (auto object : array) {
+          auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
           if (!error) {
             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
           }
@@ -130,8 +121,8 @@ inline auto build_col_integer64(simdjson::dom::array array,
         }
 
       } else {
-        for (simdjson::dom::object object : array) {
-          auto [element, error] = object.at_key(key);
+        for (auto object : array) {
+          auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
           if (!error) {
             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
           }
@@ -140,8 +131,8 @@ inline auto build_col_integer64(simdjson::dom::array array,
       }
 
     } else {
-      for (simdjson::dom::object object : array) {
-        auto [element, error] = object.at_key(key);
+      for (auto object : array) {
+        auto [element, error] = object.get<simdjson::dom::object>().at_key(key);
         if (!error) {
           switch (element.type()) {
             case simdjson::dom::element_type::INT64:
@@ -159,7 +150,7 @@ inline auto build_col_integer64(simdjson::dom::array array,
         i_row++;
       }
     }
-    return rcppsimdjson::utils::as_integer64(stl_vec);
+    return utils::as_integer64(stl_vec);
   }
 }
 

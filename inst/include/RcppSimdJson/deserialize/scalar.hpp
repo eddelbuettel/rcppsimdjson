@@ -25,39 +25,32 @@ inline auto get_scalar(simdjson::dom::element element) noexcept(is_no_except(R_T
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::chr>(simdjson::dom::element element) noexcept(is_no_except(rcpp_T::chr)) {
-
   return element.get<bool>().first ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
 }
 // return double
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::dbl>(simdjson::dom::element element) noexcept(is_no_except(rcpp_T::dbl)) {
-
   return element.get<bool>().first ? 1.0 : 0.0;
 }
 // return int64_t
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i64>(simdjson::dom::element element) noexcept(is_no_except(rcpp_T::i64)) {
-
-  return element.get<bool>().first ? 1LL : 0LL;
+  return element.get<bool>().first ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
 }
 // return int
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i32>(simdjson::dom::element element) noexcept(is_no_except(rcpp_T::i32)) {
-
   return element.get<bool>().first ? 1 : 0;
 }
 // return "bool"
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::lgl>(simdjson::dom::element element) noexcept(is_no_except(rcpp_T::lgl)) {
-
   return element.get<bool>().first ? 1 : 0;
 }
-
-
 // int64_t =========================================================================================
 // return Rcpp::String
 template <>
@@ -70,7 +63,7 @@ inline auto get_scalar_<int64_t, rcpp_T::chr>(simdjson::dom::element element) no
 template <>
 inline auto get_scalar_<int64_t, rcpp_T::dbl>(simdjson::dom::element element) noexcept(
     is_no_except(rcpp_T::dbl)) {
-  return element.get<double>().first;
+  return static_cast<double>(element.get<int64_t>().first);
 }
 // return int64_t
 template <>
@@ -122,7 +115,7 @@ inline auto get_scalar_<uint64_t, rcpp_T::chr>(simdjson::dom::element element) n
 // dispatchers =====================================================================================
 template <int RTYPE>
 inline auto get_scalar_dispatch(simdjson::dom::element) noexcept(RTYPE != STRSXP &&
-                                                                 SIMDJSON_NOEXCEPT);
+                                                                 RCPPSIMDJSON_NO_EXCEPTIONS);
 
 template <>
 inline auto get_scalar_dispatch<STRSXP>(simdjson::dom::element element) noexcept(false) {
@@ -150,7 +143,7 @@ inline auto get_scalar_dispatch<STRSXP>(simdjson::dom::element element) noexcept
 
 template <>
 inline auto
-get_scalar_dispatch<REALSXP>(simdjson::dom::element element) noexcept(SIMDJSON_NOEXCEPT) {
+get_scalar_dispatch<REALSXP>(simdjson::dom::element element) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
   switch (element.type()) {
     case simdjson::dom::element_type::DOUBLE:
       return get_scalar<double, rcpp_T::dbl, NO_NULLS>(element);
@@ -169,7 +162,7 @@ get_scalar_dispatch<REALSXP>(simdjson::dom::element element) noexcept(SIMDJSON_N
 
 template <>
 inline auto
-get_scalar_dispatch<INTSXP>(simdjson::dom::element element) noexcept(SIMDJSON_NOEXCEPT) {
+get_scalar_dispatch<INTSXP>(simdjson::dom::element element) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
   switch (element.type()) {
     case simdjson::dom::element_type::INT64:
       return get_scalar<int64_t, rcpp_T::i32, NO_NULLS>(element);
@@ -185,7 +178,7 @@ get_scalar_dispatch<INTSXP>(simdjson::dom::element element) noexcept(SIMDJSON_NO
 
 template <>
 inline auto
-get_scalar_dispatch<LGLSXP>(simdjson::dom::element element) noexcept(SIMDJSON_NOEXCEPT) {
+get_scalar_dispatch<LGLSXP>(simdjson::dom::element element) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
   switch (element.type()) {
     case simdjson::dom::element_type::BOOL:
       return get_scalar<bool, rcpp_T::i32, NO_NULLS>(element);
@@ -195,7 +188,9 @@ get_scalar_dispatch<LGLSXP>(simdjson::dom::element element) noexcept(SIMDJSON_NO
   }
 }
 
+
 } // namespace deserialize
 } // namespace rcppsimdjson
+
 
 #endif
