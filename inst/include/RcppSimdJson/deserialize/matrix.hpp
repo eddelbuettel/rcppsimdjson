@@ -5,7 +5,7 @@
 
 namespace rcppsimdjson {
 namespace deserialize {
-
+namespace matrix {
 
 struct Matrix_Diagnosis {
   bool has_nulls = false;
@@ -17,7 +17,7 @@ struct Matrix_Diagnosis {
 
 
 template <Type_Policy type_policy>
-inline auto diagnose_matrix(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
+inline auto diagnose(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
     -> std::optional<Matrix_Diagnosis> {
 
   auto n_cols = std::set<std::size_t>();
@@ -113,11 +113,11 @@ inline auto build_matrix_integer64_typed(simdjson::dom::array array, const std::
 
 
 template <utils::Int64_R_Type int64_opt>
-inline auto dispatch_matrix_typed(const simdjson::dom::array array,
-                                  const simdjson::dom::element_type element_type,
-                                  const rcpp_T R_Type,
-                                  const bool has_nulls,
-                                  const std::size_t n_cols) -> SEXP {
+inline auto dispatch_typed(const simdjson::dom::array array,
+                           const simdjson::dom::element_type element_type,
+                           const rcpp_T R_Type,
+                           const bool has_nulls,
+                           const std::size_t n_cols) -> SEXP {
 
   switch (element_type) {
     case simdjson::dom::element_type::STRING:
@@ -171,8 +171,7 @@ inline auto dispatch_matrix_typed(const simdjson::dom::array array,
 } // namespace deserialize
 
 template <int RTYPE>
-inline auto build_matrix_untyped(const simdjson::dom::array array, const std::size_t n_cols)
-    -> SEXP {
+inline auto build_matrix_mixed(const simdjson::dom::array array, const std::size_t n_cols) -> SEXP {
 
   const auto n_rows = std::size(array);
   Rcpp::Matrix<RTYPE> out(n_rows, n_cols);
@@ -203,7 +202,7 @@ inline auto build_matrix_untyped(const simdjson::dom::array array, const std::si
 }
 
 
-inline auto build_matrix_integer64_untyped(const simdjson::dom::array array, std::size_t n_cols)
+inline auto build_matrix_integer64_mixed(const simdjson::dom::array array, std::size_t n_cols)
     -> Rcpp::Vector<REALSXP> {
 
   const auto n_rows = std::size(array);
@@ -261,38 +260,38 @@ inline auto build_matrix_integer64_untyped(const simdjson::dom::array array, std
 
 
 template <utils::Int64_R_Type int64_opt>
-inline auto dispatch_matrix_untyped(const simdjson::dom::array array,
-                                    const rcpp_T R_Type,
-                                    const std::size_t n_cols) -> SEXP {
+inline auto dispatch_mixed(const simdjson::dom::array array,
+                           const rcpp_T R_Type,
+                           const std::size_t n_cols) -> SEXP {
   switch (R_Type) {
     case rcpp_T::chr:
-      return build_matrix_untyped<STRSXP>(array, n_cols);
+      return build_matrix_mixed<STRSXP>(array, n_cols);
 
     case rcpp_T::dbl:
-      return build_matrix_untyped<REALSXP>(array, n_cols);
+      return build_matrix_mixed<REALSXP>(array, n_cols);
 
     case rcpp_T::i64: {
       if constexpr (int64_opt == utils::Int64_R_Type::Double) {
-        return build_matrix_untyped<REALSXP>(array, n_cols);
+        return build_matrix_mixed<REALSXP>(array, n_cols);
       }
 
       if constexpr (int64_opt == utils::Int64_R_Type::String) {
-        return build_matrix_untyped<STRSXP>(array, n_cols);
+        return build_matrix_mixed<STRSXP>(array, n_cols);
       }
 
       if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
-        return build_matrix_integer64_untyped(array, n_cols);
+        return build_matrix_integer64_mixed(array, n_cols);
       }
     }
 
     case rcpp_T::i32:
-      return build_matrix_untyped<INTSXP>(array, n_cols);
+      return build_matrix_mixed<INTSXP>(array, n_cols);
 
     case rcpp_T::lgl:
-      return build_matrix_untyped<LGLSXP>(array, n_cols);
+      return build_matrix_mixed<LGLSXP>(array, n_cols);
 
     case rcpp_T::u64:
-      return build_matrix_untyped<STRSXP>(array, n_cols);
+      return build_matrix_mixed<STRSXP>(array, n_cols);
 
     default: {
       auto out = Rcpp::LogicalMatrix(std::size(array), n_cols);
@@ -302,7 +301,7 @@ inline auto dispatch_matrix_untyped(const simdjson::dom::array array,
   }
 }
 
-
+} // namespace matrix
 } // namespace deserialize
 } // namespace rcppsimdjson
 

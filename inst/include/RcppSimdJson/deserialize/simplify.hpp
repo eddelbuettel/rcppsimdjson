@@ -136,12 +136,12 @@ inline auto simplify_vector(const simdjson::dom::array array,
 
   if (type_doctor.is_vectorizable()) {
     return type_doctor.is_homogeneous()
-               ? dispatch_vector_typed<int64_opt>( //
-                     array,                        //
-                     type_doctor.common_R_type(),  //
-                     type_doctor.has_null()        //
-                     )                             //
-               : dispatch_vector_untyped<int64_opt>(array, type_doctor.common_R_type());
+               ? vector::dispatch_typed<int64_opt>( //
+                     array,                         //
+                     type_doctor.common_R_type(),   //
+                     type_doctor.has_null()         //
+                     )                              //
+               : vector::dispatch_mixed<int64_opt>(array, type_doctor.common_R_type());
   }
 
   return simplify_list<type_policy, int64_opt, simplify_to>(array, empty_array, empty_object);
@@ -152,16 +152,16 @@ template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To si
 inline auto simplify_matrix(const simdjson::dom::array array,
                             const SEXP empty_array,
                             const SEXP empty_object) -> SEXP {
-  if (const auto matrix = diagnose_matrix<type_policy>(array)) {
+  if (const auto matrix = matrix::diagnose<type_policy>(array)) {
     return matrix->is_homogeneous
-               ? dispatch_matrix_typed<int64_opt>( //
-                     array,                        //
-                     matrix->common_element_type,  //
-                     matrix->common_R_type,        //
-                     matrix->has_nulls,            //
-                     matrix->n_cols                //
-                     )                             //
-               : dispatch_matrix_untyped<int64_opt>(array, matrix->common_R_type, matrix->n_cols);
+               ? matrix::dispatch_typed<int64_opt>( //
+                     array,                         //
+                     matrix->common_element_type,   //
+                     matrix->common_R_type,         //
+                     matrix->has_nulls,             //
+                     matrix->n_cols                 //
+                     )                              //
+               : matrix::dispatch_mixed<int64_opt>(array, matrix->common_R_type, matrix->n_cols);
   }
 
   return simplify_vector<type_policy, int64_opt, simplify_to>(array, empty_array, empty_object);
