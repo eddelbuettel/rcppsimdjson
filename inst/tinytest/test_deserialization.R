@@ -81,7 +81,7 @@ expect_identical(
 test <- "[]"
 target <- logical()
 expect_identical(
-  RcppSimdJson:::.deserialize_json(test),
+  RcppSimdJson:::.deserialize_json(test, empty_array = target),
   target
 )
 #* integer ---------------------------------------------------------------------
@@ -817,6 +817,13 @@ expect_identical(
   target
 )
 # objects ======================================================================
+#* empty object ----------------------------------------------------------------
+test <- '{}'
+target <- structure(list(), .Names = character(0))
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, empty_object = target),
+  target
+)
 #* simple named lists ----------------------------------------------------------
 test <- '{"a":[1.0,2.0]}'
 target <- list(a = c(1, 2))
