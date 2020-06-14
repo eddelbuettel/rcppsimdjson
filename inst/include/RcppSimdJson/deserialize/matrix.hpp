@@ -8,7 +8,6 @@ namespace deserialize {
 
 
 struct Matrix_Diagnosis {
-  bool is_matrix_ish = false;
   bool has_nulls = false;
   bool is_homogeneous = false;
   simdjson::dom::element_type common_element_type = simdjson::dom::element_type::NULL_VALUE;
@@ -19,31 +18,25 @@ struct Matrix_Diagnosis {
 
 template <Type_Policy type_policy>
 inline auto diagnose_matrix(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
-    -> Matrix_Diagnosis {
+    -> std::optional<Matrix_Diagnosis> {
 
   auto n_cols = std::set<std::size_t>();
   auto matrix_doctor = Type_Doctor<type_policy>();
 
   for (auto element : array) {
     if (element.type() != simdjson::dom::element_type::ARRAY) {
-      return Matrix_Diagnosis(); // return early
+      return std::nullopt;
     }
 
-#if RCPPSIMDJSON_EXCEPTIONS
-    matrix_doctor.update(Type_Doctor<type_policy>(element));
-    n_cols.insert(std::size(simdjson::dom::array(element)));
-#else
     matrix_doctor.update(Type_Doctor<type_policy>(element.get<simdjson::dom::array>().first));
     n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
-#endif
 
     if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
-      return Matrix_Diagnosis(); // return early
+      return std::nullopt;
     };
   }
 
   return Matrix_Diagnosis{
-      matrix_doctor.is_vectorizable(),     //
       matrix_doctor.has_null(),            //
       matrix_doctor.is_homogeneous(),      //
       matrix_doctor.common_element_type(), //

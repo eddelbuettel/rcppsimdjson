@@ -17,22 +17,17 @@ template <Type_Policy type_policy> struct Column_Schema {
       std::map<std::string_view, Column<type_policy>>();
 };
 
-template <Type_Policy type_policy> struct Data_Frame_Diagnosis {
-  bool is_data_frame_ish = false;
-  Column_Schema<type_policy> cols = Column_Schema<type_policy>();
-};
-
 
 template <Type_Policy type_policy>
 inline auto
 diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
-    -> Data_Frame_Diagnosis<type_policy> {
+    -> std::optional<Column_Schema<type_policy>> {
 
   auto cols = Column_Schema<type_policy>();
   auto col_index = 0;
 
   if (std::size(array) == 0) {
-    return Data_Frame_Diagnosis<type_policy>();
+    return std::nullopt;
   }
 
   auto lengths = std::set<std::size_t>();
@@ -41,7 +36,7 @@ diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_E
     const auto [object, error] = element.get<simdjson::dom::object>();
 
     if (error) {
-      return Data_Frame_Diagnosis<type_policy>();
+      return std::nullopt;
     }
 
     for (auto [key, value] : object) {
@@ -54,7 +49,7 @@ diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_E
     lengths.insert(std::size(object));
   }
 
-  return Data_Frame_Diagnosis<type_policy>{true, cols};
+  return cols;
 }
 
 

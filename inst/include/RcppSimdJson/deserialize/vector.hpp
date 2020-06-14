@@ -10,7 +10,7 @@ namespace deserialize {
 template <int RTYPE, typename in_T, rcpp_T R_Type, bool has_nulls>
 inline auto build_vector_typed(const simdjson::dom::array array) -> Rcpp::Vector<RTYPE> {
   auto out = Rcpp::Vector<RTYPE>(std::size(array));
-  R_xlen_t i = 0;
+  auto i = R_xlen_t(0);
   for (auto element : array) {
     out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);
   }
@@ -23,7 +23,7 @@ inline auto build_vector_integer64_typed(const simdjson::dom::array array)
     -> Rcpp::Vector<REALSXP> {
 
   auto stl_vec_int64 = std::vector<int64_t>(std::size(array));
-  std::size_t i = 0;
+  auto i = std::size_t(0);
   for (auto element : array) {
     stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
   }
