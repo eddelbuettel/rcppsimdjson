@@ -1,13 +1,34 @@
 #include <RcppSimdJson.hpp>
 
+//' Deserialize JSON into R Objects
+//'
+//' @param json \code{character(1L)}
+//'
+//' @param json_pointer \code{character(1L)}, default: \code{""}
+//'
+//' @param empty_array default: \code{NULL}. Any R object to return for empty JSON arrays.
+//'
+//' @param empty_object default: \code{NULL}. Any R object to return for empty JSON objects.
+//'
+//' @param simplify_to default: \code{0}. Maximum simplification level.
+//'   0=dataframe, 1=matrix, 2=vector, 3=list
+//'
+//' @param type_policy default: \code{0}. Level of type strictness.
+//'   0=anything goes, 1=merge integers/doubles, 2=strict
+//'
+//' @param int64_r_type default: \code{0} How to return big integers to R.
+//'   0=double, 1=string, 2=bit64::integer64
+//'
+//' @keywords internal
+//'
 // [[Rcpp::export(.deserialize_json)]]
 SEXP deserialize_json(const Rcpp::String& json,
                       const std::string& json_pointer = "",
                       SEXP empty_array = R_NilValue,
                       SEXP empty_object = R_NilValue,
-                      const int simplify_to = 0,    // 0=dataframe, 1=matrix, 2=vector, 3=list
-                      const int type_policy = 0,    // 0=anything goes, 1=merge ints/dbls, 2=strict
-                      const int int64_r_type = 0) { // 0=dbl, 1=string, 2=bit64::integer64
+                      const int simplify_to = 0,
+                      const int type_policy = 0,
+                      const int int64_r_type = 0) {
   using namespace rcppsimdjson;
 
   simdjson::dom::parser parser;
