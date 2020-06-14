@@ -3,6 +3,8 @@
 // [[Rcpp::export(.deserialize_json)]]
 SEXP deserialize_json(const Rcpp::String& json,
                       const std::string& json_pointer = "",
+                      SEXP empty_array = R_NilValue,
+                      SEXP empty_object = R_NilValue,
                       const int simplify_to = 0,    // 0=dataframe, 1=matrix, 2=vector, 3=list
                       const int type_policy = 0,    // 0=anything goes, 1=merge ints/dbls, 2=strict
                       const int int64_r_type = 0) { // 0=dbl, 1=string, 2=bit64::integer64
@@ -24,6 +26,8 @@ SEXP deserialize_json(const Rcpp::String& json,
 #endif
 
   return deserialize::deserialize(parsed,
+                                  empty_array,
+                                  empty_object,
                                   static_cast<deserialize::Simplify_To>(simplify_to),
                                   static_cast<deserialize::Type_Policy>(type_policy),
                                   static_cast<utils::Int64_R_Type>(int64_r_type));
