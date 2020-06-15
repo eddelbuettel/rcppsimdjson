@@ -118,4 +118,18 @@ enum class Simplify_To : int {
 #include "RcppSimdJson/utils.hpp"
 
 
+namespace rcppsimdjson {
+namespace deserialize {
+
+
+// forward declaration: definition in inst/include/RcppSimdJson/deserialize/simplify.hpp
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
+inline auto simplify_element(simdjson::dom::element element, SEXP empty_array, SEXP empty_object)
+    -> SEXP;
+
+
+} // namespace deserialize
+} // namespace rcppsimdjson
+
+
 #endif
