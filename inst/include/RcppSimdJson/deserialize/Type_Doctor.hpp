@@ -8,13 +8,6 @@ namespace rcppsimdjson {
 namespace deserialize {
 
 
-// enum class Type_Policy : int {
-//   anything_goes = 0,
-//   ints_as_dbls = 1,
-//   strict = 2,
-// };
-
-
 template <Type_Policy type_policy> class Type_Doctor {
   bool ARRAY_ = false;
   bool array_ = false;
@@ -40,6 +33,7 @@ template <Type_Policy type_policy> class Type_Doctor {
 
   bool UINT64_ = false;
   bool u64_ = false;
+
 
 public:
   Type_Doctor() = default;
@@ -99,7 +93,7 @@ public:
 
   auto add_element(simdjson::dom::element) noexcept -> void;
 
-  constexpr auto update(Type_Doctor<type_policy>&& type_doctor) noexcept -> void;
+  constexpr auto update(Type_Doctor<type_policy>&&) noexcept -> void;
 };
 
 
@@ -327,7 +321,7 @@ template <Type_Policy type_policy>
 inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noexcept
     -> simdjson::dom::element_type {
 
-  using namespace simdjson::dom;
+  using simdjson::dom::element_type;
 
   return ARRAY_ ? element_type::ARRAY
                 : OBJECT_ ? element_type::OBJECT

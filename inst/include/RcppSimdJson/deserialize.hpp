@@ -1,7 +1,9 @@
 #ifndef RCPPSIMDJSON__DESERIALIZE_HPP
 #define RCPPSIMDJSON__DESERIALIZE_HPP
 
+
 #include "deserialize/simplify.hpp"
+
 
 namespace rcppsimdjson {
 namespace deserialize {
@@ -247,5 +249,6 @@ inline auto deserialize(const simdjson::dom::element parsed,
 
 } // namespace deserialize
 } // namespace rcppsimdjson
+
 
 #endif

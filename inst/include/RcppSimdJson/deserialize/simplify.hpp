@@ -1,6 +1,7 @@
 #ifndef RCPPSIMDJSON__DESERIALIZE__SIMPLIFY_HPP
 #define RCPPSIMDJSON__DESERIALIZE__SIMPLIFY_HPP
 
+
 #include "../common.hpp"
 #include "Type_Doctor.hpp"
 #include "scalar.hpp"
