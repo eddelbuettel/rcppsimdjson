@@ -14,9 +14,8 @@ namespace deserialize {
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_list(const simdjson::dom::array array,
-                          const SEXP empty_array,
-                          const SEXP empty_object) -> SEXP {
+inline auto simplify_list(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   Rcpp::List out(r_length(array));
 
   auto i = R_xlen_t(0);
@@ -33,9 +32,8 @@ inline auto simplify_list(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_vector(const simdjson::dom::array array,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
+inline auto simplify_vector(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   const auto type_doctor = Type_Doctor<type_policy>(array);
 
   if (type_doctor.is_vectorizable()) {
@@ -53,9 +51,8 @@ inline auto simplify_vector(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_matrix(const simdjson::dom::array array,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
+inline auto simplify_matrix(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   if (const auto matrix = matrix::diagnose<type_policy>(array)) {
     return matrix->is_homogeneous
                ? matrix::dispatch_typed<int64_opt>( //
@@ -73,9 +70,8 @@ inline auto simplify_matrix(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_data_frame(const simdjson::dom::array array,
-                                const SEXP empty_array,
-                                const SEXP empty_object) -> SEXP {
+inline auto
+simplify_data_frame(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object) -> SEXP {
   if (const auto cols = diagnose_data_frame<type_policy>(array)) {
     return build_data_frame<type_policy, int64_opt, simplify_to>( //
         array,                                                    //
@@ -91,8 +87,8 @@ inline auto simplify_data_frame(const simdjson::dom::array array,
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto dispatch_simplify_array(const simdjson::dom::array array,
-                                    const SEXP empty_array,
-                                    const SEXP empty_object) -> SEXP {
+                                    SEXP empty_array,
+                                    SEXP empty_object) -> SEXP {
 
   if (std::size(array) == 0) {
     return empty_array;
@@ -133,9 +129,8 @@ inline auto dispatch_simplify_array(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_object(const simdjson::dom::object object,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
+inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   const auto n = r_length(object);
   if (n == 0) {
     return empty_object;
@@ -159,8 +154,8 @@ inline auto simplify_object(const simdjson::dom::object object,
 // definition: forward declaration in inst/include/RcppSimdJson/deserialize/simplify.hpp
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto simplify_element(const simdjson::dom::element element,
-                             const SEXP empty_array,
-                             const SEXP empty_object) -> SEXP {
+                             SEXP empty_array,
+                             SEXP empty_object) -> SEXP {
 
   switch (element.type()) {
     case simdjson::dom::element_type::ARRAY:
