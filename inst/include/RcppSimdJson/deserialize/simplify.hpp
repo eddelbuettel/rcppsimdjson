@@ -17,7 +17,7 @@ template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To si
 inline auto simplify_list(const simdjson::dom::array array,
                           const SEXP empty_array,
                           const SEXP empty_object) -> SEXP {
-  Rcpp::List out(std::size(array));
+  Rcpp::List out(r_length(array));
 
   auto i = R_xlen_t(0);
   for (auto element : array) {
@@ -136,7 +136,7 @@ template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To si
 inline auto simplify_object(const simdjson::dom::object object,
                             const SEXP empty_array,
                             const SEXP empty_object) -> SEXP {
-  const auto n = R_xlen_t(std::size(object));
+  const auto n = r_length(object);
   if (n == 0) {
     return empty_object;
   }
@@ -144,7 +144,7 @@ inline auto simplify_object(const simdjson::dom::object object,
   Rcpp::List out(n);
   Rcpp::CharacterVector out_names(n);
 
-  auto i = R_xlen_t(0);
+  auto i = R_xlen_t(0L);
   for (auto [key, value] : object) {
     out[i] =
         simplify_element<type_policy, int64_opt, simplify_to>(value, empty_array, empty_object);
