@@ -7,6 +7,16 @@ namespace rcppsimdjson {
 namespace deserialize {
 
 
+/*
+ * Check for `null`s and return the appropriate `NA`s when found.
+ */
+static inline constexpr bool HAS_NULLS = true;
+/*
+ * No `null`s present, so skip checking for them.
+ */
+static inline constexpr bool NO_NULLS = false;
+
+
 template <typename in_T, rcpp_T R_Type>
 inline auto get_scalar_(simdjson::dom::element) noexcept(is_no_except(R_Type));
 

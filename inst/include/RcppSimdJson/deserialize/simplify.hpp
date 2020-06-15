@@ -152,7 +152,30 @@ inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array
 }
 
 
-// definition: forward declaration in inst/include/RcppSimdJson/deserialize/simplify.hpp
+/**
+ * @brief Simplify a @c simdjson::dom::element to an R object.
+ *
+ *
+ * @tparam type_policy The @c Type_Policy specifying type strictness in combining mixed-type array
+ * elements into R vectors.
+ *
+ * @tparam int64_opt The @c Int64_R_Type specifying how big integers are returned to R.
+ *
+ * @tparam simplify_to The @c Simplify_To specifying the maximum level of simplification.
+ *
+ *
+ * @param element @c simdjson::dom::element to simplify.
+ *
+ * @param empty_array R object to return when encountering an empty JSON array.
+ *
+ * @param empty_object R object to return when encountering an empty JSON object.
+ *
+ *
+ * @return The simplified R object ( @c SEXP ).
+ *
+ *
+ * @note definition: forward declaration in @file inst/include/RcppSimdJson/common.hpp @file.
+ */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto simplify_element(const simdjson::dom::element element,
                              SEXP empty_array,
