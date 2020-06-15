@@ -178,13 +178,13 @@ inline auto simplify_element(const simdjson::dom::element element,
       );
 
     case simdjson::dom::element_type::DOUBLE:
-      return Rcpp::wrap<double>(element.get<double>().first);
+      return Rcpp::wrap(element.get<double>().first);
 
     case simdjson::dom::element_type::INT64:
       return utils::resolve_int64<int64_opt>(element.get<int64_t>().first);
 
     case simdjson::dom::element_type::BOOL:
-      return Rcpp::wrap<bool>(element.get<bool>().first);
+      return Rcpp::wrap(element.get<bool>().first);
 
     case simdjson::dom::element_type::STRING:
       return Rcpp::wrap(element.get<const char*>().first);
