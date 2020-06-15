@@ -231,6 +231,7 @@ inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() co
     return rcpp_T::dbl;
   }
   if (i64_ && !(i32_ || lgl_ || u64_)) {
+  if (i64_ && !(lgl_ || u64_)) {
     // only 64/32-bit integers: will follow selected Int64_R_Type option
     return rcpp_T::i64;
   }
