@@ -2,33 +2,15 @@
 #define RCPPSIMDJSON__DESERIALIZE__SIMPLIFY_HPP
 
 
-namespace rcppsimdjson {
-namespace deserialize {
-
-
-static inline constexpr bool HAS_NULLS = true;
-static inline constexpr bool NO_NULLS = false;
-
-} // namespace deserialize
-} // namespace rcppsimdjson
-
-
 #include "Type_Doctor.hpp"
 #include "scalar.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
 #include "dataframe.hpp"
 
+
 namespace rcppsimdjson {
 namespace deserialize {
-
-
-enum class Simplify_To : int {
-  data_frame = 0,
-  matrix = 1,
-  vector = 2,
-  list = 3,
-};
 
 
 // forward declaration

@@ -63,7 +63,7 @@ inline auto get_scalar_<int64_t, rcpp_T::chr>(simdjson::dom::element element) no
 template <>
 inline auto get_scalar_<int64_t, rcpp_T::dbl>(simdjson::dom::element element) noexcept(
     is_no_except(rcpp_T::dbl)) {
-  return static_cast<double>(element.get<int64_t>().first);
+  return element.get<double>().first;
 }
 // return int64_t
 template <>

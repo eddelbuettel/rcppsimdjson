@@ -1,16 +1,18 @@
 #ifndef RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 #define RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 
+#include "../common.hpp"
+
 
 namespace rcppsimdjson {
 namespace deserialize {
 
 
-enum class Type_Policy : int {
-  anything_goes = 0,
-  ints_as_dbls = 1,
-  strict = 2,
-};
+// enum class Type_Policy : int {
+//   anything_goes = 0,
+//   ints_as_dbls = 1,
+//   strict = 2,
+// };
 
 
 template <Type_Policy type_policy> class Type_Doctor {
@@ -230,7 +232,6 @@ inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() co
   if (dbl_ && !(lgl_ || u64_)) { // any number will become double
     return rcpp_T::dbl;
   }
-  if (i64_ && !(i32_ || lgl_ || u64_)) {
   if (i64_ && !(lgl_ || u64_)) {
     // only 64/32-bit integers: will follow selected Int64_R_Type option
     return rcpp_T::i64;
