@@ -77,13 +77,15 @@ static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = false;
 
 
 /**
- * @brief Whether a function is @code{noexcept}.
+ * @brief Whether a function is @c noexcept.
  *
- * If a function does not touch throwing code it can be annotated as @c noexcept().
+ * If a function does not touch throwing code it can be annotated with @c noexcept().
  * If @c RCPPSIMDJSON_NO_EXCEPTIONS is enabled and the @c rcpp_T template argument is not
  * @c rcpp_T::chr, functions annotated with @c noexcept(is_no_except(rcpp_T)) will be @c noexcept
- * when compiled. Currently, @c rccp_T::chr touches throwing code so functions using it will always
- * be @c noexcept(false).
+ * when compiled.
+ *
+ * Currently, @c rccp_T::chr touches throwing code so functions using it will always be
+ * @c noexcept(false).
  *
  * Many examples in @file{inst/include/RcppSimdJson/deserialize/scalar.hpp}.
  */
@@ -104,7 +106,7 @@ namespace deserialize {
  */
 enum class Type_Policy : int {
   anything_goes = 0, /* Non-recursive arrays always become vectors of the highest present type */
-  ints_as_dbls = 1,  /*  Non-recursive arrays of only numbers are promoted to highest type */
+  ints_as_dbls = 1,  /* Non-recursive arrays of only numbers are promoted to highest type */
   strict = 2,        /* No type promotion */
 };
 
@@ -121,8 +123,6 @@ enum class Simplify_To : int {
 
 
 } // namespace deserialize
-
-
 } // namespace rcppsimdjson
 
 
