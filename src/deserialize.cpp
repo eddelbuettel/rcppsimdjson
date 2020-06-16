@@ -1,5 +1,6 @@
 #include <RcppSimdJson.hpp>
 
+
 //' Deserialize JSON into R Objects
 //'
 //' @param json \code{character(1L)}
@@ -33,18 +34,42 @@ SEXP deserialize_json(const Rcpp::String& json,
 
   simdjson::dom::parser parser;
 
-#if RCPPSIMDJSON_EXCEPTIONS
-  simdjson::dom::element parsed = json_pointer.empty() //
-                                      ? parser.parse(json)
-                                      : parser.parse(json).at(json_pointer);
-#else
   auto [parsed, error] = json_pointer.empty() //
-                             ? parser.parse(json).first
+                             ? parser.parse(json)
                              : parser.parse(json).at(json_pointer);
+
   if (error) {
     Rcpp::stop(simdjson::error_message(error));
   }
-#endif
+
+  return deserialize::deserialize(parsed,
+                                  empty_array,
+                                  empty_object,
+                                  static_cast<deserialize::Simplify_To>(simplify_to),
+                                  static_cast<deserialize::Type_Policy>(type_policy),
+                                  static_cast<utils::Int64_R_Type>(int64_r_type));
+}
+
+
+// [[Rcpp::export(.load_json)]]
+SEXP load_json(const std::string& file_path,
+               const std::string& json_pointer = "",
+               SEXP empty_array = R_NilValue,
+               SEXP empty_object = R_NilValue,
+               const int simplify_to = 0,
+               const int type_policy = 0,
+               const int int64_r_type = 0) {
+  using namespace rcppsimdjson;
+
+  simdjson::dom::parser parser;
+
+  auto [parsed, error] = json_pointer.empty() //
+                             ? parser.load(file_path)
+                             : parser.load(file_path).at(json_pointer);
+
+  if (error) {
+    Rcpp::stop(simdjson::error_message(error));
+  }
 
   return deserialize::deserialize(parsed,
                                   empty_array,
