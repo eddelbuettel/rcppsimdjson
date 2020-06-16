@@ -222,7 +222,7 @@ inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() co
   if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::chr;
   }
-
+  
   if (dbl_ && !(lgl_ || u64_)) { // any number will become double
     return rcpp_T::dbl;
   }
