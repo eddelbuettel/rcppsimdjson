@@ -126,8 +126,8 @@ enum class Simplify_To : int {
 } // namespace rcppsimdjson
 
 
-#include <simdjson.h>
-#include "RcppSimdJson/utils.hpp"
+#include "../simdjson.h"
+#include "utils.hpp"
 
 
 namespace rcppsimdjson {
