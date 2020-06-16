@@ -26,6 +26,10 @@
     .Call(`_RcppSimdJson_deserialize_json`, json, json_pointer, empty_array, empty_object, simplify_to, type_policy, int64_r_type)
 }
 
+.load_json <- function(file_path, json_pointer = "", empty_array = NULL, empty_object = NULL, simplify_to = 0L, type_policy = 0L, int64_r_type = 0L) {
+    .Call(`_RcppSimdJson_load_json`, file_path, json_pointer, empty_array, empty_object, simplify_to, type_policy, int64_r_type)
+}
+
 .exceptions_enabled <- function() {
     .Call(`_RcppSimdJson_exceptions_enabled`)
 }
