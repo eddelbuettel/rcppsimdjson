@@ -1,4 +1,4 @@
-/* auto-generated on Wed May 20 10:23:07 EDT 2020. Do not edit! */
+/* auto-generated on Fri 12 Jun 2020 13:09:36 EDT. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -2030,7 +2030,6 @@ namespace simdjson {
  */
 enum error_code {
   SUCCESS = 0,              ///< No error
-  SUCCESS_AND_HAS_MORE,     ///< @private No error and buffer still has more data
   CAPACITY,                 ///< This parser can't support a document that big
   MEMALLOC,                 ///< Error allocating memory, most likely out of memory
   TAPE_ERROR,               ///< Something went wrong while writing to the tape (stage 2), this is a generic error
@@ -2409,6 +2408,187 @@ inline char *allocate_padded_buffer(size_t length) noexcept;
 #ifndef SIMDJSON_IMPLEMENTATION_H
 #define SIMDJSON_IMPLEMENTATION_H
 
+/* begin file include/simdjson/internal/dom_parser_implementation.h */
+#ifndef SIMDJSON_INTERNAL_DOM_PARSER_IMPLEMENTATION_H
+#define SIMDJSON_INTERNAL_DOM_PARSER_IMPLEMENTATION_H
+
+#include <memory>
+
+namespace simdjson {
+
+namespace dom {
+class document;
+} // namespace dom
+
+namespace internal {
+
+/**
+ * An implementation of simdjson's DOM parser for a particular CPU architecture.
+ *
+ * This class is expected to be accessed only by pointer, and never move in memory (though the
+ * pointer can move).
+ */
+class dom_parser_implementation {
+public:
+
+  /**
+   * @private For internal implementation use
+   *
+   * Run a full JSON parse on a single document (stage1 + stage2).
+   * 
+   * Guaranteed only to be called when capacity > document length.
+   *
+   * Overridden by each implementation.
+   *
+   * @param buf The json document to parse. *MUST* be allocated up to len + SIMDJSON_PADDING bytes.
+   * @param len The length of the json document.
+   * @return The error code, or SUCCESS if there was no error.
+   */
+  WARN_UNUSED virtual error_code parse(const uint8_t *buf, size_t len, dom::document &doc) noexcept = 0;
+
+  /**
+   * @private For internal implementation use
+   *
+   * Stage 1 of the document parser.
+   * 
+   * Guaranteed only to be called when capacity > document length.
+   *
+   * Overridden by each implementation.
+   *
+   * @param buf The json document to parse.
+   * @param len The length of the json document.
+   * @param streaming Whether this is being called by parser::parse_many.
+   * @return The error code, or SUCCESS if there was no error.
+   */
+  WARN_UNUSED virtual error_code stage1(const uint8_t *buf, size_t len, bool streaming) noexcept = 0;
+
+  /**
+   * @private For internal implementation use
+   *
+   * Stage 2 of the document parser.
+   * 
+   * Called after stage1().
+   *
+   * Overridden by each implementation.
+   *
+   * @param doc The document to output to.
+   * @return The error code, or SUCCESS if there was no error.
+   */
+  WARN_UNUSED virtual error_code stage2(dom::document &doc) noexcept = 0;
+
+  /**
+   * @private For internal implementation use
+   *
+   * Stage 2 of the document parser for parser::parse_many.
+   *
+   * Guaranteed only to be called after stage1().
+   * Overridden by each implementation.
+   *
+   * @param doc The document to output to.
+   * @return The error code, SUCCESS if there was no error, or EMPTY if all documents have been parsed.
+   */
+  WARN_UNUSED virtual error_code stage2_next(dom::document &doc) noexcept = 0;
+
+  /**
+   * Change the capacity of this parser.
+   * 
+   * Generally used for reallocation.
+   *
+   * @param capacity The new capacity.
+   * @param max_depth The new max_depth.
+   * @return The error code, or SUCCESS if there was no error.
+   */
+  virtual error_code set_capacity(size_t capacity) noexcept = 0;
+
+  /**
+   * Change the max depth of this parser.
+   *
+   * Generally used for reallocation.
+   *
+   * @param capacity The new capacity.
+   * @param max_depth The new max_depth.
+   * @return The error code, or SUCCESS if there was no error.
+   */
+  virtual error_code set_max_depth(size_t max_depth) noexcept = 0;
+
+  /**
+   * Deallocate this parser.
+   */
+  virtual ~dom_parser_implementation() = default;
+
+  /** Number of structural indices passed from stage 1 to stage 2 */
+  uint32_t n_structural_indexes{0};
+  /** Structural indices passed from stage 1 to stage 2 */
+  std::unique_ptr<uint32_t[]> structural_indexes{};
+  /** Next structural index to parse */
+  uint32_t next_structural_index{0};
+
+  /**
+   * The largest document this parser can support without reallocating.
+   *
+   * @return Current capacity, in bytes.
+   */
+  really_inline size_t capacity() const noexcept;
+
+  /**
+   * The maximum level of nested object and arrays supported by this parser.
+   *
+   * @return Maximum depth, in bytes.
+   */
+  really_inline size_t max_depth() const noexcept;
+
+  /**
+   * Ensure this parser has enough memory to process JSON documents up to `capacity` bytes in length
+   * and `max_depth` depth.
+   *
+   * @param capacity The new capacity.
+   * @param max_depth The new max_depth. Defaults to DEFAULT_MAX_DEPTH.
+   * @return The error, if there is one.
+   */
+  WARN_UNUSED inline error_code allocate(size_t capacity, size_t max_depth) noexcept;
+
+protected:
+  /**
+   * The maximum document length this parser supports.
+   *
+   * Buffers are large enough to handle any document up to this length.
+   */
+  size_t _capacity{0};
+
+  /**
+   * The maximum depth (number of nested objects and arrays) supported by this parser.
+   *
+   * Defaults to DEFAULT_MAX_DEPTH.
+   */
+  size_t _max_depth{0};
+}; // class dom_parser_implementation
+
+really_inline size_t dom_parser_implementation::capacity() const noexcept {
+  return _capacity;
+}
+
+really_inline size_t dom_parser_implementation::max_depth() const noexcept {
+  return _max_depth;
+}
+
+WARN_UNUSED
+inline error_code dom_parser_implementation::allocate(size_t capacity, size_t max_depth) noexcept {
+  if (this->max_depth() != max_depth) {
+    error_code err = set_max_depth(max_depth);
+    if (err) { return err; }
+  }
+  if (_capacity != capacity) {
+    error_code err = set_capacity(capacity);
+    if (err) { return err; }
+  }
+  return SUCCESS;
+}
+
+} // namespace internal
+} // namespace simdjson
+
+#endif // SIMDJSON_INTERNAL_DOM_PARSER_IMPLEMENTATION_H
+/* end file include/simdjson/internal/dom_parser_implementation.h */
 #include <optional>
 #include <string>
 #include <atomic>
@@ -2417,8 +2597,8 @@ inline char *allocate_padded_buffer(size_t length) noexcept;
 namespace simdjson {
 
 namespace dom {
-  class parser;
-}
+  class document;
+} // namespace dom
 
 /**
  * An implementation of simdjson for a particular CPU architecture.
@@ -2461,16 +2641,19 @@ public:
   /**
    * @private For internal implementation use
    *
-   * Run a full document parse (ensure_capacity, stage1 and stage2).
+   *     const implementation *impl = simdjson::active_implementation;
+   *     cout << "simdjson is optimized for " << impl->name() << "(" << impl->description() << ")" << endl;
    *
-   * Overridden by each implementation.
-   *
-   * @param buf the json document to parse. *MUST* be allocated up to len + SIMDJSON_PADDING bytes.
-   * @param len the length of the json document.
-   * @param parser the parser with the buffers to use. *MUST* have allocated up to at least len capacity.
-   * @return the error code, or SUCCESS if there was no error.
+   * @param capacity The largest document that will be passed to the parser.
+   * @param max_depth The maximum JSON object/array nesting this parser is expected to handle.
+   * @param dst The place to put the resulting parser implementation.
+   * @return the name of the implementation, e.g. "haswell", "westmere", "arm64"
    */
-  WARN_UNUSED virtual error_code parse(const uint8_t *buf, size_t len, dom::parser &parser) const noexcept = 0;
+  virtual error_code create_dom_parser_implementation(
+    size_t capacity,
+    size_t max_depth,
+    std::unique_ptr<internal::dom_parser_implementation> &dst
+  ) const noexcept = 0;
 
   /**
    * @private For internal implementation use
@@ -2486,50 +2669,6 @@ public:
    * @return the error code, or SUCCESS if there was no error.
    */
   WARN_UNUSED virtual error_code minify(const uint8_t *buf, size_t len, uint8_t *dst, size_t &dst_len) const noexcept = 0;
-
-  /**
-   * @private For internal implementation use
-   *
-   * Stage 1 of the document parser.
-   *
-   * Overridden by each implementation.
-   *
-   * @param buf the json document to parse. *MUST* be allocated up to len + SIMDJSON_PADDING bytes.
-   * @param len the length of the json document.
-   * @param parser the parser with the buffers to use. *MUST* have allocated up to at least len capacity.
-   * @param streaming whether this is being called by parser::parse_many.
-   * @return the error code, or SUCCESS if there was no error.
-   */
-  WARN_UNUSED virtual error_code stage1(const uint8_t *buf, size_t len, dom::parser &parser, bool streaming) const noexcept = 0;
-
-  /**
-   * @private For internal implementation use
-   *
-   * Stage 2 of the document parser.
-   *
-   * Overridden by each implementation.
-   *
-   * @param buf the json document to parse. *MUST* be allocated up to len + SIMDJSON_PADDING bytes.
-   * @param len the length of the json document.
-   * @param parser the parser with the buffers to use. *MUST* have allocated up to at least len capacity.
-   * @return the error code, or SUCCESS if there was no error.
-   */
-  WARN_UNUSED virtual error_code stage2(const uint8_t *buf, size_t len, dom::parser &parser) const noexcept = 0;
-
-  /**
-   * @private For internal implementation use
-   *
-   * Stage 2 of the document parser for parser::parse_many.
-   *
-   * Overridden by each implementation.
-   *
-   * @param buf the json document to parse. *MUST* be allocated up to len + SIMDJSON_PADDING bytes.
-   * @param len the length of the json document.
-   * @param parser the parser with the buffers to use. *MUST* have allocated up to at least len capacity.
-   * @param next_json the next structural index. Start this at 0 the first time, and it will be updated to the next value to pass each time.
-   * @return the error code, SUCCESS if there was no error, or SUCCESS_AND_HAS_MORE if there was no error and stage2 can be called again.
-   */
-  WARN_UNUSED virtual error_code stage2(const uint8_t *buf, size_t len, dom::parser &parser, size_t &next_json) const noexcept = 0;
 
 protected:
   /** @private Construct an implementation with the given name and description. For subclasses. */
@@ -2648,7 +2787,7 @@ extern SIMDJSON_DLLIMPORTEXPORT internal::atomic_ptr<const implementation> activ
 } // namespace simdjson
 
 #endif // SIMDJSON_IMPLEMENTATION_H
-/* end file include/simdjson/implementation.h */
+/* end file include/simdjson/internal/dom_parser_implementation.h */
 /* begin file include/simdjson/dom/array.h */
 #ifndef SIMDJSON_DOM_ARRAY_H
 #define SIMDJSON_DOM_ARRAY_H
@@ -3022,22 +3161,6 @@ private:
 
 namespace simdjson {
 
-namespace internal {
-
-// expectation: sizeof(scope_descriptor) = 64/8.
-struct scope_descriptor {
-  uint32_t tape_index; // where, on the tape, does the scope ([,{) begins
-  uint32_t count; // how many elements in the scope
-}; // struct scope_descriptor
-
-#ifdef SIMDJSON_USE_COMPUTED_GOTO
-typedef void* ret_address;
-#else
-typedef char ret_address;
-#endif
-
-} // namespace internal
-
 namespace dom {
 
 class document_stream;
@@ -3075,14 +3198,14 @@ public:
    *
    * @param other The parser to take. Its capacity is zeroed.
    */
-  parser(parser &&other) = default;
+  really_inline parser(parser &&other) noexcept;
   parser(const parser &) = delete; ///< @private Disallow copying
   /**
    * Take another parser's buffers and state.
    *
    * @param other The parser to take. Its capacity is zeroed.
    */
-  parser &operator=(parser &&other) = default;
+  really_inline parser &operator=(parser &&other) noexcept;
   parser &operator=(const parser &) = delete; ///< @private Disallow copying
 
   /** Deallocate the JSON parser. */
@@ -3342,7 +3465,8 @@ public:
   /**
    * Set max_capacity. This is the largest document this parser can automatically support.
    *
-   * The parser may reallocate internal buffers as needed up to this amount.
+   * The parser may reallocate internal buffers as needed up to this amount as documents are passed
+   * to it.
    *
    * This call will not allocate or deallocate, even if capacity is currently above max_capacity.
    *
@@ -3355,19 +3479,8 @@ public:
   /** @private Use simdjson_error instead */
   using InvalidJSON [[deprecated("Use simdjson_error instead")]] = simdjson_error;
 
-  /** @private Next location to write to in the tape */
-  uint32_t current_loc{0};
-
-  /** @private Number of structural indices passed from stage 1 to stage 2 */
-  uint32_t n_structural_indexes{0};
-  /** @private Structural indices passed from stage 1 to stage 2 */
-  std::unique_ptr<uint32_t[]> structural_indexes{};
-
-  /** @private Tape location of each open { or [ */
-  std::unique_ptr<internal::scope_descriptor[]> containing_scope{};
-
-  /** @private Return address of each open { or [ */
-  std::unique_ptr<internal::ret_address[]> ret_address{};
+  /** @private [for benchmarking access] The implementation to use */
+  std::unique_ptr<internal::dom_parser_implementation> implementation{};
 
   /** @private Use `if (parser.parse(...).error())` instead */
   bool valid{false};
@@ -3406,20 +3519,6 @@ private:
    * The parser will not be automatically allocated above this amount.
    */
   size_t _max_capacity;
-
-  /**
-   * The maximum document length this parser supports.
-   *
-   * Buffers are large enough to handle any document up to this length.
-   */
-  size_t _capacity{0};
-
-  /**
-   * The maximum depth (number of nested objects and arrays) supported by this parser.
-   *
-   * Defaults to DEFAULT_MAX_DEPTH.
-   */
-  size_t _max_depth{0};
 
   /**
    * The loaded buffer (reused each time load() is called)
@@ -3500,7 +3599,7 @@ public:
     really_inline bool operator!=(const iterator &other) const noexcept;
 
   private:
-    iterator(document_stream& stream, bool finished) noexcept;
+    really_inline iterator(document_stream &s, bool finished) noexcept;
     /** The document_stream we're iterating through. */
     document_stream& stream;
     /** Whether we're finished or not. */
@@ -3523,7 +3622,23 @@ private:
 
   document_stream(document_stream &other) = delete;    // Disallow copying
 
-  really_inline document_stream(dom::parser &parser, const uint8_t *buf, size_t len, size_t batch_size, error_code error = SUCCESS) noexcept;
+  /**
+   * Construct a document_stream. Does not allocate or parse anything until the iterator is
+   * used.
+   */
+  really_inline document_stream(
+    dom::parser &parser,
+    const uint8_t *buf,
+    size_t len,
+    size_t batch_size,
+    error_code error = SUCCESS
+  ) noexcept;
+
+  /**
+   * Parse the first document in the buffer. Used by begin(), to handle allocation and
+   * initialization.
+   */
+  inline void start() noexcept;
 
   /**
    * Parse the next document found in the buffer previously given to document_stream.
@@ -3536,10 +3651,7 @@ private:
    * pre-allocating a capacity defined by the batch_size defined when creating the
    * document_stream object.
    *
-   * The function returns simdjson::SUCCESS_AND_HAS_MORE (an integer = 1) in case
-   * of success and indicates that the buffer still contains more data to be parsed,
-   * meaning this function can be called again to return the next JSON document
-   * after this one.
+   * The function returns simdjson::EMPTY if there is no more data to be parsed.
    *
    * The function returns simdjson::SUCCESS (as integer = 0) in case of success
    * and indicates that the buffer has successfully been parsed to the end.
@@ -3550,55 +3662,51 @@ private:
    * the simdjson::error_message function converts these error codes into a string).
    *
    * You can also check validity by calling parser.is_valid(). The same parser can
-   * and should be reused for the other documents in the buffer. */
-  inline error_code json_parse() noexcept;
+   * and should be reused for the other documents in the buffer.
+   */
+  inline void next() noexcept;
 
   /**
-   * Returns the location (index) of where the next document should be in the
-   * buffer.
-   * Can be used for debugging, it tells the user the position of the end of the
-   * last
-   * valid JSON document parsed
+   * Pass the next batch through stage 1 and return when finished.
+   * When threads are enabled, this may wait for the stage 1 thread to finish.
    */
-  inline size_t get_current_buffer_loc() const { return current_buffer_loc; }
+  inline void load_batch() noexcept;
 
-  /**
-   * Returns the total amount of complete documents parsed by the document_stream,
-   * in the current buffer, at the given time.
-   */
-  inline size_t get_n_parsed_docs() const { return n_parsed_docs; }
+  /** Get the next document index. */
+  inline size_t next_batch_start() const noexcept;
 
-  /**
-   * Returns the total amount of data (in bytes) parsed by the document_stream,
-   * in the current buffer, at the given time.
-   */
-  inline size_t get_n_bytes_parsed() const { return n_bytes_parsed; }
-
-  inline const uint8_t *buf() const { return _buf + buf_start; }
-
-  inline void advance(size_t offset) { buf_start += offset; }
-
-  inline size_t remaining() const { return _len - buf_start; }
+  /** Pass the next batch through stage 1 with the given parser. */
+  inline error_code run_stage1(dom::parser &p, size_t batch_start) noexcept;
 
   dom::parser &parser;
-  const uint8_t *_buf;
-  const size_t _len;
-  size_t _batch_size; // this is actually variable!
-  size_t buf_start{0};
-  size_t next_json{0};
-  bool load_next_batch{true};
-  size_t current_buffer_loc{0};
+  const uint8_t *buf;
+  const size_t len;
+  const size_t batch_size;
+  size_t batch_start{0};
+  /** The error (or lack thereof) from the current document. */
+  error_code error;
+
 #ifdef SIMDJSON_THREADS_ENABLED
-  size_t last_json_buffer_loc{0};
-#endif
-  size_t n_parsed_docs{0};
-  size_t n_bytes_parsed{0};
-  error_code error{SUCCESS_AND_HAS_MORE};
-#ifdef SIMDJSON_THREADS_ENABLED
-  error_code stage1_is_ok_thread{SUCCESS};
-  std::thread stage_1_thread{};
-  dom::parser parser_thread{};
-#endif
+  inline void load_from_stage1_thread() noexcept;
+
+  /** Start a thread to run stage 1 on the next batch. */
+  inline void start_stage1_thread() noexcept;
+
+  /** Wait for the stage 1 thread to finish and capture the results. */
+  inline void finish_stage1_thread() noexcept;
+
+  /** The error returned from the stage 1 thread. */
+  error_code stage1_thread_error{UNINITIALIZED};
+  /** The thread used to run stage 1 against the next batch in the background. */
+  std::thread stage1_thread{};
+
+  /**
+   * The parser used to run stage 1 in the background. Will be swapped
+   * with the regular parser when finished.
+   */
+  dom::parser stage1_thread_parser{};
+#endif // SIMDJSON_THREADS_ENABLED
+
   friend class dom::parser;
 }; // class document_stream
 
@@ -4843,124 +4951,36 @@ inline std::ostream& operator<<(std::ostream& out, const simdjson_result<dom::ar
 #include <stdexcept>
 
 namespace simdjson {
-namespace internal {
-
-/**
- * This algorithm is used to quickly identify the buffer position of
- * the last JSON document inside the current batch.
- *
- * It does its work by finding the last pair of structural characters
- * that represent the end followed by the start of a document.
- *
- * Simply put, we iterate over the structural characters, starting from
- * the end. We consider that we found the end of a JSON document when the
- * first element of the pair is NOT one of these characters: '{' '[' ';' ','
- * and when the second element is NOT one of these characters: '}' '}' ';' ','.
- *
- * This simple comparison works most of the time, but it does not cover cases
- * where the batch's structural indexes contain a perfect amount of documents.
- * In such a case, we do not have access to the structural index which follows
- * the last document, therefore, we do not have access to the second element in
- * the pair, and means that we cannot identify the last document. To fix this
- * issue, we keep a count of the open and closed curly/square braces we found
- * while searching for the pair. When we find a pair AND the count of open and
- * closed curly/square braces is the same, we know that we just passed a
- * complete
- * document, therefore the last json buffer location is the end of the batch
- * */
-inline uint32_t find_last_json_buf_idx(const uint8_t *buf, size_t size, const dom::parser &parser) {
-  // this function can be generally useful
-  if (parser.n_structural_indexes == 0)
-    return 0;
-  auto last_i = parser.n_structural_indexes - 1;
-  if (parser.structural_indexes[last_i] == size) {
-    if (last_i == 0)
-      return 0;
-    last_i = parser.n_structural_indexes - 2;
-  }
-  auto arr_cnt = 0;
-  auto obj_cnt = 0;
-  for (auto i = last_i; i > 0; i--) {
-    auto idxb = parser.structural_indexes[i];
-    switch (buf[idxb]) {
-    case ':':
-    case ',':
-      continue;
-    case '}':
-      obj_cnt--;
-      continue;
-    case ']':
-      arr_cnt--;
-      continue;
-    case '{':
-      obj_cnt++;
-      break;
-    case '[':
-      arr_cnt++;
-      break;
-    }
-    auto idxa = parser.structural_indexes[i - 1];
-    switch (buf[idxa]) {
-    case '{':
-    case '[':
-    case ':':
-    case ',':
-      continue;
-    }
-    if (!arr_cnt && !obj_cnt) {
-      return last_i + 1;
-    }
-    return i;
-  }
-  return 0;
-}
-
-// returns true if the provided byte value is an ASCII character
-static inline bool is_ascii(char c) {
-  return ((unsigned char)c) <= 127;
-}
-
-// if the string ends with  UTF-8 values, backtrack
-// up to the first ASCII character. May return 0.
-static inline size_t trimmed_length_safe_utf8(const char * c, size_t len) {
-  while ((len > 0) and (not is_ascii(c[len - 1]))) {
-    len--;
-  }
-  return len;
-}
-
-} // namespace internal
-
-} // namespace simdjson
-
-namespace simdjson {
 namespace dom {
+
 really_inline document_stream::document_stream(
   dom::parser &_parser,
-  const uint8_t *buf,
-  size_t len,
-  size_t batch_size,
+  const uint8_t *_buf,
+  size_t _len,
+  size_t _batch_size,
   error_code _error
 ) noexcept
   : parser{_parser},
-   _buf{buf},
-   _len{len},
-   _batch_size(batch_size),
-   error(_error)
+    buf{_buf},
+    len{_len},
+    batch_size{_batch_size},
+    error{_error}
 {
-  if (!error) { error = json_parse(); }
 }
 
 inline document_stream::~document_stream() noexcept {
 #ifdef SIMDJSON_THREADS_ENABLED
-  if (stage_1_thread.joinable()) {
-    stage_1_thread.join();
+  // TODO kill the thread, why should people have to wait for a non-side-effecting operation to complete
+  if (stage1_thread.joinable()) {
+    stage1_thread.join();
   }
 #endif
 }
 
 really_inline document_stream::iterator document_stream::begin() noexcept {
-  return iterator(*this, false);
+  start();
+  // If there are no documents, we're finished.
+  return iterator(*this, error == EMPTY);
 }
 
 really_inline document_stream::iterator document_stream::end() noexcept {
@@ -4972,17 +4992,15 @@ really_inline document_stream::iterator::iterator(document_stream& _stream, bool
 }
 
 really_inline simdjson_result<element> document_stream::iterator::operator*() noexcept {
-  error_code err = stream.error == SUCCESS_AND_HAS_MORE ? SUCCESS : stream.error;
-  if (err) { return err; }
+  // Once we have yielded any errors, we're finished.
+  if (stream.error) { finished = true; return stream.error; }
   return stream.parser.doc.root();
 }
 
 really_inline document_stream::iterator& document_stream::iterator::operator++() noexcept {
-  if (stream.error == SUCCESS_AND_HAS_MORE) {
-    stream.error = stream.json_parse();
-  } else {
-    finished = true;
-  }
+  stream.next();
+  // If that was the last document, we're finished.
+  if (stream.error == EMPTY) { finished = true; }
   return *this;
 }
 
@@ -4990,130 +5008,96 @@ really_inline bool document_stream::iterator::operator!=(const document_stream::
   return finished != other.finished;
 }
 
+inline void document_stream::start() noexcept {
+  if (error) { return; }
+
+  error = parser.ensure_capacity(batch_size);
+  if (error) { return; }
+
+  // Always run the first stage 1 parse immediately
+  batch_start = 0;
+  error = run_stage1(parser, batch_start);
+  if (error) { return; }
+
+#ifdef SIMDJSON_THREADS_ENABLED
+  if (next_batch_start() < len) {
+    // Kick off the first thread if needed
+    error = stage1_thread_parser.ensure_capacity(batch_size);
+    if (error) { return; }
+    start_stage1_thread();
+    if (error) { return; }
+  }
+#endif // SIMDJSON_THREADS_ENABLED
+
+  next();
+}
+
+inline void document_stream::next() noexcept {
+  if (error) { return; }
+
+  // Load the next document from the batch
+  error = parser.implementation->stage2_next(parser.doc);
+
+  // If that was the last document in the batch, load another batch (if available)
+  while (error == EMPTY) {
+    batch_start = next_batch_start();
+    if (batch_start >= len) { break; }
+
+#ifdef SIMDJSON_THREADS_ENABLED
+    load_from_stage1_thread();
+#else
+    error = run_stage1(parser, batch_start);
+#endif
+    if (error) { continue; } // If the error was EMPTY, we may want to load another batch.
+
+    // Run stage 2 on the first document in the batch
+    error = parser.implementation->stage2_next(parser.doc);
+  }
+}
+
+inline size_t document_stream::next_batch_start() const noexcept {
+  return batch_start + parser.implementation->structural_indexes[parser.implementation->n_structural_indexes];
+}
+
+inline error_code document_stream::run_stage1(dom::parser &p, size_t _batch_start) noexcept {
+  // If this is the final batch, pass partial = false
+  size_t remaining = len - _batch_start;
+  if (remaining <= batch_size) {
+    return p.implementation->stage1(&buf[_batch_start], remaining, false);
+  } else {
+    return p.implementation->stage1(&buf[_batch_start], batch_size, true);
+  }
+}
+
 #ifdef SIMDJSON_THREADS_ENABLED
 
-// threaded version of json_parse
-// todo: simplify this code further
-inline error_code document_stream::json_parse() noexcept {
-  error = parser.ensure_capacity(_batch_size);
-  if (error) { return error; }
-  error = parser_thread.ensure_capacity(_batch_size);
-  if (error) { return error; }
+inline void document_stream::load_from_stage1_thread() noexcept {
+  stage1_thread.join();
 
-  if (unlikely(load_next_batch)) {
-    // First time loading
-    if (!stage_1_thread.joinable()) {
-      _batch_size = (std::min)(_batch_size, remaining());
-      _batch_size = internal::trimmed_length_safe_utf8((const char *)buf(), _batch_size);
-      if (_batch_size == 0) {
-        return simdjson::UTF8_ERROR;
-      }
-      auto stage1_is_ok = error_code(simdjson::active_implementation->stage1(buf(), _batch_size, parser, true));
-      if (stage1_is_ok != simdjson::SUCCESS) {
-        return stage1_is_ok;
-      }
-      uint32_t last_index = internal::find_last_json_buf_idx(buf(), _batch_size, parser);
-      if (last_index == 0) {
-        if (parser.n_structural_indexes == 0) {
-          return simdjson::EMPTY;
-        }
-      } else {
-        parser.n_structural_indexes = last_index + 1;
-      }
-    }
-    // the second thread is running or done.
-    else {
-      stage_1_thread.join();
-      if (stage1_is_ok_thread != simdjson::SUCCESS) {
-        return stage1_is_ok_thread;
-      }
-      std::swap(parser.structural_indexes, parser_thread.structural_indexes);
-      parser.n_structural_indexes = parser_thread.n_structural_indexes;
-      advance(last_json_buffer_loc);
-      n_bytes_parsed += last_json_buffer_loc;
-    }
-    // let us decide whether we will start a new thread
-    if (remaining() - _batch_size > 0) {
-      last_json_buffer_loc =
-          parser.structural_indexes[internal::find_last_json_buf_idx(buf(), _batch_size, parser)];
-      _batch_size = (std::min)(_batch_size, remaining() - last_json_buffer_loc);
-      if (_batch_size > 0) {
-        _batch_size = internal::trimmed_length_safe_utf8(
-            (const char *)(buf() + last_json_buffer_loc), _batch_size);
-        if (_batch_size == 0) {
-          return simdjson::UTF8_ERROR;
-        }
-        // let us capture read-only variables
-        const uint8_t *const b = buf() + last_json_buffer_loc;
-        const size_t bs = _batch_size;
-        // we call the thread on a lambda that will update
-        // this->stage1_is_ok_thread
-        // there is only one thread that may write to this value
-        stage_1_thread = std::thread([this, b, bs] {
-          this->stage1_is_ok_thread = error_code(simdjson::active_implementation->stage1(b, bs, this->parser_thread, true));
-        });
-      }
-    }
-    next_json = 0;
-    load_next_batch = false;
-  } // load_next_batch
-  error_code res = simdjson::active_implementation->stage2(buf(), remaining(), parser, next_json);
-  if (res == simdjson::SUCCESS_AND_HAS_MORE) {
-    n_parsed_docs++;
-    current_buffer_loc = parser.structural_indexes[next_json];
-    load_next_batch = (current_buffer_loc == last_json_buffer_loc);
-  } else if (res == simdjson::SUCCESS) {
-    n_parsed_docs++;
-    if (remaining() > _batch_size) {
-      current_buffer_loc = parser.structural_indexes[next_json - 1];
-      load_next_batch = true;
-      res = simdjson::SUCCESS_AND_HAS_MORE;
-    }
+  // Swap to the parser that was loaded up in the thread. Make sure the parser has
+  // enough memory to swap to, as well.
+  std::swap(parser, stage1_thread_parser);
+  error = stage1_thread_error;
+  if (error) { return; }
+
+  // If there's anything left, start the stage 1 thread!
+  if (next_batch_start() < len) {
+    start_stage1_thread();
   }
-  return res;
 }
 
-#else  // SIMDJSON_THREADS_ENABLED
-
-// single-threaded version of json_parse
-inline error_code document_stream::json_parse() noexcept {
-  error = parser.ensure_capacity(_batch_size);
-  if (error) { return error; }
-
-  if (unlikely(load_next_batch)) {
-    advance(current_buffer_loc);
-    n_bytes_parsed += current_buffer_loc;
-    _batch_size = (std::min)(_batch_size, remaining());
-    _batch_size = internal::trimmed_length_safe_utf8((const char *)buf(), _batch_size);
-    auto stage1_is_ok = (error_code)simdjson::active_implementation->stage1(buf(), _batch_size, parser, true);
-    if (stage1_is_ok != simdjson::SUCCESS) {
-      return stage1_is_ok;
-    }
-    uint32_t last_index = internal::find_last_json_buf_idx(buf(), _batch_size, parser);
-    if (last_index == 0) {
-      if (parser.n_structural_indexes == 0) {
-        return EMPTY;
-      }
-    } else {
-      parser.n_structural_indexes = last_index + 1;
-    }
-    load_next_batch = false;
-  } // load_next_batch
-  error_code res = simdjson::active_implementation->stage2(buf(), remaining(), parser, next_json);
-  if (likely(res == simdjson::SUCCESS_AND_HAS_MORE)) {
-    n_parsed_docs++;
-    current_buffer_loc = parser.structural_indexes[next_json];
-  } else if (res == simdjson::SUCCESS) {
-    n_parsed_docs++;
-    if (remaining() > _batch_size) {
-      current_buffer_loc = parser.structural_indexes[next_json - 1];
-      next_json = 1;
-      load_next_batch = true;
-      res = simdjson::SUCCESS_AND_HAS_MORE;
-    }
-  }
-  return res;
+inline void document_stream::start_stage1_thread() noexcept {
+  // we call the thread on a lambda that will update
+  // this->stage1_thread_error
+  // there is only one thread that may write to this value
+  // TODO this is NOT exception-safe.
+  this->stage1_thread_error = UNINITIALIZED; // In case something goes wrong, make sure it's an error
+  size_t _next_batch_start = this->next_batch_start();
+  stage1_thread = std::thread([this, _next_batch_start] {
+    this->stage1_thread_error = run_stage1(this->stage1_thread_parser, _next_batch_start);
+  });
 }
+
 #endif // SIMDJSON_THREADS_ENABLED
 
 } // namespace dom
@@ -5152,7 +5136,7 @@ inline error_code document::allocate(size_t capacity) noexcept {
   // worse with "[7,7,7,7,6,7,7,7,6,7,7,6,[7,7,7,7,6,7,7,7,6,7,7,6,7,7,7,7,7,7,6"
   //where len + 1 tape elements are
   // generated, see issue https://github.com/lemire/simdjson/issues/345
-  size_t tape_capacity = ROUNDUP_N(capacity + 2, 64);
+  size_t tape_capacity = ROUNDUP_N(capacity + 3, 64);
   // a document with only zero-length strings... could have len/3 string
   // and we would need len/3 * 5 bytes on the string buffer
   size_t string_capacity = ROUNDUP_N(5 * capacity / 3 + 32, 64);
@@ -6741,8 +6725,11 @@ namespace dom {
 //
 really_inline parser::parser(size_t max_capacity) noexcept
   : _max_capacity{max_capacity},
-    loaded_bytes(nullptr, &aligned_free_char)
-    {}
+    loaded_bytes(nullptr, &aligned_free_char) {
+}
+really_inline parser::parser(parser &&other) noexcept = default;
+really_inline parser &parser::operator=(parser &&other) noexcept = default;
+
 inline bool parser::is_valid() const noexcept { return valid; }
 inline int parser::get_error_code() const noexcept { return error; }
 inline std::string parser::get_error_message() const noexcept { return error_message(error); }
@@ -6825,15 +6812,12 @@ inline simdjson_result<element> parser::parse(const uint8_t *buf, size_t len, bo
     memcpy((void *)buf, tmp_buf, len);
   }
 
-  code = simdjson::active_implementation->parse(buf, len, *this);
+  code = implementation->parse(buf, len, doc);
   if (realloc_if_needed) {
     aligned_free((void *)buf); // must free before we exit
   }
   if (code) { return code; }
 
-  // We're indicating validity via the simdjson_result<element>, so set the parse state back to invalid
-  valid = false;
-  error = UNINITIALIZED;
   return doc.root();
 }
 really_inline simdjson_result<element> parser::parse(const char *buf, size_t len, bool realloc_if_needed) & noexcept {
@@ -6860,81 +6844,30 @@ inline document_stream parser::parse_many(const padded_string &s, size_t batch_s
 }
 
 really_inline size_t parser::capacity() const noexcept {
-  return _capacity;
+  return implementation ? implementation->capacity() : 0;
 }
 really_inline size_t parser::max_capacity() const noexcept {
   return _max_capacity;
 }
 really_inline size_t parser::max_depth() const noexcept {
-  return _max_depth;
+  return implementation ? implementation->max_depth() : DEFAULT_MAX_DEPTH;
 }
 
 WARN_UNUSED
 inline error_code parser::allocate(size_t capacity, size_t max_depth) noexcept {
   //
-  // If capacity has changed, reallocate capacity-based buffers
+  // Reallocate implementation and document if needed
   //
-  if (_capacity != capacity) {
-    // Set capacity to 0 until we finish, in case there's an error
-    _capacity = 0;
-
-    //
-    // Reallocate the document
-    //
-    error_code err = doc.allocate(capacity);
-    if (err) { return err; }
-
-    //
-    // Don't allocate 0 bytes, just return.
-    //
-    if (capacity == 0) {
-      structural_indexes.reset();
-      return SUCCESS;
-    }
-
-    //
-    // Initialize stage 1 output
-    //
-    size_t max_structures = ROUNDUP_N(capacity, 64) + 2 + 7;
-    structural_indexes.reset( new (std::nothrow) uint32_t[max_structures] ); // TODO realloc
-    if (!structural_indexes) {
-      return MEMALLOC;
-    }
-
-    _capacity = capacity;
-
-  //
-  // If capacity hasn't changed, but the document was taken, allocate a new document.
-  //
-  } else if (!doc.tape) {
-    error_code err = doc.allocate(capacity);
-    if (err) { return err; }
+  error_code err;
+  if (implementation) {
+    err = implementation->allocate(capacity, max_depth);
+  } else {
+    err = simdjson::active_implementation->create_dom_parser_implementation(capacity, max_depth, implementation);
   }
+  if (err) { return err; }
 
-  //
-  // If max_depth has changed, reallocate those buffers
-  //
-  if (max_depth != _max_depth) {
-    _max_depth = 0;
-
-    if (max_depth == 0) {
-      ret_address.reset();
-      containing_scope.reset();
-      return SUCCESS;
-    }
-
-    //
-    // Initialize stage 2 state
-    //
-    containing_scope.reset(new (std::nothrow) internal::scope_descriptor[max_depth]); // TODO realloc
-    ret_address.reset(new (std::nothrow) internal::ret_address[max_depth]);
-
-    if (!ret_address || !containing_scope) {
-      // Could not allocate memory
-      return MEMALLOC;
-    }
-
-    _max_depth = max_depth;
+  if (implementation->capacity() != capacity || !doc.tape) {
+    return doc.allocate(capacity);
   }
   return SUCCESS;
 }
@@ -6944,22 +6877,22 @@ inline bool parser::allocate_capacity(size_t capacity, size_t max_depth) noexcep
   return !allocate(capacity, max_depth);
 }
 
-really_inline void parser::set_max_capacity(size_t max_capacity) noexcept {
-  _max_capacity = max_capacity;
-}
-
 inline error_code parser::ensure_capacity(size_t desired_capacity) noexcept {
   // If we don't have enough capacity, (try to) automatically bump it.
   // If the document was taken, reallocate that too.
   // Both in one if statement to minimize unlikely branching.
-  if (unlikely(desired_capacity > capacity() || !doc.tape)) {
+  if (unlikely(capacity() < desired_capacity || !doc.tape)) {
     if (desired_capacity > max_capacity()) {
       return error = CAPACITY;
     }
-    return allocate(desired_capacity, _max_depth > 0 ? _max_depth : DEFAULT_MAX_DEPTH);
+    return allocate(desired_capacity, max_depth());
   }
 
   return SUCCESS;
+}
+
+really_inline void parser::set_max_capacity(size_t max_capacity) noexcept {
+  _max_capacity = max_capacity;
 }
 
 } // namespace dom
