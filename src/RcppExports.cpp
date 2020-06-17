@@ -6,12 +6,12 @@
 using namespace Rcpp;
 
 // deserialize_json
-SEXP deserialize_json(const Rcpp::String& json, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
+SEXP deserialize_json(const Rcpp::CharacterVector& json, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
 RcppExport SEXP _RcppSimdJson_deserialize_json(SEXP jsonSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::String& >::type json(jsonSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type json(jsonSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type json_pointer(json_pointerSEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_object(empty_objectSEXP);
@@ -23,12 +23,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // load_json
-SEXP load_json(const std::string& file_path, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
+SEXP load_json(const Rcpp::CharacterVector& file_path, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
 RcppExport SEXP _RcppSimdJson_load_json(SEXP file_pathSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type file_path(file_pathSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type file_path(file_pathSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type json_pointer(json_pointerSEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_object(empty_objectSEXP);
