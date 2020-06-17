@@ -1,20 +1,43 @@
 #ifndef RCPPSIMDJSON__DESERIALIZE_HPP
 #define RCPPSIMDJSON__DESERIALIZE_HPP
 
+
 #include "deserialize/simplify.hpp"
+
 
 namespace rcppsimdjson {
 namespace deserialize {
 
-// THE GREAT DISPATCHER
+
+/**
+ * @brief Deserialize a parsed @c simdjson::dom::element to R objects.
+ *
+ *
+ * @param element @c simdjson::dom::element to deserialize.
+ *
+ * @param empty_array R object to return when encountering an empty JSON array.
+ *
+ * @param empty_object R object to return when encountering an empty JSON object.
+ *
+ * @param type_policy @c Type_Policy specifying type strictness in combining mixed-type array
+ * elements into R vectors.
+ *
+ * @param int64_opt @c Int64_R_Type specifying how big integers are returned to R.
+ *
+ * @param simplify_to @c Simplify_To specifying the maximum level of simplification.
+ *
+ *
+ * @return The simplified R object ( @c SEXP ).
+ */
 inline auto deserialize(const simdjson::dom::element parsed,
-                        const SEXP empty_array,
-                        const SEXP empty_object,
+                        SEXP empty_array,
+                        SEXP empty_object,
                         const Simplify_To simplify_to,
                         const Type_Policy type_policy,
                         const utils::Int64_R_Type int64_opt) -> SEXP {
   using Int64_R_Type = utils::Int64_R_Type;
 
+  // THE GREAT DISPATCHER
   switch (type_policy) {
     case Type_Policy::anything_goes: {
       switch (int64_opt) {
@@ -247,5 +270,6 @@ inline auto deserialize(const simdjson::dom::element parsed,
 
 } // namespace deserialize
 } // namespace rcppsimdjson
+
 
 #endif

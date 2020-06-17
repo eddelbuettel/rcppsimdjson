@@ -2,118 +2,22 @@
 #define RCPPSIMDJSON__DESERIALIZE__SIMPLIFY_HPP
 
 
-namespace rcppsimdjson {
-namespace deserialize {
-
-
-static inline constexpr bool HAS_NULLS = true;
-static inline constexpr bool NO_NULLS = false;
-
-} // namespace deserialize
-} // namespace rcppsimdjson
-
-
+#include "../common.hpp"
 #include "Type_Doctor.hpp"
 #include "scalar.hpp"
 #include "vector.hpp"
 #include "matrix.hpp"
 #include "dataframe.hpp"
 
+
 namespace rcppsimdjson {
 namespace deserialize {
 
 
-enum class Simplify_To : int {
-  data_frame = 0,
-  matrix = 1,
-  vector = 2,
-  list = 3,
-};
-
-
-// forward declaration
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_element(const simdjson::dom::element, const SEXP, const SEXP) -> SEXP;
-
-
-template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto build_data_frame(const simdjson::dom::array array,
-                             const std::map<std::string_view, Column<type_policy>>& cols,
-                             const SEXP empty_array,
-                             const SEXP empty_object) -> SEXP {
-
-  const auto n_rows = R_xlen_t(std::size(array));
-  auto out = Rcpp::List(std::size(cols));
-  auto out_names = Rcpp::CharacterVector(std::size(cols));
-
-  for (auto [key, col] : cols) {
-    out_names[col.index] = std::string(key);
-
-    switch (col.schema.common_R_type()) {
-      case rcpp_T::chr: {
-        out[col.index] =
-            build_col<STRSXP, std::string, rcpp_T::chr, type_policy>(array, key, col.schema);
-        break;
-      }
-
-      case rcpp_T::dbl: {
-        out[col.index] =
-            build_col<REALSXP, double, rcpp_T::dbl, type_policy>(array, key, col.schema);
-        break;
-      }
-
-      case rcpp_T::i64: {
-        out[col.index] = build_col_integer64<type_policy, int64_opt>(array, key, col.schema);
-        break;
-      }
-
-      case rcpp_T::i32: {
-        out[col.index] =
-            build_col<INTSXP, int64_t, rcpp_T::i32, type_policy>(array, key, col.schema);
-        break;
-      }
-
-      case rcpp_T::lgl: {
-        out[col.index] = build_col<LGLSXP, bool, rcpp_T::lgl, type_policy>(array, key, col.schema);
-        break;
-      }
-
-      case rcpp_T::null: {
-        out[col.index] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
-        break;
-      }
-
-      default: {
-        auto this_col = Rcpp::Vector<VECSXP>(n_rows);
-        auto i_row = R_xlen_t(0);
-        for (auto element : array) {
-          auto [value, error] = element.get<simdjson::dom::object>().at_key(key);
-          if (error) {
-            this_col[i_row++] = NA_LOGICAL;
-          } else {
-            this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
-                value, empty_array, empty_object //
-            );
-          }
-        }
-        out[col.index] = this_col;
-      }
-    }
-  }
-
-  out.attr("names") = out_names;
-  out.attr("row.names") = Rcpp::seq(1, n_rows);
-  out.attr("class") = "data.frame";
-
-  return out;
-}
-
-
-template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_list(const simdjson::dom::array array,
-                          const SEXP empty_array,
-                          const SEXP empty_object) -> SEXP {
-  Rcpp::List out(std::size(array));
+inline auto simplify_list(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
+  Rcpp::List out(r_length(array));
 
   auto i = R_xlen_t(0);
   for (auto element : array) {
@@ -129,9 +33,8 @@ inline auto simplify_list(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_vector(const simdjson::dom::array array,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
+inline auto simplify_vector(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   const auto type_doctor = Type_Doctor<type_policy>(array);
 
   if (type_doctor.is_vectorizable()) {
@@ -149,9 +52,8 @@ inline auto simplify_vector(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_matrix(const simdjson::dom::array array,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
+inline auto simplify_matrix(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
   if (const auto matrix = matrix::diagnose<type_policy>(array)) {
     return matrix->is_homogeneous
                ? matrix::dispatch_typed<int64_opt>( //
@@ -169,9 +71,8 @@ inline auto simplify_matrix(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_data_frame(const simdjson::dom::array array,
-                                const SEXP empty_array,
-                                const SEXP empty_object) -> SEXP {
+inline auto
+simplify_data_frame(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object) -> SEXP {
   if (const auto cols = diagnose_data_frame<type_policy>(array)) {
     return build_data_frame<type_policy, int64_opt, simplify_to>( //
         array,                                                    //
@@ -187,8 +88,8 @@ inline auto simplify_data_frame(const simdjson::dom::array array,
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto dispatch_simplify_array(const simdjson::dom::array array,
-                                    const SEXP empty_array,
-                                    const SEXP empty_object) -> SEXP {
+                                    SEXP empty_array,
+                                    SEXP empty_object) -> SEXP {
 
   if (std::size(array) == 0) {
     return empty_array;
@@ -229,10 +130,9 @@ inline auto dispatch_simplify_array(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_object(const simdjson::dom::object object,
-                            const SEXP empty_array,
-                            const SEXP empty_object) -> SEXP {
-  const auto n = R_xlen_t(std::size(object));
+inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array, SEXP empty_object)
+    -> SEXP {
+  const auto n = r_length(object);
   if (n == 0) {
     return empty_object;
   }
@@ -240,7 +140,7 @@ inline auto simplify_object(const simdjson::dom::object object,
   Rcpp::List out(n);
   Rcpp::CharacterVector out_names(n);
 
-  auto i = R_xlen_t(0);
+  auto i = R_xlen_t(0L);
   for (auto [key, value] : object) {
     out[i] =
         simplify_element<type_policy, int64_opt, simplify_to>(value, empty_array, empty_object);
@@ -252,10 +152,34 @@ inline auto simplify_object(const simdjson::dom::object object,
 }
 
 
+/**
+ * @brief Simplify a @c simdjson::dom::element to an R object.
+ *
+ *
+ * @tparam type_policy The @c Type_Policy specifying type strictness in combining mixed-type array
+ * elements into R vectors.
+ *
+ * @tparam int64_opt The @c Int64_R_Type specifying how big integers are returned to R.
+ *
+ * @tparam simplify_to The @c Simplify_To specifying the maximum level of simplification.
+ *
+ *
+ * @param element @c simdjson::dom::element to simplify.
+ *
+ * @param empty_array R object to return when encountering an empty JSON array.
+ *
+ * @param empty_object R object to return when encountering an empty JSON object.
+ *
+ *
+ * @return The simplified R object ( @c SEXP ).
+ *
+ *
+ * @note definition: forward declaration in @file inst/include/RcppSimdJson/common.hpp @file.
+ */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto simplify_element(const simdjson::dom::element element,
-                             const SEXP empty_array,
-                             const SEXP empty_object) -> SEXP {
+                             SEXP empty_array,
+                             SEXP empty_object) -> SEXP {
 
   switch (element.type()) {
     case simdjson::dom::element_type::ARRAY:
@@ -273,13 +197,13 @@ inline auto simplify_element(const simdjson::dom::element element,
       );
 
     case simdjson::dom::element_type::DOUBLE:
-      return Rcpp::wrap<double>(element.get<double>().first);
+      return Rcpp::wrap(element.get<double>().first);
 
     case simdjson::dom::element_type::INT64:
       return utils::resolve_int64<int64_opt>(element.get<int64_t>().first);
 
     case simdjson::dom::element_type::BOOL:
-      return Rcpp::wrap<bool>(element.get<bool>().first);
+      return Rcpp::wrap(element.get<bool>().first);
 
     case simdjson::dom::element_type::STRING:
       return Rcpp::wrap(element.get<const char*>().first);

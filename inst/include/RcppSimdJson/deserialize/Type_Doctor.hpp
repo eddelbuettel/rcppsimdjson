@@ -1,16 +1,11 @@
 #ifndef RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 #define RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 
+#include "../common.hpp"
+
 
 namespace rcppsimdjson {
 namespace deserialize {
-
-
-enum class Type_Policy : int {
-  anything_goes = 0,
-  ints_as_dbls = 1,
-  strict = 2,
-};
 
 
 template <Type_Policy type_policy> class Type_Doctor {
@@ -38,6 +33,7 @@ template <Type_Policy type_policy> class Type_Doctor {
 
   bool UINT64_ = false;
   bool u64_ = false;
+
 
 public:
   Type_Doctor() = default;
@@ -97,7 +93,7 @@ public:
 
   auto add_element(simdjson::dom::element) noexcept -> void;
 
-  constexpr auto update(Type_Doctor<type_policy>&& type_doctor) noexcept -> void;
+  constexpr auto update(Type_Doctor<type_policy>&&) noexcept -> void;
 };
 
 
@@ -226,11 +222,11 @@ inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() co
   if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::chr;
   }
-
+  
   if (dbl_ && !(lgl_ || u64_)) { // any number will become double
     return rcpp_T::dbl;
   }
-  if (i64_ && !(i32_ || lgl_ || u64_)) {
+  if (i64_ && !(lgl_ || u64_)) {
     // only 64/32-bit integers: will follow selected Int64_R_Type option
     return rcpp_T::i64;
   }
@@ -325,7 +321,7 @@ template <Type_Policy type_policy>
 inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noexcept
     -> simdjson::dom::element_type {
 
-  using namespace simdjson::dom;
+  using simdjson::dom::element_type;
 
   return ARRAY_ ? element_type::ARRAY
                 : OBJECT_ ? element_type::OBJECT
