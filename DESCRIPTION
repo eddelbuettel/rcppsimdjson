@@ -1,8 +1,8 @@
 Package: RcppSimdJson
 Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
-Version: 0.0.5.2
-Date: 2020-06-23
+Version: 0.0.6
+Date: 2020-06-25
 Author: Dirk Eddelbuettel, Brendan Knapp
 Maintainer: Dirk Eddelbuettel <edd@debian.org>
 Description: The 'JSON' format is ubiquitous for data interchange, and the
@@ -10,9 +10,8 @@ Description: The 'JSON' format is ubiquitous for data interchange, and the
  a high-performance parser for these files which by relying on parallel 'SIMD'
  instruction manages to parse these files as faster than disk speed. See the
  <arXiv:1902.08318> paper for more details about 'simdjson'.  This package is
- at present only a very thin and incomplete wrapper and does not aim to replace
- the existing and excellent 'JSON' packages for R. But it does already validate
- orders of magnitude faster.
+ at present still a fairly thin and not fully complete wrapper that does not
+ aim to replace the existing and excellent 'JSON' packages for R.
 OS_type: unix
 License: GPL (>= 2)
 Imports: Rcpp

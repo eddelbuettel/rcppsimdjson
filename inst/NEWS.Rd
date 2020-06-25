@@ -3,10 +3,12 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
-\section{Changes in version 0.0.6 (2020-XX-XX)}{
+\section{Changes in version 0.0.6 (2020-06-25)}{
   \itemize{
     \item Created C++ integer-handling utilities for safe downcasting
     and integer return (Brendan in \ghpr{16} closing \ghit{13}).
+    \item New JSON functions \code{.deserialize_json} and
+    \code{.load_json} (Brendan in \ghpr{16}, \ghpr{17}, \ghpr{20}, \ghpr{21}).
     \item Upgrade Travis CI to 'bionic', extract package and version
     from \code{DESCRIPTION} (Dirk in \ghpr{23}).
     \item Upgraded to simdjson 0.4.0 (Dirk in \ghpr{25} closng \ghit{24}).

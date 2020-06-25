@@ -1,3 +1,8 @@
+2020-06-25  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.0.6
+	* DESCRIPTION (Description): Changed wording a little
+
 2020-06-24  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll version and date
@@ -5,9 +10,32 @@
 	* inst/include/simdjson.h: Upgrade to upstream version 0.4.0
 	* inst/include/simdjson.cpp: Ditto
 
+	* src/Makevars.win: Stub, windows build not yet supported
+
 2020-06-18  Dirk Eddelbuettel  <edd@debian.org>
 
 	* .travis.yml: Switch to 'bionic', derive package name and version
+
+2020-06-18  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* inst/include/RcppSimdJson.hpp: New functions .deserialize_json and
+	.load_json (plus utilities .exceptions_enabled and .check_int64)
+	* inst/include/RcppSimdJson/common.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem
+	* inst/tinytest/test_deserialization.R: Idem
+	* inst/tinytest/test_load_json.R: Idem
+	* inst/tinytest/test_vectorized_ops.R: Idem
+	* src/deserialize.cpp: Idem
+	* src/RcppExport.cpp: Idem
+	* R/RcppExport.R: Idem
+	* man/dot-serialize_json.Rd: Idem
+	[ plus mulitple earlier dates ]
 
 2020-05-26  Dirk Eddelbuettel  <edd@debian.org>
 
