@@ -1,8 +1,8 @@
 Package: RcppSimdJson
 Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
-Version: 0.0.6
-Date: 2020-06-25
+Version: 0.0.6.1
+Date: 2020-06-27
 Author: Dirk Eddelbuettel, Brendan Knapp
 Maintainer: Dirk Eddelbuettel <edd@debian.org>
 Description: The 'JSON' format is ubiquitous for data interchange, and the
@@ -12,7 +12,6 @@ Description: The 'JSON' format is ubiquitous for data interchange, and the
  <arXiv:1902.08318> paper for more details about 'simdjson'.  This package is
  at present still a fairly thin and not fully complete wrapper that does not
  aim to replace the existing and excellent 'JSON' packages for R.
-OS_type: unix
 License: GPL (>= 2)
 Imports: Rcpp
 LinkingTo: Rcpp
