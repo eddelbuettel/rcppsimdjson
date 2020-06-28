@@ -38,7 +38,7 @@
 #'
 #' @details
 #' Instead of using \code{lapply()} for vectors containing multiple strings,
-#'   just use \code{fparse()} directly as it is vectorized This is much more 
+#'   just use \code{fparse()} directly as it is vectorized. This is much more 
 #'   efficient as the underlying \code{simdjson::dom::parser} can reuse internal
 #'   buffers between parses. Since the overwhelming majority of JSON objects
 #'   parsed will not result in R scalars, a \code{list()} is always returned 
