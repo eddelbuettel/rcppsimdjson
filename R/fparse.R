@@ -1,15 +1,15 @@
-#' Fast and Friendly JSON String Parser
+#' Fast and Friendly JSON Parsing
 #'
-#' @param json One or more \code{character}s of JSON data. 
+#' @param json One or more \code{character}s of JSON or paths to files containing JSON.
 #'
 #' @param query String used as a JSON Pointer to identify a specific element within \code{json}.
 #'   \code{character(1L)}, default: \code{""}
 #'
-#' @param empty_array Any R object to return for empty JSON arrays. 
+#' @param empty_array Any R object to return for empty JSON arrays.
 #'   default: \code{NULL}
 #'
 #' @param empty_object Any R object to return for empty JSON objects.
-#'   default: \code{NULL}. 
+#'   default: \code{NULL}.
 #'
 #' @param max_simplify_lvl Maximum simplification level.
 #'   \code{character(1L)} or \code{integer(1L)}, default: \code{"data_frame"}
@@ -23,9 +23,9 @@
 #' @param type_policy Level of type strictness.
 #'   \code{character(1L)} or \code{integer(1L)}, default: \code{"anything_goes"}.
 #'   \itemize{
-#'     \item \code{"anything_goes"} or \code{0L}: arrays always become atomic vectors
-#'     \item \code{"numbers"} or \code{1L}: arrays containing only numbers always become atomic vectors
-#'     \item \code{"strict"} or \code{2L}: arrays containing mixed types never become atomic vectors
+#'     \item \code{"anything_goes"} or \code{0L}: non-recursive arrays always become atomic vectors
+#'     \item \code{"numbers"} or \code{1L}: non-recursive arrays containing only numbers always become atomic vectors
+#'     \item \code{"strict"} or \code{2L}: non-recursive arrays containing mixed types never become atomic vectors
 #'    }
 #'
 #' @param int64_policy How to return big integers to R.
@@ -38,25 +38,28 @@
 #'
 #' @details
 #' Instead of using \code{lapply()} for vectors containing multiple strings,
-#'   just use \code{fparse()} directly as it is vectorized. This is much more 
+#'   just use \code{fparse()} directly as it is vectorized. This is much more
 #'   efficient as the underlying \code{simdjson::dom::parser} can reuse internal
 #'   buffers between parses. Since the overwhelming majority of JSON objects
-#'   parsed will not result in R scalars, a \code{list()} is always returned 
-#'   when multiple items are passed. Also in keeping with \code{lapply()}'s 
-#'   behavior, if the data passed has \code{names()}, the returned object will 
+#'   parsed will not result in R scalars, a \code{list()} is always returned
+#'   when multiple items are passed. Also in keeping with \code{lapply()}'s
+#'   behavior, if the data passed has \code{names()}, the returned object will
 #'   have the same names.
 #'
 #' @examples
 #' # simple parsing ============================================================
 #' json_string <- '{"a":[[1,null,3.0],["a","b",true],[10000000000,2,3]]}'
 #' fparse(json_string)
-#' 
+#'
 #' # controlling type-strictness ===============================================
 #' fparse(json_string, type_policy = "numbers")
 #' fparse(json_string, type_policy = "strict")
 #' fparse(json_string, type_policy = "numbers", int64_policy = "string")
-#' fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
-#' 
+#'
+#' if (requireNamespace("bit64", quietly = TRUE)) {
+#'   fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
+#' }
+#'
 #' # vectorized parsing ========================================================
 #' json_strings <- c(
 #'   json1 = '[{"b":true,
@@ -72,17 +75,17 @@
 #'              "c":null}]'
 #' )
 #' fparse(json_strings)
-#' 
+#'
 #' # controlling simplification ================================================
 #' fparse(json_strings, max_simplify_lvl = "matrix")
 #' fparse(json_strings, max_simplify_lvl = "vector")
 #' fparse(json_strings, max_simplify_lvl = "list")
-#' 
+#'
 #' # customizing what `[]` and `{}` return =====================================
-#' empties <- '[[],{}]'
+#' empties <- "[[],{}]"
 #' fparse(empties)
 #' fparse(empties, empty_array = NA, empty_object = FALSE)
-#' 
+#'
 #' # querying JSON w/ a JSON Pointer ===========================================
 #' json_to_query <- c(
 #'   json1 = '[
@@ -130,7 +133,30 @@
 #' fparse(json_to_query, query = "1/b/c")
 #' fparse(json_to_query, query = "1/b/c/1")
 #' fparse(json_to_query, query = "1/b/c/1/0")
-#' 
+#'
+#' # load JSON files ===========================================================
+#' single_file <- system.file("jsonexamples/small/demo.json", package = "RcppSimdJson")
+#' fload(single_file)
+#'
+#' multiple_files <- c(
+#'   single_file,
+#'   system.file("jsonexamples/small/smalldemo.json", package = "RcppSimdJson")
+#' )
+#' fload(multiple_files)
+#'
+#' # load remote files =========================================================
+#' \dontrun{
+#'
+#' single_url <- "https://raw.githubusercontent.com/eddelbuettel/rcppsimdjson/master/inst/jsonexamples/small/demo.json"
+#' fload(single_url)
+#'
+#' multiple_urls <- c(
+#'   single_url,
+#'   "https://raw.githubusercontent.com/eddelbuettel/rcppsimdjson/master/inst/jsonexamples/small/smalldemo.json"
+#' )
+#' fload(multiple_urls, verbose = TRUE)
+#' }
+#'
 #' @export
 fparse <- function(json,
                    query = "",
@@ -191,7 +217,7 @@ fparse <- function(json,
   } else {
     stop("`int64_policy` must be of type `character` or `numeric`.")
   }
-  
+
   if (int64_policy == 2L && !requireNamespace("bit64", quietly = TRUE)) {
     stop('`int64_policy="integer64", but the {bit64} package is not installed.')
   }
