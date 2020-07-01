@@ -1,13 +1,11 @@
-.file_extension <- function(x, dot = TRUE, ignore_zip_ext = FALSE) {
-  if (ignore_zip_ext) {
-    base_name <- sub("\\.[bgx]z2?$", "", basename(x))
-  } else {
-    base_name <- basename(x)
-  }
+.file_extension <- function(x, dot = TRUE) {
+  base_name <- basename(x)
+  
   captures <- regexpr("(?<!^|[.]|/)[.]([^.]+)$", base_name, perl = TRUE)
   out <- rep(NA_character_, length(x))
   out[captures > 0L] <- substring(base_name[captures > 0L], captures[captures > 0L])
-  if (dot) out else substring(out, 2L)
+  
+  out
 }
 
 
@@ -26,37 +24,63 @@
 }
 
 
-.diagnose_input <- function(x, diagnose_type = TRUE) {
+.diagnose_input <- function(x) {
   init <- list(
     input = x,
     url_prefix = .url_prefix(x),
     file_ext = .file_extension(x)
   )
-  init$compressed <- init$file_ext %in% c(".gz", ".bz", ".bz2", ".xz")
-
-  if (diagnose_type) {
-    if (!anyNA(init$url_prefix)) {
-      init$type <- "url"
-    } else if (!anyNA(init$file_ext)) {
-      init$type <- "file"
-    } else {
-      init$type <- "text"
-    }
+  
+  init$compressed <- tolower(init$file_ext) %in% c(".gz", ".bz", ".bz2", ".xz", ".zip")
+  if (any(init$compressed)) {
+    stop(
+      "Compressed files are not yet supported. The following files are affected:",
+      sprintf("\n\t- %s", x[init$compressed]),
+      call. = FALSE
+    )
   }
+
+  if (!anyNA(init$url_prefix)) {
+    init$type <- rep("url", length(x))
+  } else if (!anyNA(init$file_ext)) {
+    init$type <- rep("file", length(x))
+  } else {
+    init$type <- rep(NA, length(x))
+  }
+  
   structure(init, class = "data.frame", row.names = seq_along(x))
 }
 
+
 #' @rdname fparse
+#' 
+#' @order 2
+#' 
+#' @examples
+#' # load JSON files ===========================================================
+#' single_file <- system.file("jsonexamples/small/demo.json", package = "RcppSimdJson")
+#' fload(single_file)
 #'
-#' @param verbose Whether to display status messages.
-#'   \code{TRUE} or \code{FALSE}, default: \code{FALSE}
+#' multiple_files <- c(
+#'   single_file,
+#'   system.file("jsonexamples/small/smalldemo.json", package = "RcppSimdJson")
+#' )
+#' fload(multiple_files)
 #'
-#' @param temp_dir Directory path to use for any temporary files.
-#'   \code{character(1L)}, default: \code{tempdir()}
+#' # load remote JSON ==========================================================
+#' \dontrun{
 #'
-#' @param keep_temp_files Whether to remove any temporary files created by
-#' \code{fload()} from \code{temp_dir}.
-#'   \code{TRUE} or \code{FALSE}, default: \code{TRUE}
+#' a_url <- "https://api.github.com/users/lemire"
+#' fload(a_url)
+#'
+#' multiple_urls <- c(
+#'   a_url,
+#'   "https://api.github.com/users/eddelbuettel",
+#'   "https://api.github.com/users/knapply",
+#'   "https://api.github.com/users/dcooley"
+#' )
+#' fload(multiple_urls, query = "name", verbose = TRUE)
+#' }
 #'
 #' @export
 fload <- function(json,
@@ -73,7 +97,10 @@ fload <- function(json,
   if (!is.character(json)) {
     stop("`json=` must be a `character`.")
   }
-  if (!is.character(query) || is.na(query) || length(query) != 1L) {
+  
+  if (is.null(query)) {
+    query <- ""
+  } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
     stop("`query=` must be a single, non-`NA` `character`.")
   }
 
@@ -83,7 +110,7 @@ fload <- function(json,
   if (!is.logical(keep_temp_files) || length(keep_temp_files) != 1L || is.na(keep_temp_files)) {
     stop("`keep_temp_files=` must be either `TRUE` or `FALSE`.")
   }
-  if (!dir.exists(temp_dir <- Sys.glob(temp_dir))) {
+  if (!length(temp_dir <- Sys.glob(temp_dir))) {
     stop("`temp_dir=` does not exist.")
   }
   # prep options ===============================================================
@@ -137,16 +164,14 @@ fload <- function(json,
   # files or URLs? =============================================================
   diagnosis <- .diagnose_input(json)
   input_type <- unique(diagnosis$type)
-  if (length(input_type) != 1L) {
+  if (length(input_type) != 1L || is.na(input_type)) {
     stop(
-      "`input` should all be of the same `input_type`. Types detected:",
-      sprintf("\n\t- %s", input_type)
+      "`json=` should be either paths to local files or paths to remote files (URLs). Not both."
     )
   }
-  seq_input <- seq_along(json)
   # URLs -----------------------------------------------------------------------
-  if (input_type == "url") {
-    for (i in seq_input) {
+  if (identical(input_type, "url")) {
+    for (i in seq_along(json)) {
       temp_file <- tempfile(fileext = diagnosis$file_ext[[i]], tmpdir = temp_dir)
 
       switch(
@@ -170,6 +195,10 @@ fload <- function(json,
     }
   }
   # file -----------------------------------------------------------------------
+  if (length(missing_files <- diagnosis$input[!file.exists(diagnosis$input)])) {
+    stop("The following files don't exist:",
+         sprintf("\n\t- %s", missing_files))
+  }
   input <- Sys.glob(diagnosis$input)
   # prep names =================================================================
   if (length(names(json))) {

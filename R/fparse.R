@@ -1,4 +1,8 @@
-#' Fast and Friendly JSON Parsing
+#' Fast, Friendly, and Flexible JSON Parsing
+#' 
+#' Parse JSON strings and files to R objects.
+#' 
+#' @order 1
 #'
 #' @param json One or more \code{character}s of JSON or paths to files containing JSON.
 #'
@@ -35,16 +39,39 @@
 #'     \item \code{"string"} or \code{1L}: big integers become \code{character}s
 #'     \item \code{"integer64"} or \code{2L}: big integers \code{bit64::integer64}s
 #'   }
+#'   
+#' @param verbose Whether to display status messages.
+#'   \code{TRUE} or \code{FALSE}, default: \code{FALSE}
+#'
+#' @param temp_dir Directory path to use for any temporary files.
+#'   \code{character(1L)}, default: \code{tempdir()}
+#'
+#' @param keep_temp_files Whether to remove any temporary files created by
+#'   \code{fload()} from \code{temp_dir}.
+#'   \code{TRUE} or \code{FALSE}, default: \code{TRUE}
+#'
 #'
 #' @details
-#' Instead of using \code{lapply()} for vectors containing multiple strings,
-#'   just use \code{fparse()} directly as it is vectorized. This is much more
-#'   efficient as the underlying \code{simdjson::dom::parser} can reuse internal
-#'   buffers between parses. Since the overwhelming majority of JSON objects
-#'   parsed will not result in R scalars, a \code{list()} is always returned
-#'   when multiple items are passed. Also in keeping with \code{lapply()}'s
-#'   behavior, if the data passed has \code{names()}, the returned object will
-#'   have the same names.
+#' \itemize{
+#' 
+#'   \item Instead of using \code{lapply()} to parse multiple values, just use
+#'   \code{fparse()} and \code{fload()} directly.
+#'   \itemize{
+#'     \item They are vectorized in order to leverage the underlying
+#'           \code{simdjson::dom::parser}'s ability to reuse its internal buffers
+#'            between parses. 
+#'     \item Since the overwhelming majority of JSON parsed will not result in
+#'           scalars, a \code{list()} is always returned if \code{json} contains
+#'           more than one value.
+#'     \item If \code{json} contains multiple values and has \code{names()}, the 
+#'           returned object will have the same names.
+#'     \item If \code{json} contains multiple values and is unnamed, \code{fload()}
+#'           names each returned element using the file's \code{basename()}.
+#'    }
+#'  
+#' }
+#'
+#' @author Brendan Knapp
 #'
 #' @examples
 #' # simple parsing ============================================================
@@ -133,30 +160,7 @@
 #' fparse(json_to_query, query = "1/b/c")
 #' fparse(json_to_query, query = "1/b/c/1")
 #' fparse(json_to_query, query = "1/b/c/1/0")
-#'
-#' # load JSON files ===========================================================
-#' single_file <- system.file("jsonexamples/small/demo.json", package = "RcppSimdJson")
-#' fload(single_file)
-#'
-#' multiple_files <- c(
-#'   single_file,
-#'   system.file("jsonexamples/small/smalldemo.json", package = "RcppSimdJson")
-#' )
-#' fload(multiple_files)
-#'
-#' # load remote files =========================================================
-#' \dontrun{
-#'
-#' single_url <- "https://raw.githubusercontent.com/eddelbuettel/rcppsimdjson/master/inst/jsonexamples/small/demo.json"
-#' fload(single_url)
-#'
-#' multiple_urls <- c(
-#'   single_url,
-#'   "https://raw.githubusercontent.com/eddelbuettel/rcppsimdjson/master/inst/jsonexamples/small/smalldemo.json"
-#' )
-#' fload(multiple_urls, verbose = TRUE)
-#' }
-#'
+#' 
 #' @export
 fparse <- function(json,
                    query = "",
@@ -170,7 +174,10 @@ fparse <- function(json,
   if (!is.character(json)) {
     stop("`json=` must be a `character`.")
   }
-  if (!is.character(query) || is.na(query) || length(query) != 1L) {
+  
+  if (is.null(query)) {
+    query <- ""
+  } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
     stop("`query=` must be a single, non-`NA` `character`.")
   }
   # prep options ===============================================================
@@ -199,7 +206,7 @@ fparse <- function(json,
       stop("Unknown `type_policy=`.")
     )
   } else if (is.numeric(type_policy)) {
-    stopifnot(max_simplify_lvl %in% 0:2)
+    stopifnot(type_policy %in% 0:2)
   } else {
     stop("`type_policy=` must be of type `character` or `numeric`.")
   }
