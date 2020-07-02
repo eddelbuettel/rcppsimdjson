@@ -1,8 +1,8 @@
 Package: RcppSimdJson
 Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
-Version: 0.0.6.1
-Date: 2020-06-27
+Version: 0.0.6.2
+Date: 2020-07-02
 Author: Dirk Eddelbuettel, Brendan Knapp
 Maintainer: Dirk Eddelbuettel <edd@debian.org>
 Description: The 'JSON' format is ubiquitous for data interchange, and the
