@@ -1,4 +1,4 @@
-/* auto-generated on Fri 26 Jun 2020 20:03:28 EDT. Do not edit! */
+/* auto-generated on Wed Jul  1 14:00:57 EDT 2020. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -59,7 +59,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cfloat>
-
+#include <cassert>
 
 #ifdef _MSC_VER
 #define SIMDJSON_VISUAL_STUDIO 1
@@ -190,7 +190,6 @@ use a 64-bit target such as x64 or 64-bit ARM.")
 #endif
 #endif
 
-
 // workaround for large stack sizes under -O0.
 // https://github.com/simdjson/simdjson/issues/691
 #ifdef __APPLE__
@@ -203,6 +202,13 @@ use a 64-bit target such as x64 or 64-bit ARM.")
 #undef SIMDJSON_THREADS_ENABLED
 #endif
 #endif
+
+
+#if SIMDJSON_DO_NOT_USE_THREADS_NO_MATTER_WHAT
+// No matter what happened, we undefine SIMDJSON_THREADS_ENABLED and so disable threads.
+#undef SIMDJSON_THREADS_ENABLED
+#endif
+
 
 #if defined(__clang__)
 #define NO_SANITIZE_UNDEFINED __attribute__((no_sanitize("undefined")))
@@ -280,7 +286,6 @@ static inline void aligned_free_char(char *mem_block) {
 
 #else // NDEBUG
 
-#include <cassert>
 #define SIMDJSON_UNREACHABLE() assert(0);
 #define SIMDJSON_ASSUME(COND) assert(COND)
 
@@ -367,12 +372,15 @@ constexpr size_t DEFAULT_MAX_DEPTH = 1024;
   #define SIMDJSON_PUSH_DISABLE_ALL_WARNINGS __pragma(warning( push, 0 ))
   #define SIMDJSON_DISABLE_VS_WARNING(WARNING_NUMBER) __pragma(warning( disable : WARNING_NUMBER ))
   // Get rid of Intellisense-only warnings (Code Analysis)
-  // Though __has_include is C++17, it looks like it is supported in Visual Studio 2017 or better.
-  // We are probably not supporting earlier version of Visual Studio in any case.
+  // Though __has_include is C++17, it is supported in Visual Studio 2017 or better (_MSC_VER>=1910).
+  #if defined(_MSC_VER) && (_MSC_VER>=1910) 
   #if __has_include(<CppCoreCheck\Warnings.h>)
   #include <CppCoreCheck\Warnings.h>
   #define SIMDJSON_DISABLE_UNDESIRED_WARNINGS SIMDJSON_DISABLE_VS_WARNING(ALL_CPPCORECHECK_WARNINGS)
-  #else
+  #endif
+  #endif
+
+  #ifndef SIMDJSON_DISABLE_UNDESIRED_WARNINGS
   #define SIMDJSON_DISABLE_UNDESIRED_WARNINGS
   #endif
 
@@ -2032,7 +2040,7 @@ SIMDJSON_DISABLE_UNDESIRED_WARNINGS
 #define SIMDJSON_SIMDJSON_VERSION_H
 
 /** The version of simdjson being used (major.minor.revision) */
-#define SIMDJSON_VERSION 0.4.1
+#define SIMDJSON_VERSION 0.4.6
 
 namespace simdjson {
 enum {
@@ -2047,7 +2055,7 @@ enum {
   /**
    * The revision (major.minor.REVISION) of simdjson being used.
    */
-  SIMDJSON_VERSION_REVISION = 1
+  SIMDJSON_VERSION_REVISION = 6
 };
 } // namespace simdjson
 
@@ -3667,7 +3675,12 @@ private:
   /**
    * The loaded buffer (reused each time load() is called)
    */
+  #if defined(_MSC_VER) && _MSC_VER < 1910
+  // older versions of Visual Studio lack proper support for unique_ptr.
+  std::unique_ptr<char[]> loaded_bytes;
+  #else
   std::unique_ptr<char[], decltype(&aligned_free_char)> loaded_bytes;
+  #endif
 
   /** Capacity of loaded_bytes buffer. */
   size_t _loaded_bytes_capacity{0};
@@ -6773,7 +6786,12 @@ inline char *allocate_padded_buffer(size_t length) noexcept {
   // return (char *) malloc(length + SIMDJSON_PADDING);
   // However, we might as well align to cache lines...
   size_t totalpaddedlength = length + SIMDJSON_PADDING;
+#if defined(_MSC_VER) && _MSC_VER < 1910
+  // For legacy Visual Studio 2015 since it does not have proper C++11 support
+  char *padded_buffer = new[totalpaddedlength];
+#else
   char *padded_buffer = aligned_malloc_char(64, totalpaddedlength);
+#endif
 #ifndef NDEBUG
   if (padded_buffer == nullptr) {
     return nullptr;
@@ -7395,10 +7413,18 @@ namespace dom {
 //
 // parser inline implementation
 //
+#if defined(_MSC_VER) && _MSC_VER < 1910
+// older versions of Visual Studio lack proper support for unique_ptr.
+really_inline parser::parser(size_t max_capacity) noexcept
+  : _max_capacity{max_capacity},
+    loaded_bytes(nullptr) {
+}
+#else 
 really_inline parser::parser(size_t max_capacity) noexcept
   : _max_capacity{max_capacity},
     loaded_bytes(nullptr, &aligned_free_char) {
 }
+#endif
 really_inline parser::parser(parser &&other) noexcept = default;
 really_inline parser &parser::operator=(parser &&other) noexcept = default;
 
