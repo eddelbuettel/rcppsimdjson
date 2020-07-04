@@ -15,7 +15,8 @@ namespace deserialize {
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_list(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+inline auto
+simplify_list(simdjson::dom::array array, SEXP empty_array, SEXP empty_object, SEXP single_null)
     -> SEXP {
   Rcpp::List out(r_length(array));
 
@@ -24,7 +25,8 @@ inline auto simplify_list(const simdjson::dom::array array, SEXP empty_array, SE
     out[i++] = simplify_element<type_policy, int64_opt, simplify_to>( //
         element,                                                      //
         empty_array,                                                  //
-        empty_object                                                  //
+        empty_object,                                                 //
+        single_null                                                   //
     );                                                                //
   }
 
@@ -33,7 +35,8 @@ inline auto simplify_list(const simdjson::dom::array array, SEXP empty_array, SE
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_vector(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+inline auto
+simplify_vector(simdjson::dom::array array, SEXP empty_array, SEXP empty_object, SEXP single_null)
     -> SEXP {
   const auto type_doctor = Type_Doctor<type_policy>(array);
 
@@ -47,12 +50,14 @@ inline auto simplify_vector(const simdjson::dom::array array, SEXP empty_array, 
                : vector::dispatch_mixed<int64_opt>(array, type_doctor.common_R_type());
   }
 
-  return simplify_list<type_policy, int64_opt, simplify_to>(array, empty_array, empty_object);
+  return simplify_list<type_policy, int64_opt, simplify_to>(
+      array, empty_array, empty_object, single_null);
 }
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_matrix(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object)
+inline auto
+simplify_matrix(simdjson::dom::array array, SEXP empty_array, SEXP empty_object, SEXP single_null)
     -> SEXP {
   if (const auto matrix = matrix::diagnose<type_policy>(array)) {
     return matrix->is_homogeneous
@@ -66,30 +71,36 @@ inline auto simplify_matrix(const simdjson::dom::array array, SEXP empty_array, 
                : matrix::dispatch_mixed<int64_opt>(array, matrix->common_R_type, matrix->n_cols);
   }
 
-  return simplify_vector<type_policy, int64_opt, simplify_to>(array, empty_array, empty_object);
+  return simplify_vector<type_policy, int64_opt, simplify_to>(
+      array, empty_array, empty_object, single_null);
 }
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto
-simplify_data_frame(const simdjson::dom::array array, SEXP empty_array, SEXP empty_object) -> SEXP {
+inline auto simplify_data_frame(simdjson::dom::array array,
+                                SEXP empty_array,
+                                SEXP empty_object,
+                                SEXP single_null) -> SEXP {
   if (const auto cols = diagnose_data_frame<type_policy>(array)) {
     return build_data_frame<type_policy, int64_opt, simplify_to>( //
         array,                                                    //
         cols->schema,                                             //
         empty_array,                                              //
-        empty_object                                              //
+        empty_object,                                             //
+        single_null                                               //
     );                                                            //
   }
 
-  return simplify_matrix<type_policy, int64_opt, simplify_to>(array, empty_array, empty_object);
+  return simplify_matrix<type_policy, int64_opt, simplify_to>(
+      array, empty_array, empty_object, single_null);
 }
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto dispatch_simplify_array(const simdjson::dom::array array,
+inline auto dispatch_simplify_array(simdjson::dom::array array,
                                     SEXP empty_array,
-                                    SEXP empty_object) -> SEXP {
+                                    SEXP empty_object,
+                                    SEXP single_null) -> SEXP {
 
   if (std::size(array) == 0) {
     return empty_array;
@@ -99,7 +110,8 @@ inline auto dispatch_simplify_array(const simdjson::dom::array array,
     return simplify_data_frame<type_policy, int64_opt, Simplify_To::data_frame>( //
         array,                                                                   //
         empty_array,                                                             //
-        empty_object                                                             //
+        empty_object,                                                            //
+        single_null                                                              //
     );                                                                           //
   }
 
@@ -107,7 +119,8 @@ inline auto dispatch_simplify_array(const simdjson::dom::array array,
     return simplify_matrix<type_policy, int64_opt, Simplify_To::matrix>( //
         array,                                                           //
         empty_array,                                                     //
-        empty_object                                                     //
+        empty_object,                                                    //
+        single_null                                                      //
     );
   }
 
@@ -115,23 +128,26 @@ inline auto dispatch_simplify_array(const simdjson::dom::array array,
     return simplify_vector<type_policy, int64_opt, Simplify_To::vector>( //
         array,                                                           //
         empty_array,                                                     //
-        empty_object                                                     //
-    );
+        empty_object,                                                    //
+        single_null);
   }
 
   if constexpr (simplify_to == Simplify_To::list) {
     return simplify_list<type_policy, int64_opt, Simplify_To::list>( //
         array,                                                       //
         empty_array,                                                 //
-        empty_object                                                 //
+        empty_object,                                                //
+        single_null                                                  //
     );                                                               //
   }
 }
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array, SEXP empty_object)
-    -> SEXP {
+inline auto simplify_object(const simdjson::dom::object object,
+                            SEXP empty_array,
+                            SEXP empty_object,
+                            SEXP single_null) -> SEXP {
   const auto n = r_length(object);
   if (n == 0) {
     return empty_object;
@@ -142,8 +158,8 @@ inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array
 
   auto i = R_xlen_t(0L);
   for (auto [key, value] : object) {
-    out[i] =
-        simplify_element<type_policy, int64_opt, simplify_to>(value, empty_array, empty_object);
+    out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
+        value, empty_array, empty_object, single_null);
     out_names[i++] = std::string(key);
   }
 
@@ -179,21 +195,24 @@ inline auto simplify_object(const simdjson::dom::object object, SEXP empty_array
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto simplify_element(const simdjson::dom::element element,
                              SEXP empty_array,
-                             SEXP empty_object) -> SEXP {
+                             SEXP empty_object,
+                             SEXP single_null) -> SEXP {
 
   switch (element.type()) {
     case simdjson::dom::element_type::ARRAY:
       return dispatch_simplify_array<type_policy, int64_opt, simplify_to>(
           element.get<simdjson::dom::array>().first, //
           empty_array,                               //
-          empty_object                               //
+          empty_object,                              //
+          single_null                                //
       );
 
     case simdjson::dom::element_type::OBJECT:
       return simplify_object<type_policy, int64_opt, simplify_to>(
           element.get<simdjson::dom::object>().first, //
           empty_array,                                //
-          empty_object                                //
+          empty_object,                               //
+          single_null                                 //
       );
 
     case simdjson::dom::element_type::DOUBLE:
@@ -209,7 +228,7 @@ inline auto simplify_element(const simdjson::dom::element element,
       return Rcpp::wrap(element.get<const char*>().first);
 
     case simdjson::dom::element_type::NULL_VALUE:
-      return R_NilValue;
+      return single_null;
 
     case simdjson::dom::element_type::UINT64:
       return Rcpp::wrap(std::to_string(element.get<uint64_t>().first));
