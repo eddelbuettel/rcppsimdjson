@@ -1,36 +1,42 @@
-# Run Travis CI for R via Docker
-#
-# Made by Dirk Eddelbuettel in August 2018 and released under GPL (>=2)
+# Run Travis CI for R using https://eddelbuettel.github.io/r-travis/
 
-os: linux
-dist: bionic
+language: c
 sudo: required
-services: docker
+dist: bionic
 
 env:
   global:
-    - DOCKER_OPTS="--rm -ti -v $(pwd):/mnt -w /mnt"
-      DOCKER_CNTR="rcpp/run"
-      R_BLD_OPTS="--no-build-vignettes --no-manual"
-      R_CHK_OPTS="--no-vignettes --no-manual"
-      PKG_NAME=$(awk '/Package:/ {print $2}' DESCRIPTION)
-      PKG_VER=$(awk '/Version:/ {print $2}' DESCRIPTION)
-      PKG_TGZ="${PKG_NAME}_${PKG_VER}.tar.gz"
+    - R_VERSION="4.0"
+
+jobs:
+  include:
+    - name: gcc-8
+      env: CXX11="g++-8" CXX17="g++-8" CC="gcc-8"
+    - name: gcc-9
+      env: CXX11="g++-9" CXX17="g++-9" CC="gcc-9"
+    - name: gcc-10
+      env: CXX11="g++-10" CXX17="g++-10" CC="gcc-10"
 
 before_install:
-  - docker pull ${DOCKER_CNTR}
-  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} r -p -e 'sessionInfo()'
+  - curl -OLs https://eddelbuettel.github.io/r-travis/run.sh && chmod 0755 run.sh
+  # add toolchain-uploads-restricted PPA
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - ./run.sh bootstrap
 
 install:
-  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD build ${R_BLD_OPTS} .
+  - ./run.sh install_aptget ${CXX17} r-cran-rcpp r-cran-bit64 r-cran-tinytest
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/${CC} 60 --slave /usr/bin/g++ g++ /usr/bin/${CXX17}
+  - g++ --version
 
-script:
-  - docker run ${DOCKER_OPTS} ${DOCKER_CNTR} R CMD check ${R_CHK_OPTS} ${PKG_TGZ}
+script: 
+  - ./run.sh run_tests
 
-after_success:
-  - docker run ${DOCKER_OPTS} -e CODECOV_TOKEN ${DOCKER_CNTR} r -l covr -e 'codecov()'
+after_failure:
+  - ./run.sh dump_logs
 
 notifications:
   email:
     on_success: change
     on_failure: change
+
+
