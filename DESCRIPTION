@@ -13,7 +13,7 @@ Description: The 'JSON' format is ubiquitous for data interchange, and the
  at present still a fairly thin and not fully complete wrapper that does not
  aim to replace the existing and excellent 'JSON' packages for R.
 License: GPL (>= 2)
-Imports: Rcpp
+Imports: Rcpp, utils
 LinkingTo: Rcpp
 Suggests: bit64, tinytest
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
