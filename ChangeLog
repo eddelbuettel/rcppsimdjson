@@ -1,3 +1,32 @@
+2020-07-05  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* DESCRIPTION (Version, Date): Roll version and date
+	* DESCRIPTION (Imports): add utils to Imports
+	* DESCRIPTION (RoxygenNote): update RoxygenNote
+	* NAMESPACE: added importFrom(utils, download.file)
+	
+	* .travis.yml: Change Travis to build matrix over g++ 7, 8, 9, 10
+	* .covrignore: Exclude upstream simdjson when measuring code coverage
+	* .clang-format: Format C++ code consistently
+	
+	* R/fparse: New functions fparse and fload (plus tests and docs)
+	* R/fload: Idem
+	* inst/tinytest/test_fparse_fload.R: Idem
+	* man/fparse.Rd: Idem
+	
+	* src/deserialize.cpp: add options for errors and single JSON nulls,
+	reformat C++ code, guard GCC-7 from disabling simdjson exceptions or
+	touching its no-exceptions-only API in matrix loops, expand 
+	test coverage, maximize if-initializations, remove redundant docs
+	* inst/include/RcppSimdJson/common.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem
+
 2020-07-02  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll version and date

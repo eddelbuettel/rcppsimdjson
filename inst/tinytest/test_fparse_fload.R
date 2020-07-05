@@ -710,7 +710,7 @@ expect_error(
 
 
 # TODO verify CRAN policies for downloading, Travis usage
-if (T) { 
+if (FALSE) { 
   expect_error(
     suppressWarnings(fload("https://not-a-real-url"))
   )
