@@ -11,6 +11,8 @@ fparse(
   empty_array = NULL,
   empty_object = NULL,
   single_null = NULL,
+  error_ok = FALSE,
+  on_error = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
   int64_policy = c("double", "string", "integer64")
@@ -22,6 +24,8 @@ fload(
   empty_array = NULL,
   empty_object = NULL,
   single_null = NULL,
+  error_ok = FALSE,
+  on_error = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
   int64_policy = c("double", "string", "integer64"),
@@ -43,6 +47,13 @@ default: \code{NULL}}
 default: \code{NULL}.}
 
 \item{single_null}{Any R object to return for single JSON nulls.
+default: \code{NULL}.}
+
+\item{error_ok}{Whether to allow parsing errors.
+default: \code{FALSE}.}
+
+\item{on_error}{If \code{error_ok} is \code{TRUE}, \code{on_error} is any
+R object to return when parsing errors occur.
 default: \code{NULL}.}
 
 \item{max_simplify_lvl}{Maximum simplification level.
@@ -138,13 +149,25 @@ fparse(json_strings, max_simplify_lvl = "matrix")
 fparse(json_strings, max_simplify_lvl = "vector")
 fparse(json_strings, max_simplify_lvl = "list")
 
-# customizing what `[]`, `{}`, and `null` return ============================
+# customizing what `[]`, `{}`, and single `null`s return ====================
 empties <- "[[],{},null]"
 fparse(empties)
 fparse(empties,
        empty_array = logical(), 
        empty_object = `names<-`(list(), character()), 
        single_null = NA_real_)
+
+# handling invalid JSON and parsing errors ==================================
+fparse("junk JSON", error_ok = TRUE)
+fparse("junk JSON", error_ok = TRUE, on_error = "can't parse invalid JSON")
+fparse(
+  c(junk_JSON_1 = "junk JSON 1",
+    valid_JSON_1 = '"this is valid JSON"',
+    junk_JSON_2 = "junk JSON 2",
+    valid_JSON_2 = '{"is is also valid JSON"'),
+  error_ok = TRUE,
+  on_error = NA
+)
 
 # querying JSON w/ a JSON Pointer ===========================================
 json_to_query <- c(

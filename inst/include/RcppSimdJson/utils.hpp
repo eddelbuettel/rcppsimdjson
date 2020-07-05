@@ -2,7 +2,7 @@
 #define RCPPSIMDJSON_UTILS_HPP
 
 #include <Rcpp.h>
-#include <algorithm>  // std::all_of
+#include <algorithm> // std::all_of
 
 
 namespace rcppsimdjson {
@@ -10,8 +10,8 @@ namespace utils {
 
 // options for returning big-ints
 enum class Int64_R_Type : int {
-  Double = 0,
-  String = 1,
+  Double    = 0,
+  String    = 1,
   Integer64 = 2,
 };
 
@@ -25,7 +25,7 @@ inline SEXP as_integer64(int64_t x) {
 }
 // Convert `std::vector<int64_t>` to `bit64::integer64`.
 inline SEXP as_integer64(const std::vector<int64_t>& x) {
-  const auto n = std::size(x);
+  const auto          n = std::size(x);
   Rcpp::NumericVector out(n);
   std::memcpy(&(out[0]), &(x[0]), n * sizeof(double));
   out.attr("class") = "integer64";
@@ -72,14 +72,14 @@ inline constexpr SEXP resolve_int64(int64_t x) {
   }
 
   switch (int64_opt) {
-    case Int64_R_Type::Double:
-      return Rcpp::wrap<double>(x);
+  case Int64_R_Type::Double:
+    return Rcpp::wrap<double>(x);
 
-    case Int64_R_Type::String:
-      return Rcpp::wrap(std::to_string(x));
+  case Int64_R_Type::String:
+    return Rcpp::wrap(std::to_string(x));
 
-    case Int64_R_Type::Integer64:
-      return as_integer64(x);
+  case Int64_R_Type::Integer64:
+    return as_integer64(x);
   }
 
   return R_NilValue;
@@ -94,15 +94,15 @@ inline constexpr SEXP resolve_int64(const std::vector<int64_t>& x) {
   }
 
   switch (int64_opt) {
-    case Int64_R_Type::Double:
-      return Rcpp::NumericVector(std::begin(x), std::end(x));
+  case Int64_R_Type::Double:
+    return Rcpp::NumericVector(std::begin(x), std::end(x));
 
-    case Int64_R_Type::String:
-      return Rcpp::CharacterVector(std::begin(x), std::end(x),
-                                   [](int64_t val) { return std::to_string(val); });
+  case Int64_R_Type::String:
+    return Rcpp::CharacterVector(
+        std::begin(x), std::end(x), [](int64_t val) { return std::to_string(val); });
 
-    case Int64_R_Type::Integer64:
-      return as_integer64(x);
+  case Int64_R_Type::Integer64:
+    return as_integer64(x);
   }
 
   return R_NilValue;
@@ -117,12 +117,12 @@ inline SEXP resolve_int64(uint64_t x) {
 // converts `std::vector<uint64_t>` to `SEXP` (always strings)
 template <Int64_R_Type int64_opt>
 inline SEXP resolve_int64(const std::vector<uint64_t>& x) {
-  return Rcpp::CharacterVector(std::begin(x), std::end(x),
-                               [](uint64_t val) { return std::to_string(val); });
+  return Rcpp::CharacterVector(
+      std::begin(x), std::end(x), [](uint64_t val) { return std::to_string(val); });
 }
 
 
-}  // namespace utils
-}  // namespace rcppsimdjson
+} // namespace utils
+} // namespace rcppsimdjson
 
 #endif

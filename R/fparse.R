@@ -17,6 +17,13 @@
 #'   
 #' @param single_null Any R object to return for single JSON nulls.
 #'   default: \code{NULL}.
+#'   
+#' @param error_ok Whether to allow parsing errors.
+#'   default: \code{FALSE}.
+#'   
+#' @param on_error If \code{error_ok} is \code{TRUE}, \code{on_error} is any
+#'   R object to return when parsing errors occur.
+#'   default: \code{NULL}.
 #'
 #' @param max_simplify_lvl Maximum simplification level.
 #'   \code{character(1L)} or \code{integer(1L)}, default: \code{"data_frame"}
@@ -111,13 +118,25 @@
 #' fparse(json_strings, max_simplify_lvl = "vector")
 #' fparse(json_strings, max_simplify_lvl = "list")
 #'
-#' # customizing what `[]`, `{}`, and `null` return ============================
+#' # customizing what `[]`, `{}`, and single `null`s return ====================
 #' empties <- "[[],{},null]"
 #' fparse(empties)
 #' fparse(empties,
 #'        empty_array = logical(), 
 #'        empty_object = `names<-`(list(), character()), 
 #'        single_null = NA_real_)
+#'
+#' # handling invalid JSON and parsing errors ==================================
+#' fparse("junk JSON", error_ok = TRUE)
+#' fparse("junk JSON", error_ok = TRUE, on_error = "can't parse invalid JSON")
+#' fparse(
+#'   c(junk_JSON_1 = "junk JSON 1",
+#'     valid_JSON_1 = '"this is valid JSON"',
+#'     junk_JSON_2 = "junk JSON 2",
+#'     valid_JSON_2 = '{"is is also valid JSON"'),
+#'   error_ok = TRUE,
+#'   on_error = NA
+#' )
 #'
 #' # querying JSON w/ a JSON Pointer ===========================================
 #' json_to_query <- c(
@@ -173,6 +192,8 @@ fparse <- function(json,
                    empty_array = NULL,
                    empty_object = NULL,
                    single_null = NULL,
+                   error_ok = FALSE,
+                   on_error = NULL,
                    max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                    type_policy = c("anything_goes", "numbers", "strict"),
                    int64_policy = c("double", "string", "integer64")) {
@@ -186,6 +207,10 @@ fparse <- function(json,
     query <- ""
   } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
     stop("`query=` must be a single, non-`NA` `character`.")
+  }
+  
+  if (!is.logical(error_ok) || length(error_ok) != 1L || is.na(error_ok)) {
+    stop("`error_ok=` must be either `TRUE` or `FALSE`.")
   }
   # prep options ===============================================================
   # max_simplify_lvl -----------------------------------------------------------
@@ -233,7 +258,9 @@ fparse <- function(json,
   }
 
   if (int64_policy == 2L && !requireNamespace("bit64", quietly = TRUE)) {
+    # nocov start
     stop('`int64_policy="integer64", but the {bit64} package is not installed.')
+    # nocov end
   }
   # deserialize ================================================================
   .deserialize_json(
@@ -242,6 +269,8 @@ fparse <- function(json,
     empty_array = empty_array,
     empty_object = empty_object,
     single_null = single_null,
+    error_ok = error_ok,
+    on_error = on_error,
     simplify_to = max_simplify_lvl,
     type_policy = type_policy,
     int64_r_type = int64_policy

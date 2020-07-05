@@ -10,7 +10,7 @@ namespace deserialize {
 
 template <Type_Policy type_policy>
 struct Column {
-  R_xlen_t index                  = 0L;
+  R_xlen_t                 index  = 0L;
   Type_Doctor<type_policy> schema = Type_Doctor<type_policy>();
 };
 
@@ -52,8 +52,8 @@ diagnose_data_frame(const simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_E
 
 
 template <int RTYPE, typename scalar_T, rcpp_T R_Type, Type_Policy type_policy>
-inline auto build_col(const simdjson::dom::array array,
-                      const std::string_view key,
+inline auto build_col(const simdjson::dom::array      array,
+                      const std::string_view          key,
                       const Type_Doctor<type_policy>& type_doc) -> Rcpp::Vector<RTYPE> {
 
   auto out   = Rcpp::Vector<RTYPE>(std::size(array), na_val<R_Type>());
@@ -94,8 +94,8 @@ inline auto build_col(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline auto build_col_integer64(const simdjson::dom::array array,
-                                const std::string_view key,
+inline auto build_col_integer64(const simdjson::dom::array     array,
+                                const std::string_view         key,
                                 const Type_Doctor<type_policy> type_doc) -> SEXP {
 
   if constexpr (int64_opt == utils::Int64_R_Type::Double) {
@@ -132,16 +132,16 @@ inline auto build_col_integer64(const simdjson::dom::array array,
       for (auto object : array) {
         if (auto [element, error] = object.get<simdjson::dom::object>().at_key(key); !error) {
           switch (element.type()) {
-            case simdjson::dom::element_type::INT64:
-              stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
-              break;
+          case simdjson::dom::element_type::INT64:
+            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
+            break;
 
-            case simdjson::dom::element_type::BOOL:
-              stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
-              break;
+          case simdjson::dom::element_type::BOOL:
+            stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
+            break;
 
-            default:
-              break;
+          default:
+            break;
           }
         }
         i_row++;
@@ -153,67 +153,64 @@ inline auto build_col_integer64(const simdjson::dom::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto build_data_frame(const simdjson::dom::array array,
+inline auto build_data_frame(const simdjson::dom::array                                       array,
                              const std::unordered_map<std::string_view, Column<type_policy>>& cols,
                              SEXP empty_array,
                              SEXP empty_object,
                              SEXP single_null) -> SEXP {
 
-  const auto n_rows = R_xlen_t(std::size(array));
-  auto out          = Rcpp::List(std::size(cols));
-  auto out_names    = Rcpp::CharacterVector(std::size(cols));
+  const auto n_rows    = R_xlen_t(std::size(array));
+  auto       out       = Rcpp::List(std::size(cols));
+  auto       out_names = Rcpp::CharacterVector(std::size(cols));
 
   for (auto [key, col] : cols) {
     out_names[col.index] = std::string(key);
 
     switch (col.schema.common_R_type()) {
-      case rcpp_T::chr: {
-        out[col.index] =
-            build_col<STRSXP, std::string, rcpp_T::chr, type_policy>(array, key, col.schema);
-        break;
-      }
+    case rcpp_T::chr: {
+      out[col.index] =
+          build_col<STRSXP, std::string, rcpp_T::chr, type_policy>(array, key, col.schema);
+      break;
+    }
 
-      case rcpp_T::dbl: {
-        out[col.index] =
-            build_col<REALSXP, double, rcpp_T::dbl, type_policy>(array, key, col.schema);
-        break;
-      }
+    case rcpp_T::dbl: {
+      out[col.index] = build_col<REALSXP, double, rcpp_T::dbl, type_policy>(array, key, col.schema);
+      break;
+    }
 
-      case rcpp_T::i64: {
-        out[col.index] = build_col_integer64<type_policy, int64_opt>(array, key, col.schema);
-        break;
-      }
+    case rcpp_T::i64: {
+      out[col.index] = build_col_integer64<type_policy, int64_opt>(array, key, col.schema);
+      break;
+    }
 
-      case rcpp_T::i32: {
-        out[col.index] =
-            build_col<INTSXP, int64_t, rcpp_T::i32, type_policy>(array, key, col.schema);
-        break;
-      }
+    case rcpp_T::i32: {
+      out[col.index] = build_col<INTSXP, int64_t, rcpp_T::i32, type_policy>(array, key, col.schema);
+      break;
+    }
 
-      case rcpp_T::lgl: {
-        out[col.index] = build_col<LGLSXP, bool, rcpp_T::lgl, type_policy>(array, key, col.schema);
-        break;
-      }
+    case rcpp_T::lgl: {
+      out[col.index] = build_col<LGLSXP, bool, rcpp_T::lgl, type_policy>(array, key, col.schema);
+      break;
+    }
 
-      case rcpp_T::null: {
-        out[col.index] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
-        break;
-      }
+    case rcpp_T::null: {
+      out[col.index] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
+      break;
+    }
 
-      default: {
-        auto this_col = Rcpp::Vector<VECSXP>(n_rows);
-        auto i_row    = R_xlen_t(0L);
-        for (auto element : array) {
-          if (auto [value, error] = element.get<simdjson::dom::object>().at_key(key); !error) {
-            this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
-                value, empty_array, empty_object, single_null //
-            );
-          } else {
-            this_col[i_row++] = NA_LOGICAL;
-          }
+    default: {
+      auto this_col = Rcpp::Vector<VECSXP>(n_rows);
+      auto i_row    = R_xlen_t(0L);
+      for (auto element : array) {
+        if (auto [value, error] = element.get<simdjson::dom::object>().at_key(key); !error) {
+          this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
+              value, empty_array, empty_object, single_null);
+        } else {
+          this_col[i_row++] = NA_LOGICAL;
         }
-        out[col.index] = this_col;
       }
+      out[col.index] = this_col;
+    }
     }
   }
 

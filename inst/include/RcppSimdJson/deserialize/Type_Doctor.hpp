@@ -8,7 +8,8 @@ namespace rcppsimdjson {
 namespace deserialize {
 
 
-template <Type_Policy type_policy> class Type_Doctor {
+template <Type_Policy type_policy>
+class Type_Doctor {
   bool ARRAY_ = false;
   bool array_ = false;
 
@@ -16,23 +17,23 @@ template <Type_Policy type_policy> class Type_Doctor {
   bool object_ = false;
 
   bool STRING_ = false;
-  bool chr_ = false;
+  bool chr_    = false;
 
   bool DOUBLE_ = false;
-  bool dbl_ = false;
+  bool dbl_    = false;
 
   bool INT64_ = false;
-  bool i64_ = false;
-  bool i32_ = false;
+  bool i64_   = false;
+  bool i32_   = false;
 
   bool BOOL_ = false;
-  bool lgl_ = false;
+  bool lgl_  = false;
 
   bool NULL_VALUE_ = false;
-  bool null_ = false;
+  bool null_       = false;
 
   bool UINT64_ = false;
-  bool u64_ = false;
+  bool u64_    = false;
 
 
 public:
@@ -47,23 +48,23 @@ public:
     object_ = false;
 
     STRING_ = false;
-    chr_ = false;
+    chr_    = false;
 
     DOUBLE_ = false;
-    dbl_ = false;
+    dbl_    = false;
 
     INT64_ = false;
-    i64_ = false;
-    i32_ = false;
+    i64_   = false;
+    i32_   = false;
 
     BOOL_ = false;
-    lgl_ = false;
+    lgl_  = false;
 
     NULL_VALUE_ = false;
-    null_ = false;
+    null_       = false;
 
     UINT64_ = false;
-    u64_ = false;
+    u64_    = false;
   };
 
   [[nodiscard]] constexpr auto has_ARRAY() const noexcept -> bool { return ARRAY_; };
@@ -102,50 +103,50 @@ inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcep
 
   for (auto element : array) {
     switch (element.type()) {
-      case simdjson::dom::element_type::ARRAY:
-        ARRAY_ = true;
-        array_ = true;
-        break;
+    case simdjson::dom::element_type::ARRAY:
+      ARRAY_ = true;
+      array_ = true;
+      break;
 
-      case simdjson::dom::element_type::OBJECT:
-        OBJECT_ = true;
-        object_ = true;
-        break;
+    case simdjson::dom::element_type::OBJECT:
+      OBJECT_ = true;
+      object_ = true;
+      break;
 
-      case simdjson::dom::element_type::STRING:
-        STRING_ = true;
-        chr_ = true;
-        break;
+    case simdjson::dom::element_type::STRING:
+      STRING_ = true;
+      chr_    = true;
+      break;
 
-      case simdjson::dom::element_type::DOUBLE:
-        DOUBLE_ = true;
-        dbl_ = true;
-        break;
+    case simdjson::dom::element_type::DOUBLE:
+      DOUBLE_ = true;
+      dbl_    = true;
+      break;
 
-      case simdjson::dom::element_type::INT64: {
-        INT64_ = true;
-        if (utils::is_castable_int64(element.get<int64_t>().first)) {
-          i32_ = true;
-        } else {
-          i64_ = true;
-        }
-        break;
+    case simdjson::dom::element_type::INT64: {
+      INT64_ = true;
+      if (utils::is_castable_int64(element.get<int64_t>().first)) {
+        i32_ = true;
+      } else {
+        i64_ = true;
       }
+      break;
+    }
 
-      case simdjson::dom::element_type::BOOL:
-        BOOL_ = true;
-        lgl_ = true;
-        break;
+    case simdjson::dom::element_type::BOOL:
+      BOOL_ = true;
+      lgl_  = true;
+      break;
 
-      case simdjson::dom::element_type::NULL_VALUE:
-        NULL_VALUE_ = true;
-        null_ = true;
-        break;
+    case simdjson::dom::element_type::NULL_VALUE:
+      NULL_VALUE_ = true;
+      null_       = true;
+      break;
 
-      case simdjson::dom::element_type::UINT64:
-        UINT64_ = true;
-        u64_ = true;
-        break;
+    case simdjson::dom::element_type::UINT64:
+      UINT64_ = true;
+      u64_    = true;
+      break;
     }
   }
 }
@@ -154,10 +155,10 @@ inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcep
 template <Type_Policy type_policy>
 constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool {
   if (ARRAY_) {
-    return !(OBJECT_ || STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_);
+    return !(OBJECT_ || STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_); // # nocov
   }
   if (OBJECT_) {
-    return !(STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_);
+    return !(STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_); // # nocov
   }
   if (STRING_) {
     return !(DOUBLE_ || INT64_ || BOOL_ || UINT64_);
@@ -179,10 +180,10 @@ constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool
 template <>
 inline constexpr auto Type_Doctor<Type_Policy::strict>::common_R_type() const noexcept -> rcpp_T {
   if (object_) {
-    return rcpp_T::object;
+    return rcpp_T::object; // # nocov
   }
   if (array_) {
-    return rcpp_T::array;
+    return rcpp_T::array; // # nocov
   }
 
   if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
@@ -213,16 +214,16 @@ inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() co
     -> rcpp_T {
 
   if (object_) {
-    return rcpp_T::object;
+    return rcpp_T::object; // # nocov
   }
   if (array_) {
-    return rcpp_T::array;
+    return rcpp_T::array; // # nocov
   }
 
   if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
     return rcpp_T::chr;
   }
-  
+
   if (dbl_ && !(lgl_ || u64_)) { // any number will become double
     return rcpp_T::dbl;
   }
@@ -249,15 +250,14 @@ template <>
 inline constexpr auto Type_Doctor<Type_Policy::anything_goes>::common_R_type() const noexcept
     -> rcpp_T {
 
-  return object_ ? rcpp_T::object                                                   //
-                 : array_ ? rcpp_T::array                                           //
-                          : chr_ ? rcpp_T::chr                                      //
-                                 : dbl_ ? rcpp_T::dbl                               //
-                                        : i64_ ? rcpp_T::i64                        //
-                                               : i32_ ? rcpp_T::i32                 //
-                                                      : lgl_ ? rcpp_T::lgl          //
-                                                             : u64_ ? rcpp_T::u64   //
-                                                                    : rcpp_T::null; //
+  return object_ ? rcpp_T::object
+                 : array_ ? rcpp_T::array
+                          : chr_ ? rcpp_T::chr
+                                 : u64_ ? rcpp_T::u64
+                                        : dbl_ ? rcpp_T::dbl
+                                               : i64_ ? rcpp_T::i64
+                                                      : i32_ ? rcpp_T::i32
+                                                             : lgl_ ? rcpp_T::lgl : rcpp_T::null;
 }
 
 
@@ -326,10 +326,10 @@ inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noex
   return ARRAY_ ? element_type::ARRAY
                 : OBJECT_ ? element_type::OBJECT
                           : STRING_ ? element_type::STRING
-                                    : DOUBLE_ ? element_type::DOUBLE
-                                              : INT64_ ? element_type::INT64
-                                                       : BOOL_ ? element_type::BOOL
-                                                               : UINT64_ ? element_type::UINT64
+                                    : UINT64_ ? element_type::UINT64
+                                              : DOUBLE_ ? element_type::DOUBLE
+                                                        : INT64_ ? element_type::INT64
+                                                                 : BOOL_ ? element_type::BOOL
                                                                          : element_type::NULL_VALUE;
 }
 
@@ -337,50 +337,50 @@ inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noex
 template <Type_Policy type_policy>
 auto Type_Doctor<type_policy>::add_element(simdjson::dom::element element) noexcept -> void {
   switch (element.type()) {
-    case simdjson::dom::element_type::ARRAY:
-      ARRAY_ = true;
-      array_ = true;
-      break;
+  case simdjson::dom::element_type::ARRAY:
+    ARRAY_ = true;
+    array_ = true;
+    break;
 
-    case simdjson::dom::element_type::OBJECT:
-      OBJECT_ = true;
-      object_ = true;
-      break;
+  case simdjson::dom::element_type::OBJECT:
+    OBJECT_ = true;
+    object_ = true;
+    break;
 
-    case simdjson::dom::element_type::STRING:
-      STRING_ = true;
-      chr_ = true;
-      break;
+  case simdjson::dom::element_type::STRING:
+    STRING_ = true;
+    chr_    = true;
+    break;
 
-    case simdjson::dom::element_type::DOUBLE:
-      DOUBLE_ = true;
-      dbl_ = true;
-      break;
+  case simdjson::dom::element_type::DOUBLE:
+    DOUBLE_ = true;
+    dbl_    = true;
+    break;
 
-    case simdjson::dom::element_type::INT64: {
-      INT64_ = true;
-      if (utils::is_castable_int64(element.get<int64_t>().first)) {
-        i32_ = true;
-      } else {
-        i64_ = true;
-      }
-      break;
+  case simdjson::dom::element_type::INT64: {
+    INT64_ = true;
+    if (utils::is_castable_int64(element.get<int64_t>().first)) {
+      i32_ = true;
+    } else {
+      i64_ = true;
     }
+    break;
+  }
 
-    case simdjson::dom::element_type::BOOL:
-      BOOL_ = true;
-      lgl_ = true;
-      break;
+  case simdjson::dom::element_type::BOOL:
+    BOOL_ = true;
+    lgl_  = true;
+    break;
 
-    case simdjson::dom::element_type::NULL_VALUE:
-      NULL_VALUE_ = true;
-      null_ = true;
-      break;
+  case simdjson::dom::element_type::NULL_VALUE:
+    NULL_VALUE_ = true;
+    null_       = true;
+    break;
 
-    case simdjson::dom::element_type::UINT64:
-      UINT64_ = true;
-      u64_ = true;
-      break;
+  case simdjson::dom::element_type::UINT64:
+    UINT64_ = true;
+    u64_    = true;
+    break;
   }
 }
 
@@ -395,24 +395,24 @@ Type_Doctor<type_policy>::update(Type_Doctor<type_policy>&& type_doctor2) noexce
   this->object_ = this->object_ || type_doctor2.object_;
 
   this->STRING_ = this->STRING_ || type_doctor2.STRING_;
-  this->chr_ = this->chr_ || type_doctor2.chr_;
+  this->chr_    = this->chr_ || type_doctor2.chr_;
 
   this->DOUBLE_ = this->DOUBLE_ || type_doctor2.DOUBLE_;
-  this->dbl_ = this->dbl_ || type_doctor2.dbl_;
+  this->dbl_    = this->dbl_ || type_doctor2.dbl_;
 
   this->INT64_ = this->INT64_ || type_doctor2.INT64_;
-  this->i64_ = this->i64_ || type_doctor2.i64_;
+  this->i64_   = this->i64_ || type_doctor2.i64_;
 
-  this->i32_ = this->i32_ || type_doctor2.i32_;
+  this->i32_  = this->i32_ || type_doctor2.i32_;
   this->BOOL_ = this->BOOL_ || type_doctor2.BOOL_;
 
-  this->lgl_ = this->lgl_ || type_doctor2.lgl_;
+  this->lgl_        = this->lgl_ || type_doctor2.lgl_;
   this->NULL_VALUE_ = this->NULL_VALUE_ || type_doctor2.NULL_VALUE_;
 
   this->null_ = this->null_ || type_doctor2.null_;
 
   this->UINT64_ = this->UINT64_ || type_doctor2.UINT64_;
-  this->u64_ = this->u64_ || type_doctor2.u64_;
+  this->u64_    = this->u64_ || type_doctor2.u64_;
 }
 
 

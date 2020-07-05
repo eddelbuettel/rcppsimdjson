@@ -89,6 +89,8 @@ fload <- function(json,
                   empty_array = NULL,
                   empty_object = NULL,
                   single_null = NULL,
+                  error_ok = FALSE,
+                  on_error = NULL,
                   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                   type_policy = c("anything_goes", "numbers", "strict"),
                   int64_policy = c("double", "string", "integer64"),
@@ -107,6 +109,10 @@ fload <- function(json,
     query <- ""
   } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
     stop("`query=` must be a single, non-`NA` `character`.")
+  }
+  
+  if (!is.logical(error_ok) || length(error_ok) != 1L || is.na(error_ok)) {
+    stop("`error_ok=` must be either `TRUE` or `FALSE`.")
   }
 
   if (!is.logical(verbose) || length(verbose) != 1L || is.na(verbose)) {
@@ -164,7 +170,9 @@ fload <- function(json,
   }
 
   if (int64_policy == 2L && !requireNamespace("bit64", quietly = TRUE)) {
+    # nocov start
     stop('`int64_policy="integer64", but the {bit64} package is not installed.')
+    # nocov end
   }
   # files or URLs? =============================================================
   diagnosis <- .diagnose_input(json)
@@ -184,7 +192,7 @@ fload <- function(json,
         "http://" = ,
         "ftp://" = download.file(diagnosis$input[[i]], destfile = temp_file, method = getOption("download.file.method", default = "auto"), quiet = !verbose),
         "file://" = download.file(diagnosis$input[[i]], destfile = temp_file, method = "internal", quiet = !verbose),
-        stop("Unknown URL prefix")
+        stop("Unknown URL prefix") # nocov
       )
 
       diagnosis$input[[i]] <- temp_file
@@ -214,6 +222,8 @@ fload <- function(json,
     json_pointer = query,
     empty_array = empty_array,
     empty_object = empty_object,
+    error_ok = error_ok,
+    on_error = on_error,
     single_null = single_null,
     simplify_to = max_simplify_lvl,
     type_policy = type_policy,

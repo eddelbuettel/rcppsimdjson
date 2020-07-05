@@ -20,6 +20,10 @@ expect_error(
 expect_error(
   fparse(NA_integer_)
 )
+
+expect_error(
+  fparse('1', error_ok = NA)
+)
 #** fload() --------------------------------------------------------------------
 expect_error(
   fload(1)
@@ -27,6 +31,20 @@ expect_error(
 expect_error(
   fload(NA_integer_)
 )
+
+expect_error(
+  fload('1', error_ok = NA)
+)
+
+.write_file("junk JSON", test_file1)
+.write_file("more junk JSON", test_file2)
+expect_error(
+  fparse(test_file1)
+)
+expect_error(
+  fload(c(test_file1, test_file2))
+)
+
 #* valid -----------------------------------------------------------------------
 #** fparse() -------------------------------------------------------------------
 expect_identical(
@@ -52,6 +70,13 @@ expect_identical(
 )
 expect_true(
   fparse("null", single_null = TRUE)
+)
+expect_true(
+  fparse("junk JSON", error_ok = TRUE, on_error = TRUE)
+)
+expect_identical(
+  fparse(c("junk JSON", "more junk JSON"), error_ok = TRUE, on_error = NA),
+  list(NA, NA)
 )
 #** fload() --------------------------------------------------------------------
 .write_file("1", test_file1)
@@ -80,6 +105,15 @@ expect_identical(
 .write_file("null", test_file1)
 expect_true(
   fload(test_file1, single_null = TRUE)
+)
+.write_file("junk JSON", test_file1)
+.write_file("more junk JSON", test_file2)
+expect_true(
+  fload(test_file1, error_ok = TRUE, on_error = TRUE)
+)
+expect_identical(
+  fload(c(test_file1, test_file2), error_ok = TRUE, on_error = NA),
+  `names<-`(list(NA, NA), basename(c(c(test_file1, test_file2))))
 )
 # _ ============================================================================
 # query ========================================================================
@@ -273,6 +307,31 @@ expect_identical(
   target
 )
 
+expect_identical(
+  fparse('[[null, null],[null,null]]'),
+  matrix(NA, nrow = 2L, ncol = 2L)
+)
+expect_identical(
+  fparse('[[true,false],[true,false]]'),
+  matrix(c(TRUE, TRUE, FALSE, FALSE),
+         nrow = 2L, ncol = 2L)
+)
+expect_identical(
+  fparse(
+    '[[9999999999999999999,9999999999999999999],[9999999999999999999,9999999999999999999]]'
+  ),
+  matrix(
+    rep("9999999999999999999", 4L), nrow = 2L, ncol = 2L 
+  )
+)
+expect_identical(
+  fparse(
+    '[[9999999999999999999,1],[1,1]]'
+  ),
+  matrix(c("9999999999999999999", "1", "1", "1"),
+         nrow = 2L, ncol = 2L )
+)
+
 # _ ============================================================================
 # type_policy ==================================================================
 #* invalid ---------------------------------------------------------------------
@@ -344,6 +403,24 @@ expect_identical(
   fparse(test, type_policy = 0L),
   target
 )
+
+expect_identical(
+  fparse('[1,2]', type_policy = "anything_goes"),
+  c(1L, 2L)
+)
+expect_identical(
+  fparse('[true,false]', type_policy = "anything_goes"),
+  c(TRUE, FALSE)
+)
+expect_identical(
+  fparse('[9999999999999999999,9999999999999999999]', 
+         type_policy = "anything_goes"),
+  c("9999999999999999999", "9999999999999999999")
+)
+expect_identical(
+  fparse('[null,null]', single_null = NA, type_policy = "anything_goes"),
+  c(NA, NA)
+)
 #*** fload() -------------------------------------------------------------------
 expect_identical(
   fload(test_file1, type_policy = "anything_goes"),
@@ -369,6 +446,23 @@ expect_identical(
 expect_identical(
   fparse(test, type_policy = 1L),
   target
+)
+
+expect_identical(
+  fparse('[1,2]', type_policy = "numbers"),
+  c(1L, 2L)
+)
+expect_identical(
+  fparse('[true,false]', type_policy = "numbers"),
+  c(TRUE, FALSE)
+)
+expect_identical(
+  fparse('[9999999999999999999,9999999999999999999]', type_policy = "numbers"),
+  c("9999999999999999999", "9999999999999999999")
+)
+expect_identical(
+  fparse('[null,null]', single_null = NA, type_policy = "numbers"),
+  list(NA, NA)
 )
 #*** fload() -------------------------------------------------------------------
 expect_identical(
@@ -396,7 +490,24 @@ expect_identical(
   fparse(test, type_policy = 2L),
   target
 )
-#*** fparse() ------------------------------------------------------------------
+
+expect_identical(
+  fparse('[1,2]', type_policy = "strict"),
+  c(1L, 2L)
+)
+expect_identical(
+  fparse('[true,false]', type_policy = "strict"),
+  c(TRUE, FALSE)
+)
+expect_identical(
+  fparse('[9999999999999999999,9999999999999999999]', type_policy = "strict"),
+  c("9999999999999999999", "9999999999999999999")
+)
+expect_identical(
+  fparse('[null,null]', single_null = NA, type_policy = "strict"),
+  list(NA, NA)
+)
+#*** fload() ------------------------------------------------------------------
 expect_identical(
   fload(test_file1, type_policy = "strict"),
   target
@@ -519,6 +630,20 @@ if (requireNamespace("bit64", quietly = TRUE)) {
 }
 
 
+
+expect_identical(
+  fparse('[3000000000, 1]'),
+  c(3000000000, 1)
+)
+expect_identical(
+  fparse('[3000000000, 1]', int64_policy = "string"),
+  c("3000000000", "1")
+)
+expect_identical(
+  fparse('[9999999999999999999, 1]'),
+  c("9999999999999999999", "1")
+)
+
 # _ ============================================================================
 # battery ======================================================================
 #* vanilla JSON ----------------------------------------------------------------
@@ -585,7 +710,7 @@ expect_error(
 
 
 # TODO verify CRAN policies for downloading, Travis usage
-if (FALSE) { 
+if (T) { 
   expect_error(
     suppressWarnings(fload("https://not-a-real-url"))
   )
@@ -616,6 +741,8 @@ if (FALSE) {
     names(fload(multiple_urls)),
     basename(multiple_urls)
   )
+  .write_file("true", test_file1)
+  .write_file("false", test_file2)
   expect_silent(
     fload(c(test_file1, test_file2, multiple_urls), keep_temp_files = TRUE)
   )
@@ -624,7 +751,3 @@ if (FALSE) {
     basename(multiple_urls)
   )
 }
-
-expect_silent(
-  fload(c(test_file1, test_file2))
-)

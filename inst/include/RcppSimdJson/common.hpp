@@ -9,7 +9,7 @@
 namespace rcppsimdjson {
 
 /**
- * @brief A container's size as an @c R_xlen_t @c. Otherwise Equivalent to @c std::size() @c.
+ * @brief A container's size as anR_xlen_t . Otherwise Equivalent tostd::size() .
  */
 template <typename _Container>
 inline constexpr auto r_length(const _Container& __cont) noexcept -> R_xlen_t {
@@ -18,29 +18,29 @@ inline constexpr auto r_length(const _Container& __cont) noexcept -> R_xlen_t {
 
 
 /**
- * @brief A @c bit64::integer64 @c-compatible @c NA @c.
+ * @brief Abit64::integer64 -compatibleNA .
  */
 static inline constexpr int64_t NA_INTEGER64 = LLONG_MIN;
 
 
 /**
- * @brief Typing arguments that decide how a @c simdjson::dom::element is ultimately returned to R.
+ * @brief Typing arguments that decide how a simdjson::dom::element is ultimately returned to R.
  */
 enum class rcpp_T : int {
   array  = 0, /**< recursive: individual elements will decide ultimate R type */
   object = 1, /**< recursive: individual elements will decide ultimate R type */
-  chr    = 2, /**< always becomes @c Rcpp::String / @c character */
-  u64    = 3, /**< always becomes @c Rcpp::String / @c character */
-  dbl    = 4, /**< always becomes @c double */
-  i64    = 5, /**< follows @c Int64_R_Type: @c double, @c character, or @c bit64::integer64 */
-  i32    = 6, /**< always becomes @c int */
-  lgl    = 7, /**< always becomes @c bool / @c logical */
-  null   = 8, /**< becomes @c NA if returned in a vector, else @c NULL */
+  chr    = 2, /**< always becomesRcpp::String /character */
+  u64    = 3, /**< always becomesRcpp::String /character */
+  dbl    = 4, /**< always becomesdouble */
+  i64    = 5, /**< followsInt64_R_Type:double,character, orbit64::integer64 */
+  i32    = 6, /**< always becomesint */
+  lgl    = 7, /**< always becomesbool /logical */
+  null   = 8, /**< becomesNA if returned in a vector, elseNULL */
 };
 
 
 /**
- * @brief Get a typed @c NA @c.
+ * @brief Get a typedNA .
  */
 template <rcpp_T R_Type>
 static inline constexpr auto na_val() {
@@ -64,8 +64,8 @@ static inline constexpr auto na_val() {
 
 /**
  * Internal flags tracking whether simdjson is compiled with exceptions enabled (the
- * default). If simdjson is compiled w/o exceptions ( @c #define SIMDJSON_EXCEPTIONS 0
- * @c), operations that do not touch throwing code can be annotated with keyword @c
+ * default). If simdjson is compiled w/o exceptions (#define SIMDJSON_EXCEPTIONS 0),
+ * operations that do not touch throwing code can be annotated with keyword
  * noexcept where appropriate.
  */
 
@@ -86,20 +86,26 @@ static inline constexpr auto RCPPSIMDJSON_EXCEPTIONS = !RCPPSIMDJSON_NO_EXCEPTIO
 
 
 /**
- * @brief Whether a function is @c noexcept.
+ * @brief Whether a function isnoexcept.
  *
- * If a function does not touch throwing code it can be annotated with @c noexcept().
- * If @c RCPPSIMDJSON_NO_EXCEPTIONS is enabled and the @c rcpp_T template argument is not
- * @c rcpp_T::chr, functions annotated with @c noexcept(is_no_except(rcpp_T)) will be @c noexcept
+ * If a function does not touch throwing code it can be annotated withnoexcept().
+ * IfRCPPSIMDJSON_NO_EXCEPTIONS is enabled and thercpp_T template argument is not
+ *rcpp_T::chr, functions annotated withnoexcept(noxcpt<rcpp_T>()) will benoexcept
  * when compiled.
  *
- * Currently, @c rccp_T::chr touches throwing code so functions using it will always be
- * @c noexcept(false).
+ * Currently,rccp_T::chr touches throwing code so functions using it will always be
+ *noexcept(false).
  *
  * Many examples in @file{inst/include/RcppSimdJson/deserialize/scalar.hpp}.
  */
-static inline constexpr auto is_no_except(rcpp_T R_Type) -> bool {
+
+template <rcpp_T R_Type>
+static inline constexpr auto noxcpt() -> bool {
   return RCPPSIMDJSON_NO_EXCEPTIONS && R_Type != rcpp_T::chr;
+}
+template <int RTYPE>
+static inline constexpr auto noxcpt() -> bool {
+  return RCPPSIMDJSON_NO_EXCEPTIONS && RTYPE != STRSXP;
 }
 
 
@@ -109,7 +115,7 @@ namespace deserialize {
 /**
  * @brief Determines level of type strictness in combining array elements into R vectors.
  *
- * When arrays are not homogeneous and @c Type_Policy::anything_goes is used, type promotion follows
+ * When arrays are not homogeneous andType_Policy::anything_goes is used, type promotion follows
  * R's behavior.
  */
 enum class Type_Policy : int {
@@ -143,15 +149,15 @@ namespace deserialize {
 
 
 /**
- * @brief Simplify a @c simdjson::dom::element to an R object.
+ * @brief Simplify asimdjson::dom::element to an R object.
  *
  * @note Forward declaration. See @file inst/include/RcppSimdJson/deserialize/simplify.hpp @file.
  */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto simplify_element(simdjson::dom::element element,
-                             SEXP empty_array,
-                             SEXP empty_object,
-                             SEXP single_null) -> SEXP;
+                             SEXP                   empty_array,
+                             SEXP                   empty_object,
+                             SEXP                   single_null) -> SEXP;
 
 
 } // namespace deserialize
