@@ -1,23 +1,15 @@
 2020-07-05  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
-	* DESCRIPTION (Version, Date): Roll version and date
 	* DESCRIPTION (Imports): add utils to Imports
-	* DESCRIPTION (RoxygenNote): update RoxygenNote
 	* NAMESPACE: added importFrom(utils, download.file)
-	
-	* .travis.yml: Change Travis to build matrix over g++ 7, 8, 9, 10
-	* .covrignore: Exclude upstream simdjson when measuring code coverage
-	* .clang-format: Format C++ code consistently
-	
+
 	* R/fparse: New functions fparse and fload (plus tests and docs)
 	* R/fload: Idem
-	* inst/tinytest/test_fparse_fload.R: Idem
 	* man/fparse.Rd: Idem
-	
+	* inst/tinytest/test_fparse_fload.R: Idem
+
 	* src/deserialize.cpp: add options for errors and single JSON nulls,
-	reformat C++ code, guard GCC-7 from disabling simdjson exceptions or
-	touching its no-exceptions-only API in matrix loops, expand 
-	test coverage, maximize if-initializations, remove redundant docs
+	guard gcc-7 from disabling simdjson exceptions, expand tests
 	* inst/include/RcppSimdJson/common.hpp: Idem
 	* inst/include/RcppSimdJson/deserialize.hpp: Idem
 	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
@@ -26,6 +18,12 @@
 	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem
 	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
 	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem
+
+	* .travis.yml: Add (now passing) g++-7 to Travis Matrix
+
+2020-07-04  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .travis.yml: Rewritten as matrix over g++ 8, 9, and 10
 
 2020-07-02  Dirk Eddelbuettel  <edd@debian.org>
 

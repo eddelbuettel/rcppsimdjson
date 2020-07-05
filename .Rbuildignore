@@ -10,3 +10,4 @@
 \.travis\.yml
 \.clang-format$
 \.covrignore$
+^local
