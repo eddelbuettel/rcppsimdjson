@@ -1,9 +1,12 @@
-.file_extension <- function(x, dot = TRUE) {
+.file_extension <- function(x) {
   base_name <- basename(x)
   
   captures <- regexpr("(?<!^|[.]|/)[.]([^.]+)$", base_name, perl = TRUE)
   out <- rep(NA_character_, length(x))
-  out[captures > 0L] <- substring(base_name[captures > 0L], captures[captures > 0L])
+  out[!is.na(x) & captures > 0L] <- substring(
+    base_name[!is.na(x) & captures > 0L], 
+    captures[!is.na(x) & captures > 0L]
+  )
   
   out
 }
@@ -11,6 +14,7 @@
 
 .url_prefix <- function(x) {
   vapply(x, function(.x) {
+    if (is.na(.x)) return(NA_character_)
     if (substring(.x, 1L, 8L) == "https://") {
       "https://"
     } else if ((prefix <- substring(.x, 1L, 7L)) %in% c("http://", "ftps://", "file://")) {
@@ -39,14 +43,11 @@
       call. = FALSE
     )
   }
-
-  if (!anyNA(init$url_prefix)) {
-    init$type <- rep("url", length(x))
-  } else if (!anyNA(init$file_ext)) {
-    init$type <- rep("file", length(x))
-  } else {
-    init$type <- rep(NA, length(x))
-  }
+  
+  init$type <- ifelse(
+    !is.na(init$url_prefix), "url",
+    ifelse(!is.na(init$file_ext), "file", NA_character_)
+  )
   
   structure(init, class = "data.frame", row.names = seq_along(x))
 }
@@ -87,6 +88,7 @@ fload <- function(json,
                   query = "",
                   empty_array = NULL,
                   empty_object = NULL,
+                  single_null = NULL,
                   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                   type_policy = c("anything_goes", "numbers", "strict"),
                   int64_policy = c("double", "string", "integer64"),
@@ -94,8 +96,11 @@ fload <- function(json,
                   temp_dir = tempdir(),
                   keep_temp_files = FALSE) {
   # validate arguments =========================================================
-  if (!is.character(json)) {
-    stop("`json=` must be a `character`.")
+  if (!is.character(json) || length(json) == 0L) {
+    stop("`json=` must be a non-empty `character`.")
+  }
+  if (all(is.na(json))) {
+    if (length(json) == 1L) return(json) else return(as.list(json))
   }
   
   if (is.null(query)) {
@@ -163,15 +168,13 @@ fload <- function(json,
   }
   # files or URLs? =============================================================
   diagnosis <- .diagnose_input(json)
-  input_type <- unique(diagnosis$type)
-  if (length(input_type) != 1L || is.na(input_type)) {
-    stop(
-      "`json=` should be either paths to local files or paths to remote files (URLs). Not both."
-    )
-  }
   # URLs -----------------------------------------------------------------------
-  if (identical(input_type, "url")) {
+  if (any(diagnosis$type == "url", na.rm = TRUE)) {
     for (i in seq_along(json)) {
+      if (is.na(diagnosis$type[[i]]) || diagnosis$type[[i]] != "url") {
+        next
+      }
+      
       temp_file <- tempfile(fileext = diagnosis$file_ext[[i]], tmpdir = temp_dir)
 
       switch(
@@ -188,18 +191,17 @@ fload <- function(json,
       diagnosis$type[[i]] <- "file"
     }
 
-    input_type <- unique(diagnosis$type)
-    stopifnot(length(input_type) == 1L)
     if (!keep_temp_files) {
       on.exit(unlink(diagnosis$input), add = TRUE)
     }
   }
   # file -----------------------------------------------------------------------
-  if (length(missing_files <- diagnosis$input[!file.exists(diagnosis$input)])) {
-    stop("The following files don't exist:",
-         sprintf("\n\t- %s", missing_files))
+  if (length(missing_files <- diagnosis$input[!is.na(diagnosis$input) & !file.exists(diagnosis$input)])) {
+      stop("The following files don't exist:",
+           sprintf("\n\t- %s", missing_files))
   }
-  input <- Sys.glob(diagnosis$input)
+  input <- rep(NA_character_, length(json))
+  input[!is.na(diagnosis$input)] <- Sys.glob(diagnosis$input[!is.na(diagnosis$input)])
   # prep names =================================================================
   if (length(names(json))) {
     names(input) <- names(json)
@@ -212,6 +214,7 @@ fload <- function(json,
     json_pointer = query,
     empty_array = empty_array,
     empty_object = empty_object,
+    single_null = single_null,
     simplify_to = max_simplify_lvl,
     type_policy = type_policy,
     int64_r_type = int64_policy

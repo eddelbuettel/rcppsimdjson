@@ -10,6 +10,7 @@ fparse(
   query = "",
   empty_array = NULL,
   empty_object = NULL,
+  single_null = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
   int64_policy = c("double", "string", "integer64")
@@ -20,6 +21,7 @@ fload(
   query = "",
   empty_array = NULL,
   empty_object = NULL,
+  single_null = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
   int64_policy = c("double", "string", "integer64"),
@@ -38,6 +40,9 @@ fload(
 default: \code{NULL}}
 
 \item{empty_object}{Any R object to return for empty JSON objects.
+default: \code{NULL}.}
+
+\item{single_null}{Any R object to return for single JSON nulls.
 default: \code{NULL}.}
 
 \item{max_simplify_lvl}{Maximum simplification level.
@@ -133,10 +138,13 @@ fparse(json_strings, max_simplify_lvl = "matrix")
 fparse(json_strings, max_simplify_lvl = "vector")
 fparse(json_strings, max_simplify_lvl = "list")
 
-# customizing what `[]` and `{}` return =====================================
-empties <- "[[],{}]"
+# customizing what `[]`, `{}`, and `null` return ============================
+empties <- "[[],{},null]"
 fparse(empties)
-fparse(empties, empty_array = NA, empty_object = FALSE)
+fparse(empties,
+       empty_array = logical(), 
+       empty_object = `names<-`(list(), character()), 
+       single_null = NA_real_)
 
 # querying JSON w/ a JSON Pointer ===========================================
 json_to_query <- c(

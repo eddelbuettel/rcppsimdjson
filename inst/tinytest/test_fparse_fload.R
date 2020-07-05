@@ -15,20 +15,17 @@ test_file2 <- tempfile(fileext = ".json")
 json_error <- "`json=` must be a `character`"
 #** fparse() -------------------------------------------------------------------
 expect_error(
-  fparse(1), 
-  json_error
+  fparse(1),
 )
 expect_error(
-  fparse(NA_integer_),
-  json_error
+  fparse(NA_integer_)
 )
 #** fload() --------------------------------------------------------------------
 expect_error(
   fload(1)
 )
 expect_error(
-  fload(NA_integer_),
-  json_error
+  fload(NA_integer_)
 )
 #* valid -----------------------------------------------------------------------
 #** fparse() -------------------------------------------------------------------
@@ -43,6 +40,18 @@ expect_identical(
 expect_identical(
   fparse(c(json1 = "1", json2 = "2")),
   list(json1 = 1L, json2 = 2L)
+)
+expect_identical(
+  fparse(NA_character_), NA_character_
+)
+expect_identical(
+  fparse(c(NA_character_, NA_character_)), list(NA_character_, NA_character_)
+)
+expect_identical(
+  fparse(c("1", NA_character_)), list(1L, NA_character_)
+)
+expect_true(
+  fparse("null", single_null = TRUE)
 )
 #** fload() --------------------------------------------------------------------
 .write_file("1", test_file1)
@@ -59,8 +68,19 @@ expect_identical(
   fload(c(json1 = test_file1, json2 = test_file2)),
   list(json1 = 1L, json2 = 2L)
 )
-
-
+expect_identical(
+  fload(NA_character_), NA_character_
+)
+expect_identical(
+  fload(c(NA_character_, NA_character_)), list(NA_character_, NA_character_)
+)
+expect_identical(
+  fload(c(test_file1, NA_character_))[[2L]], NA_character_
+)
+.write_file("null", test_file1)
+expect_true(
+  fload(test_file1, single_null = TRUE)
+)
 # _ ============================================================================
 # query ========================================================================
 #* invalid ---------------------------------------------------------------------
@@ -535,14 +555,11 @@ expect_error(
   fload("not-a-real-file.rcppsimdjson"), 
   "The following files don't exist"
 )
+
 expect_error(
-  fload("not a real file"), 
-  "should be either paths to local files or paths to remote files"
+  fload("not a real file")
 )
-expect_error(
-  fload(c("fileish.txt", "http://url-ish")), 
-  '`json=` should be either paths to local files or paths to remote files'
-)
+
 expect_error(
   fload("not-a-real-file.rcppsimdjson",
         temp_dir = "not/a/real/directory"), 
@@ -554,6 +571,7 @@ expect_error(
         keep_temp_files = NA), 
   "`keep_temp_files=` must be either `TRUE` or `FALSE`."
 )
+
 expect_error(
   fload("not-a-real-file.rcppsimdjson",
         verbose = NA), 
@@ -566,7 +584,7 @@ expect_error(
 )
 
 
-# TODO verify CRAN policies, Travis usage
+# TODO verify CRAN policies for downloading, Travis usage
 if (FALSE) { 
   expect_error(
     suppressWarnings(fload("https://not-a-real-url"))
@@ -598,4 +616,15 @@ if (FALSE) {
     names(fload(multiple_urls)),
     basename(multiple_urls)
   )
+  expect_silent(
+    fload(c(test_file1, test_file2, multiple_urls), keep_temp_files = TRUE)
+  )
+  expect_identical(
+    names(fload(multiple_urls)),
+    basename(multiple_urls)
+  )
 }
+
+expect_silent(
+  fload(c(test_file1, test_file2))
+)
