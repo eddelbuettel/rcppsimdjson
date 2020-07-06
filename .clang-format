@@ -20,8 +20,9 @@ ColumnLimit: 100
 
 DerivePointerAlignment: false
 
-IndentWidth: 2
+IndentCaseLabels: true
 IndentPPDirectives: AfterHash
+IndentWidth: 4
 
 MaxEmptyLinesToKeep: 2
 

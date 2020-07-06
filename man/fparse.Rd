@@ -102,16 +102,16 @@ Parse JSON strings and files to R objects.
   \itemize{
     \item They are vectorized in order to leverage the underlying
           \code{simdjson::dom::parser}'s ability to reuse its internal buffers
-           between parses. 
+           between parses.
     \item Since the overwhelming majority of JSON parsed will not result in
           scalars, a \code{list()} is always returned if \code{json} contains
           more than one value.
-    \item If \code{json} contains multiple values and has \code{names()}, the 
+    \item If \code{json} contains multiple values and has \code{names()}, the
           returned object will have the same names.
     \item If \code{json} contains multiple values and is unnamed, \code{fload()}
           names each returned element using the file's \code{basename()}.
    }
- 
+
 }
 }
 \examples{
@@ -125,22 +125,22 @@ fparse(json_string, type_policy = "strict")
 fparse(json_string, type_policy = "numbers", int64_policy = "string")
 
 if (requireNamespace("bit64", quietly = TRUE)) {
-  fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
+    fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
 }
 
 # vectorized parsing ========================================================
 json_strings <- c(
-  json1 = '[{"b":true,
-             "c":null},
-            {"b":[[1,2,3],
-                  [4,5,6]],
-             "c":"Q"}]',
-  json2 = '[{"b":[[7,8,9],
-                  [10,11,12]],
-             "c":"Q"},
-            {"b":[[13,14,15],
-                  [16,17,18]],
-             "c":null}]'
+    json1 = '[{"b":true,
+               "c":null},
+              {"b":[[1,2,3],
+                    [4,5,6]],
+               "c":"Q"}]',
+    json2 = '[{"b":[[7, 8, 9],
+                   [10,11,12]],
+              "c":"Q"},
+             {"b":[[13,14,15],
+                   [16,17,18]],
+              "c":null}]'
 )
 fparse(json_strings)
 
@@ -153,64 +153,62 @@ fparse(json_strings, max_simplify_lvl = "list")
 empties <- "[[],{},null]"
 fparse(empties)
 fparse(empties,
-       empty_array = logical(), 
-       empty_object = `names<-`(list(), character()), 
+       empty_array = logical(),
+       empty_object = `names<-`(list(), character()),
        single_null = NA_real_)
 
 # handling invalid JSON and parsing errors ==================================
 fparse("junk JSON", error_ok = TRUE)
 fparse("junk JSON", error_ok = TRUE, on_error = "can't parse invalid JSON")
 fparse(
-  c(junk_JSON_1 = "junk JSON 1",
-    valid_JSON_1 = '"this is valid JSON"',
-    junk_JSON_2 = "junk JSON 2",
-    valid_JSON_2 = '{"is is also valid JSON"'),
-  error_ok = TRUE,
-  on_error = NA
+    c(junk_JSON_1 = "junk JSON 1",
+      valid_JSON_1 = '"this is valid JSON"',
+      junk_JSON_2 = "junk JSON 2",
+      valid_JSON_2 = '"this is also valid JSON"'),
+    error_ok = TRUE,
+    on_error = NA
 )
 
 # querying JSON w/ a JSON Pointer ===========================================
 json_to_query <- c(
-  json1 = '[
-      "a",
-      {
-          "b": {
-              "c": [
-                  [
-                      1,
-                      2,
-                      3
-                  ],
-                  [
-                      4,
-                      5,
-                      6
-                  ]
-              ]
-          }
-      }
-  ]
-  ',
-  json2 = '[
-      "a",
-      {
-          "b": {
-              "c": [
-                  [
-                      7,
-                      8,
-                      9
-                  ],
-                  [
-                      10,
-                      11,
-                      12
-                  ]
-              ]
-          }
-      }
-  ]'
-)
+    json1 = '[
+    "a",
+    {
+        "b": {
+            "c": [
+                [
+                    1,
+                    2,
+                    3
+                ],
+                [
+                    4,
+                    5,
+                    6
+                ]
+            ]
+        }
+    }
+]',
+    json2 = '[
+    "a",
+    {
+        "b": {
+            "c": [
+                [
+                    7,
+                    8,
+                    9
+                ],
+                [
+                    10,
+                    11,
+                    12
+                ]
+            ]
+        }
+    }
+]')
 fparse(json_to_query, query = "1")
 fparse(json_to_query, query = "1/b")
 fparse(json_to_query, query = "1/b/c")

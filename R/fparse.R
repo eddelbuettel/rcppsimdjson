@@ -1,7 +1,7 @@
 #' Fast, Friendly, and Flexible JSON Parsing
-#' 
+#'
 #' Parse JSON strings and files to R objects.
-#' 
+#'
 #' @order 1
 #'
 #' @param json One or more \code{character}s of JSON or paths to files containing JSON.
@@ -14,13 +14,13 @@
 #'
 #' @param empty_object Any R object to return for empty JSON objects.
 #'   default: \code{NULL}.
-#'   
+#'
 #' @param single_null Any R object to return for single JSON nulls.
 #'   default: \code{NULL}.
-#'   
+#'
 #' @param error_ok Whether to allow parsing errors.
 #'   default: \code{FALSE}.
-#'   
+#'
 #' @param on_error If \code{error_ok} is \code{TRUE}, \code{on_error} is any
 #'   R object to return when parsing errors occur.
 #'   default: \code{NULL}.
@@ -49,7 +49,7 @@
 #'     \item \code{"string"} or \code{1L}: big integers become \code{character}s
 #'     \item \code{"integer64"} or \code{2L}: big integers \code{bit64::integer64}s
 #'   }
-#'   
+#'
 #' @param verbose Whether to display status messages.
 #'   \code{TRUE} or \code{FALSE}, default: \code{FALSE}
 #'
@@ -63,22 +63,22 @@
 #'
 #' @details
 #' \itemize{
-#' 
+#'
 #'   \item Instead of using \code{lapply()} to parse multiple values, just use
 #'   \code{fparse()} and \code{fload()} directly.
 #'   \itemize{
 #'     \item They are vectorized in order to leverage the underlying
 #'           \code{simdjson::dom::parser}'s ability to reuse its internal buffers
-#'            between parses. 
+#'            between parses.
 #'     \item Since the overwhelming majority of JSON parsed will not result in
 #'           scalars, a \code{list()} is always returned if \code{json} contains
 #'           more than one value.
-#'     \item If \code{json} contains multiple values and has \code{names()}, the 
+#'     \item If \code{json} contains multiple values and has \code{names()}, the
 #'           returned object will have the same names.
 #'     \item If \code{json} contains multiple values and is unnamed, \code{fload()}
 #'           names each returned element using the file's \code{basename()}.
 #'    }
-#'  
+#'
 #' }
 #'
 #' @author Brendan Knapp
@@ -94,22 +94,22 @@
 #' fparse(json_string, type_policy = "numbers", int64_policy = "string")
 #'
 #' if (requireNamespace("bit64", quietly = TRUE)) {
-#'   fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
+#'     fparse(json_string, type_policy = "numbers", int64_policy = "integer64")
 #' }
 #'
 #' # vectorized parsing ========================================================
 #' json_strings <- c(
-#'   json1 = '[{"b":true,
-#'              "c":null},
-#'             {"b":[[1,2,3],
-#'                   [4,5,6]],
-#'              "c":"Q"}]',
-#'   json2 = '[{"b":[[7,8,9],
-#'                   [10,11,12]],
-#'              "c":"Q"},
-#'             {"b":[[13,14,15],
-#'                   [16,17,18]],
-#'              "c":null}]'
+#'     json1 = '[{"b":true,
+#'                "c":null},
+#'               {"b":[[1,2,3],
+#'                     [4,5,6]],
+#'                "c":"Q"}]',
+#'     json2 = '[{"b":[[7, 8, 9],
+#'                    [10,11,12]],
+#'               "c":"Q"},
+#'               {"b":[[13,14,15],
+#'                    [16,17,18]],
+#'               "c":null}]'
 #' )
 #' fparse(json_strings)
 #'
@@ -122,70 +122,68 @@
 #' empties <- "[[],{},null]"
 #' fparse(empties)
 #' fparse(empties,
-#'        empty_array = logical(), 
-#'        empty_object = `names<-`(list(), character()), 
+#'        empty_array = logical(),
+#'        empty_object = `names<-`(list(), character()),
 #'        single_null = NA_real_)
 #'
 #' # handling invalid JSON and parsing errors ==================================
 #' fparse("junk JSON", error_ok = TRUE)
 #' fparse("junk JSON", error_ok = TRUE, on_error = "can't parse invalid JSON")
 #' fparse(
-#'   c(junk_JSON_1 = "junk JSON 1",
-#'     valid_JSON_1 = '"this is valid JSON"',
-#'     junk_JSON_2 = "junk JSON 2",
-#'     valid_JSON_2 = '"this is also valid JSON"'),
-#'   error_ok = TRUE,
-#'   on_error = NA
+#'     c(junk_JSON_1 = "junk JSON 1",
+#'       valid_JSON_1 = '"this is valid JSON"',
+#'       junk_JSON_2 = "junk JSON 2",
+#'       valid_JSON_2 = '"this is also valid JSON"'),
+#'     error_ok = TRUE,
+#'     on_error = NA
 #' )
 #'
 #' # querying JSON w/ a JSON Pointer ===========================================
 #' json_to_query <- c(
-#'   json1 = '[
-#'       "a",
-#'       {
-#'           "b": {
-#'               "c": [
-#'                   [
-#'                       1,
-#'                       2,
-#'                       3
-#'                   ],
-#'                   [
-#'                       4,
-#'                       5,
-#'                       6
-#'                   ]
-#'               ]
-#'           }
-#'       }
-#'   ]
-#'   ',
-#'   json2 = '[
-#'       "a",
-#'       {
-#'           "b": {
-#'               "c": [
-#'                   [
-#'                       7,
-#'                       8,
-#'                       9
-#'                   ],
-#'                   [
-#'                       10,
-#'                       11,
-#'                       12
-#'                   ]
-#'               ]
-#'           }
-#'       }
-#'   ]'
-#' )
+#'     json1 = '[
+#'     "a",
+#'     {
+#'         "b": {
+#'             "c": [
+#'                 [
+#'                     1,
+#'                     2,
+#'                     3
+#'                 ],
+#'                 [
+#'                     4,
+#'                     5,
+#'                     6
+#'                 ]
+#'             ]
+#'         }
+#'     }
+#' ]',
+#'     json2 = '[
+#'     "a",
+#'     {
+#'         "b": {
+#'             "c": [
+#'                 [
+#'                     7,
+#'                     8,
+#'                     9
+#'                 ],
+#'                 [
+#'                     10,
+#'                     11,
+#'                     12
+#'                 ]
+#'             ]
+#'         }
+#'     }
+#' ]')
 #' fparse(json_to_query, query = "1")
 #' fparse(json_to_query, query = "1/b")
 #' fparse(json_to_query, query = "1/b/c")
 #' fparse(json_to_query, query = "1/b/c/1")
 #' fparse(json_to_query, query = "1/b/c/1/0")
-#' 
+#'
 #' @export
 fparse <- function(json,
                    query = "",
@@ -197,82 +195,85 @@ fparse <- function(json,
                    max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                    type_policy = c("anything_goes", "numbers", "strict"),
                    int64_policy = c("double", "string", "integer64")) {
-  # validate arguments =========================================================
-  # types ----------------------------------------------------------------------
-  if (!is.character(json)) {
-    stop("`json=` must be a `character`.")
-  }
-  
-  if (is.null(query)) {
-    query <- ""
-  } else if (!.is_scalar_chr(query)) {
-    stop("`query=` must be a single, non-`NA` `character`.")
-  }
-  
-  if (!.is_scalar_lgl(error_ok)) {
-    stop("`error_ok=` must be either `TRUE` or `FALSE`.")
-  }
-  # prep options ===============================================================
-  # max_simplify_lvl -----------------------------------------------------------
-  if (is.character(max_simplify_lvl)) {
-    max_simplify_lvl <- switch(
-      match.arg(max_simplify_lvl, c("data_frame", "matrix", "vector", "list")),
-      data_frame = 0L,
-      matrix = 1L,
-      vector = 2L,
-      list = 3L,
-      stop("Unknown `max_simplify_lvl=`.")
-    )
-  } else if (is.numeric(max_simplify_lvl)) {
-    stopifnot(max_simplify_lvl %in% 0:3)
-  } else {
-    stop("`max_simplify_lvl=` must be of type `character` or `numeric`.")
-  }
-  # type_policy ----------------------------------------------------------------
-  if (is.character(type_policy)) {
-    type_policy <- switch(
-      match.arg(type_policy, c("anything_goes", "numbers", "strict")),
-      anything_goes = 0L,
-      numbers = 1L,
-      strict = 2L,
-      stop("Unknown `type_policy=`.")
-    )
-  } else if (is.numeric(type_policy)) {
-    stopifnot(type_policy %in% 0:2)
-  } else {
-    stop("`type_policy=` must be of type `character` or `numeric`.")
-  }
-  # int64_policy ---------------------------------------------------------------
-  if (is.character(int64_policy)) {
-    int64_policy <- switch(
-      match.arg(int64_policy, c("double", "string", "integer64")),
-      double = 0L,
-      string = 1L,
-      integer64 = 2L,
-      stop("Unknown `int64_policy=`.")
-    )
-  } else if (is.numeric(int64_policy)) {
-    stopifnot(int64_policy %in% 0:2)
-  } else {
-    stop("`int64_policy` must be of type `character` or `numeric`.")
-  }
+    # validate arguments =======================================================
+    # types --------------------------------------------------------------------
+    if (!is.character(json)) {
+        stop("`json=` must be a `character`.")
+    }
 
-  if (int64_policy == 2L && !requireNamespace("bit64", quietly = TRUE)) {
-    # nocov start
-    stop('`int64_policy="integer64", but the {bit64} package is not installed.')
-    # nocov end
-  }
-  # deserialize ================================================================
-  .deserialize_json(
-    json = json,
-    json_pointer = query,
-    empty_array = empty_array,
-    empty_object = empty_object,
-    single_null = single_null,
-    error_ok = error_ok,
-    on_error = on_error,
-    simplify_to = max_simplify_lvl,
-    type_policy = type_policy,
-    int64_r_type = int64_policy
-  )
+    if (is.null(query)) {
+        query <- ""
+    } else if (!.is_scalar_chr(query)) {
+        stop("`query=` must be a single, non-`NA` `character`.")
+    }
+
+    if (!.is_scalar_lgl(error_ok)) {
+        stop("`error_ok=` must be either `TRUE` or `FALSE`.")
+    }
+    # prep options =============================================================
+    # max_simplify_lvl ---------------------------------------------------------
+    if (is.character(max_simplify_lvl)) {
+        max_simplify_lvl <- switch(
+            match.arg(max_simplify_lvl, c("data_frame", "matrix", "vector", "list")),
+            data_frame = 0L,
+            matrix = 1L,
+            vector = 2L,
+            list = 3L,
+            stop("Unknown `max_simplify_lvl=`.")
+        )
+    } else if (is.numeric(max_simplify_lvl)) {
+        stopifnot(max_simplify_lvl %in% 0:3)
+    } else {
+        stop("`max_simplify_lvl=` must be of type `character` or `numeric`.")
+    }
+    # type_policy --------------------------------------------------------------
+    if (is.character(type_policy)) {
+        type_policy <- switch(
+            match.arg(type_policy, c(
+                "anything_goes", "numbers", "strict"
+            )),
+            anything_goes = 0L,
+            numbers = 1L,
+            strict = 2L,
+            stop("Unknown `type_policy=`.")
+        )
+    } else if (is.numeric(type_policy)) {
+        stopifnot(type_policy %in% 0:2)
+    } else {
+        stop("`type_policy=` must be of type `character` or `numeric`.")
+    }
+    # int64_policy -------------------------------------------------------------
+    if (is.character(int64_policy)) {
+        int64_policy <- switch(
+            match.arg(int64_policy, c("double", "string", "integer64")),
+            double = 0L,
+            string = 1L,
+            integer64 = 2L,
+            stop("Unknown `int64_policy=`.")
+        )
+    } else if (is.numeric(int64_policy)) {
+        stopifnot(int64_policy %in% 0:2)
+    } else {
+        stop("`int64_policy` must be of type `character` or `numeric`.")
+    }
+
+    if (int64_policy == 2L &&
+        !requireNamespace("bit64", quietly = TRUE)) {
+        # nocov start
+        stop('`int64_policy="integer64", but the {bit64} package is not installed.')
+        # nocov end
+    }
+    # deserialize ==============================================================
+    .deserialize_json(
+        json = json,
+        json_pointer = query,
+        empty_array = empty_array,
+        empty_object = empty_object,
+        single_null = single_null,
+        error_ok = error_ok,
+        on_error = on_error,
+        simplify_to = max_simplify_lvl,
+        type_policy = type_policy,
+        int64_r_type = int64_policy
+    )
 }
