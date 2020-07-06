@@ -133,7 +133,7 @@
 #'   c(junk_JSON_1 = "junk JSON 1",
 #'     valid_JSON_1 = '"this is valid JSON"',
 #'     junk_JSON_2 = "junk JSON 2",
-#'     valid_JSON_2 = '{"is is also valid JSON"'),
+#'     valid_JSON_2 = '"this is also valid JSON"'),
 #'   error_ok = TRUE,
 #'   on_error = NA
 #' )
@@ -205,11 +205,11 @@ fparse <- function(json,
   
   if (is.null(query)) {
     query <- ""
-  } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
+  } else if (!.is_scalar_chr(query)) {
     stop("`query=` must be a single, non-`NA` `character`.")
   }
   
-  if (!is.logical(error_ok) || length(error_ok) != 1L || is.na(error_ok)) {
+  if (!.is_scalar_lgl(error_ok)) {
     stop("`error_ok=` must be either `TRUE` or `FALSE`.")
   }
   # prep options ===============================================================

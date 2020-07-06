@@ -107,18 +107,18 @@ fload <- function(json,
   
   if (is.null(query)) {
     query <- ""
-  } else if (!is.character(query) || is.na(query) || length(query) != 1L) {
+  } else if (!.is_scalar_chr(query)) {
     stop("`query=` must be a single, non-`NA` `character`.")
   }
   
-  if (!is.logical(error_ok) || length(error_ok) != 1L || is.na(error_ok)) {
+  if (!.is_scalar_lgl(error_ok)) {
     stop("`error_ok=` must be either `TRUE` or `FALSE`.")
   }
 
-  if (!is.logical(verbose) || length(verbose) != 1L || is.na(verbose)) {
+  if (!.is_scalar_lgl((verbose))) {
     stop("`verbose=` must be either `TRUE` or `FALSE`.")
   }
-  if (!is.logical(keep_temp_files) || length(keep_temp_files) != 1L || is.na(keep_temp_files)) {
+  if (!.is_scalar_lgl(keep_temp_files)) {
     stop("`keep_temp_files=` must be either `TRUE` or `FALSE`.")
   }
   if (!length(temp_dir <- Sys.glob(temp_dir))) {
