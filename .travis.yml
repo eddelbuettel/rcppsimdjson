@@ -10,6 +10,8 @@ env:
 
 jobs:
   include:
+    - name: gcc-7
+      env: CXX11="g++-7" CXX17="g++-7" CC="gcc-7"
     - name: gcc-8
       env: CXX11="g++-8" CXX17="g++-8" CC="gcc-8"
     - name: gcc-9

@@ -6,8 +6,8 @@
 using namespace Rcpp;
 
 // deserialize_json
-SEXP deserialize_json(const Rcpp::CharacterVector& json, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
-RcppExport SEXP _RcppSimdJson_deserialize_json(SEXP jsonSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+SEXP deserialize_json(const Rcpp::CharacterVector& json, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, SEXP single_null, const bool error_ok, SEXP on_error, const int simplify_to, const int type_policy, const int int64_r_type);
+RcppExport SEXP _RcppSimdJson_deserialize_json(SEXP jsonSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP error_okSEXP, SEXP on_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -15,16 +15,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type json_pointer(json_pointerSEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_object(empty_objectSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type single_null(single_nullSEXP);
+    Rcpp::traits::input_parameter< const bool >::type error_ok(error_okSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type on_error(on_errorSEXP);
     Rcpp::traits::input_parameter< const int >::type simplify_to(simplify_toSEXP);
     Rcpp::traits::input_parameter< const int >::type type_policy(type_policySEXP);
     Rcpp::traits::input_parameter< const int >::type int64_r_type(int64_r_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(deserialize_json(json, json_pointer, empty_array, empty_object, simplify_to, type_policy, int64_r_type));
+    rcpp_result_gen = Rcpp::wrap(deserialize_json(json, json_pointer, empty_array, empty_object, single_null, error_ok, on_error, simplify_to, type_policy, int64_r_type));
     return rcpp_result_gen;
 END_RCPP
 }
 // load_json
-SEXP load_json(const Rcpp::CharacterVector& file_path, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, const int simplify_to, const int type_policy, const int int64_r_type);
-RcppExport SEXP _RcppSimdJson_load_json(SEXP file_pathSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+SEXP load_json(const Rcpp::CharacterVector& file_path, const std::string& json_pointer, SEXP empty_array, SEXP empty_object, SEXP single_null, const bool error_ok, SEXP on_error, const int simplify_to, const int type_policy, const int int64_r_type);
+RcppExport SEXP _RcppSimdJson_load_json(SEXP file_pathSEXP, SEXP json_pointerSEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP error_okSEXP, SEXP on_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -32,10 +35,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string& >::type json_pointer(json_pointerSEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_object(empty_objectSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type single_null(single_nullSEXP);
+    Rcpp::traits::input_parameter< const bool >::type error_ok(error_okSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type on_error(on_errorSEXP);
     Rcpp::traits::input_parameter< const int >::type simplify_to(simplify_toSEXP);
     Rcpp::traits::input_parameter< const int >::type type_policy(type_policySEXP);
     Rcpp::traits::input_parameter< const int >::type int64_r_type(int64_r_typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(load_json(file_path, json_pointer, empty_array, empty_object, simplify_to, type_policy, int64_r_type));
+    rcpp_result_gen = Rcpp::wrap(load_json(file_path, json_pointer, empty_array, empty_object, single_null, error_ok, on_error, simplify_to, type_policy, int64_r_type));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -101,8 +107,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_RcppSimdJson_deserialize_json", (DL_FUNC) &_RcppSimdJson_deserialize_json, 7},
-    {"_RcppSimdJson_load_json", (DL_FUNC) &_RcppSimdJson_load_json, 7},
+    {"_RcppSimdJson_deserialize_json", (DL_FUNC) &_RcppSimdJson_deserialize_json, 10},
+    {"_RcppSimdJson_load_json", (DL_FUNC) &_RcppSimdJson_load_json, 10},
     {"_RcppSimdJson_exceptions_enabled", (DL_FUNC) &_RcppSimdJson_exceptions_enabled, 0},
     {"_RcppSimdJson_check_int64", (DL_FUNC) &_RcppSimdJson_check_int64, 0},
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},

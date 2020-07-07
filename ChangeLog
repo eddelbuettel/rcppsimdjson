@@ -1,3 +1,30 @@
+2020-07-05  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* DESCRIPTION (Imports): add utils to Imports
+	* NAMESPACE: added importFrom(utils, download.file)
+
+	* R/fparse: New functions fparse and fload (plus tests and docs)
+	* R/fload: Idem
+	* man/fparse.Rd: Idem
+	* inst/tinytest/test_fparse_fload.R: Idem
+
+	* src/deserialize.cpp: add options for errors and single JSON nulls,
+	guard gcc-7 from disabling simdjson exceptions, expand tests
+	* inst/include/RcppSimdJson/common.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem
+
+	* .travis.yml: Add (now passing) g++-7 to Travis Matrix
+
+2020-07-04  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .travis.yml: Rewritten as matrix over g++ 8, 9, and 10
+
 2020-07-02  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll version and date

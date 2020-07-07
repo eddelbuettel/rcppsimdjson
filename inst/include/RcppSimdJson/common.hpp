@@ -5,93 +5,109 @@
 #define STRICT_R_HEADERS
 #include <Rcpp.h>
 
+#include <optional>
+
 
 namespace rcppsimdjson {
 
 /**
- * @brief A container's size as an @c R_xlen_t @c. Otherwise Equivalent to @c std::size() @c.
+ * @brief A container's size as an R_xlen_t . Otherwise Equivalent to std::size() .
  */
 template <typename _Container>
 inline constexpr auto r_length(const _Container& __cont) noexcept -> R_xlen_t {
-  return static_cast<R_xlen_t>(std::size(__cont));
+    return static_cast<R_xlen_t>(std::size(__cont));
 }
 
 
 /**
- * @brief A @c bit64::integer64 @c-compatible @c NA @c.
+ * @brief A bit64::integer64 -compatibleN A .
  */
 static inline constexpr int64_t NA_INTEGER64 = LLONG_MIN;
 
 
 /**
- * @brief Typing arguments that decide how a @c simdjson::dom::element is ultimately returned to R.
+ * @brief Typing arguments that decide how a simdjson::dom::element is ultimately returned to R.
  */
 enum class rcpp_T : int {
-  array = 0,  /**< recursive: individual elements will decide ultimate R type */
-  object = 1, /**< recursive: individual elements will decide ultimate R type */
-  chr = 2,    /**< always becomes @c Rcpp::String / @c character */
-  u64 = 3,    /**< always becomes @c Rcpp::String / @c character */
-  dbl = 4,    /**< always becomes @c double */
-  i64 = 5,    /**< follows @c Int64_R_Type: @c double, @c character, or @c bit64::integer64 */
-  i32 = 6,    /**< always becomes @c int */
-  lgl = 7,    /**< always becomes @c bool / @c logical */
-  null = 8,   /**< becomes @c NA if returned in a vector, else @c NULL */
+    array  = 0, /**< recursive: individual elements will decide ultimate R type */
+    object = 1, /**< recursive: individual elements will decide ultimate R type */
+    chr    = 2, /**< always becomes Rcpp::String /character */
+    u64    = 3, /**< always becomes Rcpp::String /character */
+    dbl    = 4, /**< always becomes double */
+    i64    = 5, /**< follows Int64_R_Type: double, character, or bit64::integer64 */
+    i32    = 6, /**< always becomes int */
+    lgl    = 7, /**< always becomes bool /logical */
+    null   = 8, /**< becomes NA if returned in a vector, else NULL */
 };
 
 
 /**
- * @brief Get a typed @c NA @c.
+ * @brief Get a typed NA .
  */
-template <rcpp_T R_Type> static inline constexpr auto na_val() {
-  if constexpr (R_Type == rcpp_T::chr) {
-    return NA_STRING;
-  }
-  if constexpr (R_Type == rcpp_T::dbl) {
-    return NA_REAL;
-  }
-  if constexpr (R_Type == rcpp_T::i64) {
-    return NA_INTEGER64;
-  }
-  if constexpr (R_Type == rcpp_T::i32) {
-    return NA_INTEGER;
-  }
-  if constexpr (R_Type == rcpp_T::lgl) {
-    return NA_LOGICAL;
-  }
+template <rcpp_T R_Type>
+inline constexpr auto na_val() {
+    if constexpr (R_Type == rcpp_T::chr) {
+        return NA_STRING;
+    }
+    if constexpr (R_Type == rcpp_T::dbl) {
+        return NA_REAL;
+    }
+    if constexpr (R_Type == rcpp_T::i64) {
+        return NA_INTEGER64;
+    }
+    if constexpr (R_Type == rcpp_T::i32) {
+        return NA_INTEGER;
+    }
+    if constexpr (R_Type == rcpp_T::lgl) {
+        return NA_LOGICAL;
+    }
 }
 
 
 /**
- * Internal flags tracking whether simdjson is compiled with exceptions enabled (the default).
- * If simdjson is compiled w/o exceptions ( @c #define SIMDJSON_EXCEPTIONS 0 @c), operations that
- * do not touch throwing code can be annotated with keyword @c noexcept where appropriate.
+ * Internal flags tracking whether simdjson is compiled with exceptions enabled (the
+ * default). If simdjson is compiled w/o exceptions (#define SIMDJSON_EXCEPTIONS 0),
+ * operations that do not touch throwing code can be annotated with keyword
+ * noexcept where appropriate.
  */
-// #define SIMDJSON_EXCEPTIONS 0 /* uncomment to disable compiling simdjson w/ exceptions */
-#ifdef SIMDJSON_EXCEPTIONS
-#define RCPPSIMDJSON_EXCEPTIONS SIMDJSON_EXCEPTIONS
-static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = SIMDJSON_EXCEPTIONS != 1;
+
+// #define DISABLE_SIMDJSON_EXCEPTIONS 1 /* uncomment to disable simdjson exceptions */
+
+#if __GNUC__ && __GNUC__ <= 7
+#    define RCPPSIMDJSON_IS_GCC_7 1
+#endif
+
+#if DISABLE_SIMDJSON_EXCEPTIONS && !RCPPSIMDJSON_IS_GCC_7
+#    define SIMDJSON_EXCEPTIONS 0
+static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = true;
 #else
-#define RCPPSIMDJSON_EXCEPTIONS 1
+#    define SIMDJSON_EXCEPTIONS 1
 static inline constexpr auto RCPPSIMDJSON_NO_EXCEPTIONS = false;
 #endif
+static inline constexpr auto RCPPSIMDJSON_EXCEPTIONS = !RCPPSIMDJSON_NO_EXCEPTIONS;
 
 
 /**
- * @brief Whether a function is @c noexcept.
+ * @brief Whether a function is noexcept.
  *
- * If a function does not touch throwing code it can be annotated with @c noexcept().
- * If @c RCPPSIMDJSON_NO_EXCEPTIONS is enabled and the @c rcpp_T template argument is not
- * @c rcpp_T::chr, functions annotated with @c noexcept(is_no_except(rcpp_T)) will be @c noexcept
+ * If a function does not touch throwing code it can be annotated with noexcept().
+ * If RCPPSIMDJSON_NO_EXCEPTIONS is enabled and the rcpp_T template argument is not
+ * rcpp_T::chr, functions annotated with noexcept(noxcpt<rcpp_T>()) will be noexcept
  * when compiled.
  *
- * Currently, @c rccp_T::chr touches throwing code so functions using it will always be
- * @c noexcept(false).
+ * Currently,rccp_T::chr touches throwing code so functions using it will always be
+ * noexcept(false).
  *
  * Many examples in @file{inst/include/RcppSimdJson/deserialize/scalar.hpp}.
  */
-static inline constexpr auto is_no_except(rcpp_T R_Type) // NOLINT(clang-diagnostic-unused-function)
-    -> bool {
-  return RCPPSIMDJSON_NO_EXCEPTIONS && R_Type != rcpp_T::chr;
+
+template <rcpp_T R_Type>
+inline constexpr auto noxcpt() -> bool {
+    return RCPPSIMDJSON_NO_EXCEPTIONS && R_Type != rcpp_T::chr;
+}
+template <int RTYPE>
+inline constexpr auto noxcpt() -> bool {
+    return RCPPSIMDJSON_NO_EXCEPTIONS && RTYPE != STRSXP;
 }
 
 
@@ -101,13 +117,13 @@ namespace deserialize {
 /**
  * @brief Determines level of type strictness in combining array elements into R vectors.
  *
- * When arrays are not homogeneous and @c Type_Policy::anything_goes is used, type promotion follows
+ * When arrays are not homogeneous and Type_Policy::anything_goes is used, type promotion follows
  * R's behavior.
  */
 enum class Type_Policy : int {
-  anything_goes = 0, /* Non-recursive arrays always become vectors of the highest present type */
-  ints_as_dbls = 1,  /* Non-recursive arrays of only numbers are promoted to highest type */
-  strict = 2,        /* No type promotion */
+    anything_goes = 0, /* Non-recursive arrays always become vectors of the highest present type */
+    ints_as_dbls  = 1, /* Non-recursive arrays of only numbers are promoted to highest type */
+    strict        = 2, /* No type promotion */
 };
 
 
@@ -115,10 +131,10 @@ enum class Type_Policy : int {
  * @brief Maximum simplification level.
  */
 enum class Simplify_To : int {
-  data_frame = 0, /* If possible, return dataframes. Otherwise return matrices/vectors/lists. */
-  matrix = 1,     /* If possible, return matrices. Otherwise return vectors/lists. */
-  vector = 2,     /* If possible, return vectors. Otherwise return lists. */
-  list = 3,       /* No simplification. */
+    data_frame = 0, /* If possible, return dataframes. Otherwise return matrices/vectors/lists. */
+    matrix     = 1, /* If possible, return matrices. Otherwise return vectors/lists. */
+    vector     = 2, /* If possible, return vectors. Otherwise return lists. */
+    list       = 3, /* No simplification. */
 };
 
 
@@ -135,13 +151,15 @@ namespace deserialize {
 
 
 /**
- * @brief Simplify a @c simdjson::dom::element to an R object.
+ * @brief Simplify asimdjson::dom::element to an R object.
  *
- * @note Forward declaration. See @file inst/include/RcppSimdJson/deserialize/simplify.hpp @file.
+ * @note Forward declaration. See inst/include/RcppSimdJson/deserialize/simplify.hpp.
  */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_element(simdjson::dom::element element, SEXP empty_array, SEXP empty_object)
-    -> SEXP;
+inline auto simplify_element(simdjson::dom::element element,
+                             SEXP                   empty_array,
+                             SEXP                   empty_object,
+                             SEXP                   single_null) -> SEXP;
 
 
 } // namespace deserialize

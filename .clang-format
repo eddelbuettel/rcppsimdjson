@@ -1,0 +1,32 @@
+---
+Language: Cpp
+Standard: Cpp11
+BasedOnStyle: LLVM
+
+AlignConsecutiveDeclarations: true
+AlignConsecutiveAssignments: true
+AlignTrailingComments: true
+
+AllowShortFunctionsOnASingleLine: Inline
+
+AlwaysBreakTemplateDeclarations: true
+
+BinPackArguments: false
+BinPackParameters: false
+
+BreakBeforeTernaryOperators: true
+
+ColumnLimit: 100
+
+DerivePointerAlignment: false
+
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash
+IndentWidth: 4
+
+MaxEmptyLinesToKeep: 2
+
+PointerAlignment: Left
+
+SortIncludes: false
+SortUsingDeclarations: false

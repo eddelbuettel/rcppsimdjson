@@ -8,3 +8,6 @@
 ^.*\.tar\.gz$
 ^docs
 \.travis\.yml
+\.clang-format$
+\.covrignore$
+^local

@@ -3,10 +3,15 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
-\section{Changes in version 0.1.0 (2020-xx-yy)}{
+\section{Changes in version 0.1.0 (2020-07-xx)}{
   \itemize{
-    \item Upgraded to simdjson 0.4.1 (Dirk in \ghpr{27} closing
-    \ghit{26} and \ghit{14}) which adds Windows support
+    \item Upgraded to simdjson 0.4.1 which adds upstream Windows support
+    (Dirk in \ghpr{27} closing \ghit{26} and \ghit{14}, plus extensive
+    work by Brendan helping upstream with mingw tests).
+    \item New JSON functions \code{fparse} and \code{fload} 
+    (Brendan in \ghpr{32}) closing \ghit{18} and \ghit{10}).
+    \item Change Travis CI to build matrix over g++ 7, 8, 9, and 10
+    (Dirk in \ghpr{31}; and Brendan and \ghpr{32}).
   }
 }
     
