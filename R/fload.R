@@ -1,13 +1,13 @@
 .file_extension <- function(x) {
   base_name <- basename(x)
-  
+
   captures <- regexpr("(?<!^|[.]|/)[.]([^.]+)$", base_name, perl = TRUE)
   out <- rep(NA_character_, length(x))
   out[!is.na(x) & captures > 0L] <- substring(
-    base_name[!is.na(x) & captures > 0L], 
+    base_name[!is.na(x) & captures > 0L],
     captures[!is.na(x) & captures > 0L]
   )
-  
+
   out
 }
 
@@ -34,7 +34,7 @@
     url_prefix = .url_prefix(x),
     file_ext = .file_extension(x)
   )
-  
+
   init$compressed <- tolower(init$file_ext) %in% c(".gz", ".bz", ".bz2", ".xz", ".zip")
   if (any(init$compressed)) {
     stop(
@@ -43,20 +43,20 @@
       call. = FALSE
     )
   }
-  
+
   init$type <- ifelse(
     !is.na(init$url_prefix), "url",
     ifelse(!is.na(init$file_ext), "file", NA_character_)
   )
-  
+
   structure(init, class = "data.frame", row.names = seq_along(x))
 }
 
 
 #' @rdname fparse
-#' 
+#'
 #' @order 2
-#' 
+#'
 #' @examples
 #' # load JSON files ===========================================================
 #' single_file <- system.file("jsonexamples/small/demo.json", package = "RcppSimdJson")
@@ -104,13 +104,13 @@ fload <- function(json,
   if (all(is.na(json))) {
     if (length(json) == 1L) return(json) else return(as.list(json))
   }
-  
+
   if (is.null(query)) {
     query <- ""
   } else if (!.is_scalar_chr(query)) {
     stop("`query=` must be a single, non-`NA` `character`.")
   }
-  
+
   if (!.is_scalar_lgl(error_ok)) {
     stop("`error_ok=` must be either `TRUE` or `FALSE`.")
   }
@@ -182,7 +182,7 @@ fload <- function(json,
       if (is.na(diagnosis$type[[i]]) || diagnosis$type[[i]] != "url") {
         next
       }
-      
+
       temp_file <- tempfile(fileext = diagnosis$file_ext[[i]], tmpdir = temp_dir)
 
       switch(
@@ -197,10 +197,9 @@ fload <- function(json,
 
       diagnosis$input[[i]] <- temp_file
       diagnosis$type[[i]] <- "file"
-    }
-
-    if (!keep_temp_files) {
-      on.exit(unlink(diagnosis$input), add = TRUE)
+      if (!keep_temp_files) {
+          on.exit(unlink(diagnosis$input[[i]]), add = TRUE)
+      }
     }
   }
   # file -----------------------------------------------------------------------
