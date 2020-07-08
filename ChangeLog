@@ -1,16 +1,19 @@
 2020-07-08  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
 	* R/fparse: add raw/list-of-raw support to fparse (plus tests and docs)
 	* R/inst/tinytest/test_issues: Idem
 	* src/deserialize.cpp: Idem
 	* src/RcppExports.cpp: Idem
 	* man/fparse.Rd: Idem
 
-2020-07-07  Dirk Eddelbuettel  <edd@debian.org>
-
-	* DESCRIPTION (Version, Date): Release 0.1.0
+2020-07-06  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
 	* R/fload: prevent deleting non-temp files (plus tests) (post-CRAN-release)
 	* R/inst/tinytest/test_issues: Idem
+
+2020-07-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.0
 
 2020-07-05  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
