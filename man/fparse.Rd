@@ -35,7 +35,22 @@ fload(
 )
 }
 \arguments{
-\item{json}{One or more \code{character}s of JSON or paths to files containing JSON.}
+\item{json}{JSON strings, file paths, or raw vectors.
+\itemize{
+  \item \code{fparse()}
+    \itemize{
+      \item \code{character}: One or more JSON strings.
+      \item \code{raw}: \code{json} is interpreted as the bytes of a single
+             JSON string.
+      \item \code{list} Every element must be of type \code{"raw"} and each
+            is individually interpreted as the bytes of a single JSON string.
+    }
+  \item \code{fload()}
+    \itemize{
+      \item \code{character}: One or more paths to files (local or remote)
+            containing JSON.
+  }
+}}
 
 \item{query}{String used as a JSON Pointer to identify a specific element within \code{json}.
 \code{character(1L)}, default: \code{""}}
@@ -119,6 +134,13 @@ Parse JSON strings and files to R objects.
 json_string <- '{"a":[[1,null,3.0],["a","b",true],[10000000000,2,3]]}'
 fparse(json_string)
 
+raw_json <- as.raw(
+    c(0x22, 0x72, 0x61, 0x77, 0x20, 0x62, 0x79, 0x74, 0x65, 0x73, 0x20, 0x63,
+      0x61, 0x6e, 0x20, 0x62, 0x65, 0x63, 0x6f, 0x6d, 0x65, 0x20, 0x4a, 0x53,
+      0x4f, 0x4e, 0x20, 0x74, 0x6f, 0x6f, 0x21, 0x22)
+)
+fparse(raw_json)
+
 # controlling type-strictness ===============================================
 fparse(json_string, type_policy = "numbers")
 fparse(json_string, type_policy = "strict")
@@ -138,11 +160,18 @@ json_strings <- c(
     json2 = '[{"b":[[7, 8, 9],
                    [10,11,12]],
               "c":"Q"},
-             {"b":[[13,14,15],
+              {"b":[[13,14,15],
                    [16,17,18]],
               "c":null}]'
 )
 fparse(json_strings)
+
+fparse(
+    list(
+        raw_json1 = as.raw(c(0x74, 0x72, 0x75, 0x65)),
+        raw_json2 = as.raw(c(0x66, 0x61, 0x6c, 0x73, 0x65))
+    )
+)
 
 # controlling simplification ================================================
 fparse(json_strings, max_simplify_lvl = "matrix")
