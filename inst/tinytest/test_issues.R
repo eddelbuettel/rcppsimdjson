@@ -25,3 +25,22 @@ fload(json_url, temp_dir = my_temp_dir)
 expect_true(
     length(dir(my_temp_dir)) == 0L
 )
+
+# 35: accept raw vectors =======================================================
+# https://github.com/eddelbuettel/rcppsimdjson/issues/35
+expect_identical(
+    fparse(charToRaw('[true,false]')),
+    c(TRUE, FALSE)
+)
+expect_identical(
+    fparse(lapply(c('[true,false]', '[false,true]'), charToRaw)),
+    list(c(TRUE, FALSE), c(FALSE, TRUE))
+)
+# ensure lists only work if all raw
+expect_error(
+    fparse(list('[true,false]', '[false,true]')),
+)
+expect_error(
+    fparse(list('[true,false]', charToRaw('[false,true]')))
+)
+
