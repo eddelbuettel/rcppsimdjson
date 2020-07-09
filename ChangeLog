@@ -1,3 +1,9 @@
+2020-07-09  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Date, Version): Roll minor version and date
+
+	* README.md: Small edits
+
 2020-07-08  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
 	* R/fparse: add raw/list-of-raw support to fparse (plus tests and docs)

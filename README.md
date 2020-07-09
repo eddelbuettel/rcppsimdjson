@@ -65,10 +65,9 @@ behaviour back locally by removing the `-DSIMDJSON_NO_COMPUTED_GOTO` term from
 
 ### Status
 
-Minimally viable. Right now it builds, wraps the validation test, and checks
-cleanly as an R package. As of version 0.0.4, basic parsing is supported, see
-`parseExample()`.  Requires a C++17 compiler. Expect changes. But please feel
-free to contribute.
+Working. As of version 0.1.0, all three major OSs are supported, and JSON can be parsed from file
+and string under a variety of settings. Prefers/requires a real C++17 compiler. Still subject to
+change.
 
 ### Contributing
 
@@ -97,6 +96,8 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
 
 ### Author
 
-For the R package wrapper, [Dirk Eddelbuettel](http://github.com/eddelbuettel).
+For the R package, [Dirk Eddelbuettel](http://github.com/eddelbuettel) and [Brendan
+Knapp](https://github.com/knapply).
 
-For everything pertaining to simdjson, [Daniel Lemire](https://lemire.me/en/) (and [many  contributors](https://github.com/lemire/simdjson/graphs/contributors)) .
+For everything pertaining to simdjson, [Daniel Lemire](https://lemire.me/en/) (and [many
+contributors](https://github.com/lemire/simdjson/graphs/contributors)).
