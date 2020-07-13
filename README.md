@@ -4,6 +4,7 @@
 [![License](https://eddelbuettel.github.io/badges/GPL2+.svg)](http://www.gnu.org/licenses/gpl-2.0.html)
 [![CRAN](http://www.r-pkg.org/badges/version/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
+[![Downloads](https://cranlogs.r-pkg.org/badges/RcppSimdJson?color=brightgreen)](https://www.r-pkg.org/pkg/RcppSimdJson)
 [![Last Commit](https://img.shields.io/github/last-commit/eddelbuettel/rcppsimdjson)](https://github.com/eddelbuettel/rcppsimdjson)
 
 ### Motivation
@@ -27,37 +28,29 @@ QCon](http://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
 ```r
 jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
 validateJSON(jsonfile)
+res <- fparse(jsonfile)
 ```
 
 ### Comparison
 
-A [simple benchmark](demo/simpleBenchmark.R) against four other R-accessible JSON parsers:
+A [simple parsing benchmark](demo/simpleBenchmark.R) against four other R-accessible JSON parsers:
 
 ```r
-R> print(res, order="median")
-Unit: microseconds
-     expr       min         lq       mean    median         uq        max neval   cld
- simdjson   279.246    332.577    390.815    362.11    427.638    648.652   100 a    
-  jsonify  2820.079   2930.945   3064.773   3027.28   3153.427   3986.948   100  b   
- jsonlite  8899.379   9085.685   9273.974   9226.56   9349.513  10820.562   100   c  
-  RJSONIO  9685.246   9899.634  10185.272  10105.96  10296.579  11766.177   100    d
-   ndjson 99460.979 100381.388 101758.682 100971.75 102613.041 111553.986   100     e
-R> print(res, order="median", unit="relative")
-Unit: relative
-     expr      min        lq      mean    median        uq       max neval   cld
- simdjson   1.0000   1.00000   1.00000   1.00000   1.00000   1.00000   100 a    
-  jsonify  10.0989   8.81284   7.84201   8.36011   7.37406   6.14651   100  b   
- jsonlite  31.8693  27.31908  23.72986  25.48003  21.86315  16.68161   100   c  
-  RJSONIO  34.6836  29.76649  26.06165  27.90857  24.07779  18.13943   100    d
-   ndjson 356.1769 301.82947 260.37585 278.84314 239.95305 171.97817   100     e
-R>
+R> res
+Unit: milliseconds
+     expr      min       lq     mean   median       uq       max neval  cld
+ simdjson  1.87118  2.03252  2.24351  2.17228  2.27756   6.57145   100 a   
+  jsonify  8.91694  9.20124  9.58652  9.46077  9.73692  13.41707   100  b  
+  RJSONIO 10.49187 11.09410 11.69109 11.42555 11.95780  17.93653   100  b  
+   ndjson 27.04830 28.62251 31.44330 29.51343 32.05847 146.88221   100   c 
+ jsonlite 34.93334 36.54784 38.67843 37.74890 40.19555  46.32444   100    d
+R> 
 ```
 
 Or in chart form:
 
-![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_benchmark.png)
+![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_parse_benchmark.png)
 
-Note that these timings came from the very beginnings of the package.
 Admittance to CRAN meant turning off one particular optimisation ('computed
 GOTOs') by default resulting in slightly slower performance. You can get the
 behaviour back locally by removing the `-DSIMDJSON_NO_COMPUTED_GOTO` term from
@@ -65,9 +58,9 @@ behaviour back locally by removing the `-DSIMDJSON_NO_COMPUTED_GOTO` term from
 
 ### Status
 
-Working. As of version 0.1.0, all three major OSs are supported, and JSON can be parsed from file
-and string under a variety of settings. Prefers/requires a real C++17 compiler. Still subject to
-change.
+As of version 0.1.0, all three major OSs are supported, and JSON can be parsed from file and string
+under a variety of settings. Prefers a real C++17 compiler but can fall back to older
+compiler. Still subject to change.
 
 ### Contributing
 

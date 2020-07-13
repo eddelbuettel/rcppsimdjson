@@ -1,3 +1,9 @@
+2020-07-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* demo/simpleParseBenchmark.R: Add new simple parsing benchmark
+	* docs/rcppsimdjson_parse_benchmark.png: Benchmark results figure
+	* README.md: Show new benchmark table and chart
+
 2020-07-09  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Date, Version): Roll minor version and date

@@ -1,1 +1,2 @@
 simpleBenchmark         Comparison of JSON Validation Speed
+simpleParseBenchmark    Comparison of JSON Parsing Speed
