@@ -53,15 +53,28 @@ SEXP deserialize_multiple_raw(const Rcpp::ListOf<Rcpp::RawVector>&         json,
 
     simdjson::dom::parser parser;
     for (R_xlen_t i = 0; i < n; ++i) {
-        out[i] = deserialize_single_raw<error_ok>(json[i],
-                                                  json_pointer,
-                                                  empty_array,
-                                                  empty_object,
-                                                  single_null,
-                                                  on_error,
-                                                  simplify_to,
-                                                  type_policy,
-                                                  int64_r_type);
+        auto [parsed, error] =
+            json_pointer.empty()
+                ? parser.parse(std::string(std::cbegin(json[i]), std::cend(json[i])))
+                : parser.parse(std::string(std::cbegin(json[i]), std::cend(json[i])))
+                      .at(json_pointer);
+
+        if (error) {
+            if constexpr (error_ok) {
+                out[i] = on_error;
+                continue;
+            } else {
+                Rcpp::stop(simdjson::error_message(error));
+            }
+        }
+
+        out[i] = deserialize::deserialize(parsed, //
+                                          empty_array,
+                                          empty_object,
+                                          single_null,
+                                          simplify_to,
+                                          type_policy,
+                                          int64_r_type);
     }
 
     out.attr("names") = json.attr("names");
