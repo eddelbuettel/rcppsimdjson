@@ -65,7 +65,7 @@ compiler. Still subject to change.
 ### Contributing
 
 Any problems, bug reports, or features requests for the package can be submitted and handled most
-conveniently as [Github issues](https://github.com/eddelbuettel/anytime/issues) in the repository.
+conveniently as [Github issues](https://github.com/eddelbuettel/rcppsimdjson/issues) in the repository.
 
 Before submitting pull requests, it is frequently preferable to first discuss need and scope in such
 an issue ticket.  See the file
