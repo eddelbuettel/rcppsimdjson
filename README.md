@@ -26,13 +26,10 @@ QCon](http://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
 ### Example
 
 ```r
-if (!require("RcppSimdJson")) install.packages("RcppSimdJson")
-library(RcppSimdJson)
-
-
 jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
-validateJSON(jsonfile)
-res <- fparse(jsonfile)
+library(RcppSimdJson)
+validateJSON(jsonfile)                  # validate a JSON file
+res <- fparse(jsonfile)                 # parse a JSON file
 ```
 
 ### Comparison
