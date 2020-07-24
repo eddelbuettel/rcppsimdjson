@@ -1025,7 +1025,7 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$ints_as_dbls,
     simplify_to = simplify_lvl$matrix
   ),
@@ -1033,7 +1033,7 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$strict,
     simplify_to = simplify_lvl$matrix
   ),
@@ -1047,7 +1047,7 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$ints_as_dbls,
     simplify_to = simplify_lvl$vector
   ),
@@ -1055,7 +1055,7 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$strict,
     simplify_to = simplify_lvl$vector
   ),
@@ -1069,7 +1069,7 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$ints_as_dbls,
     simplify_to = simplify_lvl$list
   ),
@@ -1077,10 +1077,10 @@ expect_identical(
 )
 expect_identical(
   RcppSimdJson:::.deserialize_json(
-    test, 
+    test,
     type_policy = type_policy$strict,
     simplify_to = simplify_lvl$list
   ),
   target
 )
-  
+

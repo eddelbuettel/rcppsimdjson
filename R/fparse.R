@@ -21,8 +21,9 @@
 #'     }
 #'   }
 #'
-#' @param query String used as a JSON Pointer to identify a specific element within \code{json}.
-#'   \code{character(1L)}, default: \code{""}
+#' @param query If not \code{NULL}, a string used as a JSON Pointer to identify a
+#'   specific element within \code{json}.
+#'   \code{character(1L)}, default: \code{NULL}
 #'
 #' @param empty_array Any R object to return for empty JSON arrays.
 #'   default: \code{NULL}
@@ -215,7 +216,7 @@
 #'
 #' @export
 fparse <- function(json,
-                   query = "",
+                   query = NULL,
                    empty_array = NULL,
                    empty_object = NULL,
                    single_null = NULL,
@@ -234,10 +235,18 @@ fparse <- function(json,
         stop("`json=` must be a `character` or `raw`.")
     }
 
-    if (is.null(query)) {
-        query <- ""
-    } else if (!.is_scalar_chr(query)) {
-        stop("`query=` must be a single, non-`NA` `character`.")
+    if (!is.null(query)) {
+        if (is.character(query)) {
+            if (anyNA(query)) {
+                stop("`query=` should not contain any `NA`s.")
+            }
+        } else if (is.list(query)) {
+            if (any(vapply(query, function(.x) !is.character(.x) || anyNA(.x), logical(1L)))) {
+                stop("If `query=` is a list, it should only contain `character` vectors with no-`NA`s.")
+            }
+        } else {
+            stop("`query=` must be `NULL`, a `character` vector, or a list of `character` vectors.")
+        }
     }
 
     if (!.is_scalar_lgl(error_ok)) {
@@ -299,7 +308,7 @@ fparse <- function(json,
     # deserialize ==============================================================
     .deserialize_json(
         json = json,
-        json_pointer = query,
+        query = query,
         empty_array = empty_array,
         empty_object = empty_object,
         single_null = single_null,

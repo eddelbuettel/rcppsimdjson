@@ -7,7 +7,7 @@
 \usage{
 fparse(
   json,
-  query = "",
+  query = NULL,
   empty_array = NULL,
   empty_object = NULL,
   single_null = NULL,
@@ -20,7 +20,7 @@ fparse(
 
 fload(
   json,
-  query = "",
+  query = NULL,
   empty_array = NULL,
   empty_object = NULL,
   single_null = NULL,
@@ -52,8 +52,9 @@ fload(
   }
 }}
 
-\item{query}{String used as a JSON Pointer to identify a specific element within \code{json}.
-\code{character(1L)}, default: \code{""}}
+\item{query}{If not \code{NULL}, a string used as a JSON Pointer to identify a
+specific element within \code{json}.
+\code{character(1L)}, default: \code{NULL}}
 
 \item{empty_array}{Any R object to return for empty JSON arrays.
 default: \code{NULL}}
