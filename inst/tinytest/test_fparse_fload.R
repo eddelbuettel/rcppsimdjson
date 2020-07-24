@@ -34,9 +34,9 @@ expect_error(fload(c(test_file1, test_file2)))
 expect_identical(fparse("1"), 1L)
 expect_identical(fparse(c("1", "2")), list(1L, 2L))
 expect_identical(fparse(c(json1 = "1", json2 = "2")), list(json1 = 1L, json2 = 2L))
-expect_identical(fparse(NA_character_), NA_character_)
-expect_identical(fparse(c(NA_character_, NA_character_)), list(NA_character_, NA_character_))
-expect_identical(fparse(c("1", NA_character_)), list(1L, NA_character_))
+expect_identical(fparse(NA_character_), NA)
+expect_identical(fparse(c(NA_character_, NA_character_)), list(NA, NA))
+expect_identical(fparse(c("1", NA_character_)), list(1L, NA))
 expect_true(fparse("null", single_null = TRUE))
 expect_true(fparse("junk JSON", error_ok = TRUE, on_error = TRUE))
 expect_identical(fparse(
@@ -58,7 +58,7 @@ expect_identical(fload(c(json1 = test_file1, json2 = test_file2)),
                  list(json1 = 1L, json2 = 2L))
 expect_identical(fload(NA_character_), NA_character_)
 expect_identical(fload(c(NA_character_, NA_character_)), list(NA_character_, NA_character_))
-expect_identical(fload(c(test_file1, NA_character_))[[2L]], NA_character_)
+expect_identical(fload(c(test_file1, NA_character_))[[2L]], NA)
 .write_file("null", test_file1)
 expect_true(fload(test_file1, single_null = TRUE))
 .write_file("junk JSON", test_file1)
@@ -508,9 +508,6 @@ expect_error(
           verbose = NA),
     "`verbose=` must be either `TRUE` or `FALSE`."
 )
-
-expect_error(fload("not-a-real-file.rcppsimdjson.gz"),
-             "Compressed files are not yet supported.")
 
 
 # TODO verify CRAN policies for downloading, Travis usage

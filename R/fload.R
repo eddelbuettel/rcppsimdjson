@@ -35,14 +35,14 @@
     file_ext = .file_extension(x)
   )
 
-  init$compressed <- tolower(init$file_ext) %in% c(".gz", ".bz", ".bz2", ".xz", ".zip")
-  if (any(init$compressed)) {
-    stop(
-      "Compressed files are not yet supported. The following files are affected:",
-      sprintf("\n\t- %s", x[init$compressed]),
-      call. = FALSE
-    )
-  }
+  # init$compressed <- tolower(init$file_ext) %in% c(".gz", ".bz", ".bz2", ".xz", ".zip")
+  # if (any(init$compressed)) {
+  #   stop(
+  #     "Compressed files are not yet supported. The following files are affected:",
+  #     sprintf("\n\t- %s", x[init$compressed]),
+  #     call. = FALSE
+  #   )
+  # }
 
   init$type <- ifelse(
     !is.na(init$url_prefix), "url",
@@ -85,7 +85,7 @@
 #'
 #' @export
 fload <- function(json,
-                  query = "",
+                  query = NULL,
                   empty_array = NULL,
                   empty_object = NULL,
                   single_null = NULL,
@@ -105,11 +105,11 @@ fload <- function(json,
     if (length(json) == 1L) return(json) else return(as.list(json))
   }
 
-  if (is.null(query)) {
-    query <- ""
-  } else if (!.is_scalar_chr(query)) {
-    stop("`query=` must be a single, non-`NA` `character`.")
-  }
+  # if (!is.null(query) && !()) {
+  #   query <- ""
+  # } else if (!.is_scalar_chr(query)) {
+  #   stop("`query=` must be a single, non-`NA` `character`.")
+  # }
 
   if (!.is_scalar_lgl(error_ok)) {
     stop("`error_ok=` must be either `TRUE` or `FALSE`.")
@@ -217,8 +217,8 @@ fload <- function(json,
   }
   # load =======================================================================
   .load_json(
-    file_path = input,
-    json_pointer = query,
+    json = input,
+    query = query,
     empty_array = empty_array,
     empty_object = empty_object,
     error_ok = error_ok,
