@@ -49,6 +49,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// exceptions_enabled
+bool exceptions_enabled();
+RcppExport SEXP _RcppSimdJson_exceptions_enabled() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(exceptions_enabled());
+    return rcpp_result_gen;
+END_RCPP
+}
 // is_valid_json_arg
 bool is_valid_json_arg(SEXP json);
 RcppExport SEXP _RcppSimdJson_is_valid_json_arg(SEXP jsonSEXP) {
@@ -79,16 +89,6 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(diagnose_input(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// exceptions_enabled
-bool exceptions_enabled();
-RcppExport SEXP _RcppSimdJson_exceptions_enabled() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(exceptions_enabled());
     return rcpp_result_gen;
 END_RCPP
 }
@@ -146,10 +146,10 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_deserialize", (DL_FUNC) &_RcppSimdJson_deserialize, 12},
     {"_RcppSimdJson_load", (DL_FUNC) &_RcppSimdJson_load, 12},
+    {"_RcppSimdJson_exceptions_enabled", (DL_FUNC) &_RcppSimdJson_exceptions_enabled, 0},
     {"_RcppSimdJson_is_valid_json_arg", (DL_FUNC) &_RcppSimdJson_is_valid_json_arg, 1},
     {"_RcppSimdJson_is_valid_query_arg", (DL_FUNC) &_RcppSimdJson_is_valid_query_arg, 1},
     {"_RcppSimdJson_diagnose_input", (DL_FUNC) &_RcppSimdJson_diagnose_input, 1},
-    {"_RcppSimdJson_exceptions_enabled", (DL_FUNC) &_RcppSimdJson_exceptions_enabled, 0},
     {"_RcppSimdJson_check_int64", (DL_FUNC) &_RcppSimdJson_check_int64, 0},
     {"_RcppSimdJson_validateJSON", (DL_FUNC) &_RcppSimdJson_validateJSON, 1},
     {"_RcppSimdJson_parseExample", (DL_FUNC) &_RcppSimdJson_parseExample, 0},

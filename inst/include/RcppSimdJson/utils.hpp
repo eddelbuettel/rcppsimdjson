@@ -3,10 +3,8 @@
 
 
 #include <Rcpp.h>
-#include <algorithm> // std::all_of
-#include <fstream>
-// #include <optional>
-// #include <string_view>
+#include <algorithm> /* std::all_of */
+#include <fstream>   /* std::ifstream */
 
 namespace rcppsimdjson {
 namespace utils {
@@ -119,19 +117,18 @@ inline SEXP resolve_int64(const std::vector<uint64_t>& x) {
 }
 
 
-template <typename file_path_T>
-inline std::optional<std::string_view> get_memDecompress_type(const file_path_T& file_path) {
-    std::string test;
+inline std::optional<std::string_view> get_memDecompress_type(const std::string_view& file_path) {
     if (const auto dot = std::string_view(file_path).rfind('.'); dot != std::string_view::npos) {
-        const auto ext = file_path.substr(dot + 1);
-        if (ext == "gz") {
-            return "gzip";
-        }
-        if (ext == "xz") {
-            return "xz";
-        }
-        if (ext == "bz" || ext == "bz2") {
-            return "bzip2";
+        if (const auto ext = file_path.substr(dot + 1); std::size(ext) >= 2) {
+            if (ext == "gz") {
+                return "gzip";
+            }
+            if (ext == "xz") {
+                return "xz";
+            }
+            if (ext == "bz" || ext == "bz2") {
+                return "bzip2";
+            }
         }
     }
     return std::nullopt;
@@ -182,56 +179,20 @@ template <typename file_path_T>
 inline Rcpp::RawVector decompress(const file_path_T& file_path, const Rcpp::String& file_type) {
     std::ifstream stream(file_path, std::ios::binary | std::ios::ate);
     if (!stream) {
-        Rcpp::stop("");
+        Rcpp::stop("There's a problem with this file:\n\t-%s", file_path);
     }
 
     const auto end = stream.tellg();
     stream.seekg(0, std::ios::beg);
     const std::size_t n(end - stream.tellg());
-    if (n == 0) {
-        Rcpp::stop("");
+    if (n == 0) { /* avoid undefined behavior */
+        return Rcpp::RawVector(0);
     }
 
-    // std::vector<Rbyte> buffer(n);
-    // stream.read(reinterpret_cast<char*>(buffer.data()), n);
     Rcpp::RawVector buffer(n);
     stream.read(reinterpret_cast<char*>(&(buffer[0])), n);
 
     return Rcpp::Function("memDecompress")(buffer, file_type, false);
-}
-
-
-template <typename json_T>
-constexpr void debug_msg(const std::string_view f_name,
-                         const bool             is_file,
-                         const bool             single_json,
-                         const bool             single_query,
-                         const bool             parse_error_ok,
-                         const bool             query_error_ok,
-                         SEXP                   on_parse_error,
-                         SEXP                   on_query_error) {
-    Rcpp::Rcout << f_name << std::endl << std::endl;
-
-    if constexpr (std::is_same_v<json_T, Rcpp::CharacterVector>) {
-        Rcpp::Rcout << "json_T: Rcpp::CharacterVector" << std::endl;
-    }
-    if constexpr (std::is_same_v<json_T, Rcpp::RawVector>) {
-        Rcpp::Rcout << "json_T: Rcpp::RawVector" << std::endl;
-    }
-    if constexpr (std::is_same_v<json_T, Rcpp::ListOf<Rcpp::RawVector>>) {
-        Rcpp::Rcout << "json_T: Rcpp::ListOf<Rcpp::RawVector>" << std::endl;
-    }
-    Rcpp::Rcout << (is_file ? "is_file" : "!is_file") << std::endl;
-    Rcpp::Rcout << (single_json ? "single_json" : "!single_json") << std::endl;
-    Rcpp::Rcout << (single_query ? "single_query" : "!single_query") << std::endl;
-    Rcpp::Rcout << (parse_error_ok ? "parse_error_ok" : "!parse_error_ok") << std::endl;
-    Rcpp::Rcout << (query_error_ok ? "query_error_ok" : "!query_error_ok") << std::endl;
-    Rcpp::Rcout << std::endl << "on_parse_error: " << std::endl;
-    Rcpp::print(on_parse_error);
-    Rcpp::Rcout << std::endl << "on_query_error: " << std::endl;
-    Rcpp::print(on_query_error);
-
-    Rcpp::Rcout << std::endl << std::endl;
 }
 
 
@@ -253,14 +214,10 @@ inline constexpr std::optional<std::string_view> get_url_prefix(const std::strin
 inline constexpr std::optional<std::string_view> get_file_ext(const std::string_view& str) {
     if (const auto dot = str.rfind('.'); dot != std::string_view::npos) {
         if (const auto out = str.substr(dot); /* `with_dot ? dot : dot + 1` */
-        /* if the file path is a URL without an extension, we need to ensure that that we don't
-         * extract everything after the domain by checking for '/' or '\\' (Windows),
-         */
-#ifdef _WIN32 /* both 32-bit and 64-bit Windows */
-            out.find('\\') == std::string_view::npos) {
-#else
+            /* if the file path is a URL without an extension, we need to ensure that that we don't
+             * extract everything after the domain by checking for '/'
+             */
             out.find("/") == std::string_view::npos) {
-#endif
             return str.substr(dot);
         }
     }

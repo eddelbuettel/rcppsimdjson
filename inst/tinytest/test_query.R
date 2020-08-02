@@ -1,7 +1,39 @@
 if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
 
+# parse errors =================================================================
+expect_error(fparse("junk", query = ""))
+expect_error(fparse("junk", query = c("", "")))
+expect_error(fparse(c("junk", "junk"), query = list("", "")))
+expect_identical(
+    fparse("junk", query = "", parse_error_ok = TRUE),
+    NULL
+)
+expect_identical(
+    fparse("junk", query = c("", ""), parse_error_ok = TRUE),
+    NULL
+)
+expect_identical(
+    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE),
+    list(NULL, NULL)
+)
 
-# pkgbuild::clean_dll(); devtools::document(); devtools::load_all(); library(tinytest)
+# query errors =================================================================
+expect_error(fparse("null", query = "junk"))
+expect_error(fparse("null", query = c("junk", "junk")))
+expect_error(fparse(c("null", "null"), query = list("junk", "junk")))
+expect_identical(
+    fparse("null", query = "junk", query_error_ok = TRUE),
+    NULL
+)
+expect_identical(
+    fparse("null", query = "junk", query_error_ok = TRUE),
+    NULL
+)
+expect_identical(
+    fparse(c("null", "null"),
+           query = list(c("junk", "junk"), c("junk", "junk")), query_error_ok = TRUE),
+    list(list(NULL, NULL), list(NULL, NULL))
+)
 
 # single json ==================================================================
 js <- c(single_json = '[{"a":[[1,2],[3,4]]},{"b":[[5,6],[7,8]]}]')
@@ -25,6 +57,7 @@ expect_identical(
     fparse(js, list(na = NA_character_)),
     list(na = list(NA))
 )
+
 #* flat query ------------------------------------------------------------------
 #** single query ---------------------------------------------------------------
 expect_identical(
@@ -102,6 +135,7 @@ expect_identical(
 )
 
 # multi json ===================================================================
+
 js <- c(A = '{"a":[[1,2],[3,4]]}', B = '{"a":[[5,6],[7,8]]}')
 #* flat query ------------------------------------------------------------------
 #** single query ---------------------------------------------------------------
@@ -148,3 +182,4 @@ expect_identical(
     fparse(js, query = q),
     list(a = list(a1 = 1:2, a2 = 3:4), b = list(b1 = 5:6, b2 = 7:8))
 )
+
