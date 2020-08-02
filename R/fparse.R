@@ -21,9 +21,9 @@
 #'     }
 #'   }
 #'
-#' @param query If not \code{NULL}, a string used as a JSON Pointer to identify a
-#'   specific element within \code{json}.
-#'   \code{character(1L)}, default: \code{NULL}
+#' @param query If not \code{NULL}, JSON Pointer(s) used to identify and extract
+#'   specific elements within \code{json}. See Details and Examples.
+#'   \code{NULL}, \code{character()}, or \code{list()} of \code{character()}. default: \code{NULL}
 #'
 #' @param empty_array Any R object to return for empty JSON arrays.
 #'   default: \code{NULL}
@@ -70,7 +70,7 @@
 #'   \itemize{
 #'     \item \code{"double"} or \code{0L}: big integers become \code{double}s
 #'     \item \code{"string"} or \code{1L}: big integers become \code{character}s
-#'     \item \code{"integer64"} or \code{2L}: big integers \code{bit64::integer64}s
+#'     \item \code{"integer64"} or \code{2L}: big integers become \code{bit64::integer64}s
 #'   }
 #'
 #'
@@ -90,6 +90,25 @@
 #'           returned object will have the same names.
 #'     \item If \code{json} contains multiple values and is unnamed, \code{fload()}
 #'           names each returned element using the file's \code{basename()}.
+#'    }
+#'
+#'    \item \code{query}'s goal is to minimize te amount of data that must be
+#'    materialized as R objects (the main performance bottleneck) as well as
+#'    facilitate any post-parse processing.
+#'    \itemize{
+#'      \item To maximize flexibility, there are two approaches to consider when designing \code{query} arguments.
+#'      \itemize{
+#'        \item \code{character} vectors are interpreted as containing queries that
+#'        meant to be applied to all elements of \code{json=}.
+#'        \itemize{
+#'          \item If \code{json=} contains 3 strings and \code{query=} contains
+#'          3 strings, the returned object will be a list of 3 elements (1 for each element
+#'          of \code{json=}), which themselves each contain 3 lists (1 for each element
+#'          of \code{query=}).
+#'        }
+#'        \item \code{list}s of \code{character} vectors are interpreted as containing
+#'        queries meant to be applied  to \code{json} in a zip-like fashion.
+#'      }
 #'    }
 #'
 #' }
@@ -294,11 +313,6 @@ fparse <- function(json,
         stop('`int64_policy="integer64", but the {bit64} package is not installed.')
         # nocov end
     }
-
-    # prep names ===============================================================
-    # if (length(names(json)) && !length(names(query))) {
-    #     names(query) <- names(json)
-    # }
 
     # deserialize ==============================================================
     .deserialize_json(

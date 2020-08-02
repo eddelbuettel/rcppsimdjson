@@ -1,6 +1,6 @@
 if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
 
-my_temp_dir <- paste0(tempdir(), "/rcppsimdjson-temp")
+my_temp_dir <- paste0(tempdir(), "/rcppsimdjson-compressed-temp")
 dir.create(my_temp_dir)
 
 .read_compress_write_load <- function(file_path) {
@@ -10,7 +10,7 @@ dir.create(my_temp_dir)
     init <- readBin(file_path, n = file.size(file_path), what = "raw")
 
     mapply(function(type, ext) {
-        target_path <- paste0(basename(file_path), ".", ext)
+        target_path <- paste0(my_temp_dir, "/", basename(file_path), ".", ext)
         writeBin(memCompress(init, type = type), target_path)
         fload(target_path)
     }, types, exts, USE.NAMES = FALSE, SIMPLIFY = FALSE)

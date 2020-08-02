@@ -9,6 +9,10 @@
     .Call(`_RcppSimdJson_load`, json, query, empty_array, empty_object, single_null, parse_error_ok, on_parse_error, query_error_ok, on_query_error, simplify_to, type_policy, int64_r_type)
 }
 
+.exceptions_enabled <- function() {
+    .Call(`_RcppSimdJson_exceptions_enabled`)
+}
+
 .is_valid_json_arg <- function(json) {
     .Call(`_RcppSimdJson_is_valid_json_arg`, json)
 }
@@ -19,10 +23,6 @@
 
 .diagnose_input <- function(x) {
     .Call(`_RcppSimdJson_diagnose_input`, x)
-}
-
-.exceptions_enabled <- function() {
-    .Call(`_RcppSimdJson_exceptions_enabled`)
 }
 
 .check_int64 <- function() {

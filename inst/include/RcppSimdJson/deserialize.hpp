@@ -336,20 +336,19 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
                                                                const json_T&          json) {
 
     if constexpr (utils::resembles_vec_raw<json_T>()) {
-        /* if `json` is a raw (unsigned char) vector, we (seem to be fine) cheating */
+        /* if `json` is a raw (unsigned char) vector, we can cheat */
         return parser.parse(
             std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
-        // return parser.parse(std::string(std::cbegin(json), std::cend(json))); /* the safe way */
     }
 
     if constexpr (utils::resembles_vec_chr<json_T>()) {
-        /* if `json` is a character vector, we're only parsing the first one */
+        /* if `json` is a character vector, we're only parsing the first element */
         return parse<decltype(json[0]), is_file>(parser, json[0]);
     }
 
     if constexpr (utils::resembles_r_string<json_T>()) {
         if constexpr (is_file) {
-            if (const auto file_type = utils::get_memDecompress_type(std::string(json))) {
+            if (const auto file_type = utils::get_memDecompress_type(std::string_view(json))) {
                 return parse<Rcpp::RawVector, IS_NOT_FILE>(
                     parser,
                     utils::decompress(std::string(json), Rcpp::String((*file_type).data())));
@@ -455,17 +454,6 @@ template <typename json_T,
 inline SEXP no_query(const json_T&                                json,
                      SEXP                                         on_parse_error,
                      const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-#ifdef RCPPSIMDJSON_DEBUG
-    utils::debug_msg<json_T>("no_query",
-                             is_file,
-                             is_single_json,
-                             false,
-                             parse_error_ok,
-                             query_error_ok,
-                             on_parse_error,
-                             R_NilValue);
-#endif
-
     simdjson::dom::parser parser;
 
     if constexpr (is_single_json) {
@@ -498,17 +486,6 @@ inline SEXP flat_query(const json_T&                                json,
                        SEXP                                         on_parse_error,
                        SEXP                                         on_query_error,
                        const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-#ifdef RCPPSIMDJSON_DEBUG
-    utils::debug_msg<json_T>("flat_query",
-                             is_file,
-                             is_single_json,
-                             is_single_query,
-                             parse_error_ok,
-                             query_error_ok,
-                             on_parse_error,
-                             on_query_error);
-#endif
-
     simdjson::dom::parser parser;
 
     if constexpr (is_single_json) {
@@ -601,24 +578,7 @@ inline SEXP nested_query(const json_T&                                json,
                          SEXP                                         on_parse_error,
                          SEXP                                         on_query_error,
                          const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-#ifdef RCPPSIMDJSON_DEBUG
-    utils::debug_msg<json_T>("nested_query",
-                             is_file,
-                             is_single_json,
-                             is_single_query,
-                             parse_error_ok,
-                             query_error_ok,
-                             on_parse_error,
-                             on_query_error);
-#endif
-
-    R_xlen_t n;
-    if constexpr (is_single_json) {
-        n = std::size(query);
-    } else {
-        n = std::size(json);
-    }
-
+    const R_xlen_t        n = std::size(json); /* query already checked to be the same size */
     Rcpp::List            out(n);
     simdjson::dom::parser parser;
 
