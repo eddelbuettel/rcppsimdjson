@@ -29,7 +29,7 @@ QCon](http://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
 jsonfile <- system.file("jsonexamples", "twitter.json", package="RcppSimdJson")
 library(RcppSimdJson)
 validateJSON(jsonfile)                  # validate a JSON file
-res <- fparse(jsonfile)                 # parse a JSON file
+res <- fload(jsonfile)                  # parse a JSON file
 ```
 
 ### Comparison
