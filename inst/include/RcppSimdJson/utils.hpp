@@ -3,8 +3,26 @@
 
 
 #include <Rcpp.h>
-#include <algorithm> /* std::all_of */
-#include <fstream>   /* std::ifstream */
+
+
+#include <algorithm>   /* std::all_of */
+#include <fstream>     /* std::ifstream */
+#include <type_traits> /* std::remove_cv_t or std::remove_reference_t */
+
+
+#ifndef __cpp_lib_remove_cvref
+namespace std {
+
+
+template <class T>
+struct remove_cvref {
+    typedef remove_cv_t<std::remove_reference_t<T>> type;
+};
+
+
+} // namespace std
+#endif
+
 
 namespace rcppsimdjson {
 namespace utils {
@@ -137,24 +155,19 @@ inline std::optional<std::string_view> get_memDecompress_type(const std::string_
 
 template <typename T1, typename T2>
 inline constexpr bool is_same_ish() noexcept {
-    return std::is_same_v<std::add_const_t<std::remove_reference_t<T1>>,
-                          std::add_const_t<std::remove_reference_t<T2>>>;
+    return std::is_same_v<std::remove_cv_t<T1>, std::remove_cv_t<T2>>;
 }
-
 template <typename T>
 inline constexpr bool resembles_r_string() noexcept {
     return is_same_ish<T, Rcpp::String>() || is_same_ish<T, Rcpp::String::const_StringProxy>() ||
            is_same_ish<T, Rcpp::String::StringProxy>();
 }
-
-
 template <typename T>
 inline constexpr bool resembles_vec_raw() noexcept {
     return is_same_ish<T, Rcpp::ChildVector<Rcpp::RawVector>>() ||
            is_same_ish<T, Rcpp::RawVector>() ||
            is_same_ish<T, Rcpp::Vector<RAWSXP, Rcpp::PreserveStorage>>();
 }
-
 template <typename T>
 inline constexpr bool resembles_vec_chr() noexcept {
     return is_same_ish<T, Rcpp::ChildVector<Rcpp::CharacterVector>>() ||

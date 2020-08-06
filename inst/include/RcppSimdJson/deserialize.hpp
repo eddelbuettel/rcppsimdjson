@@ -334,7 +334,6 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
 template <typename json_T, bool is_file>
 inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::parser& parser,
                                                                const json_T&          json) {
-
     if constexpr (utils::resembles_vec_raw<json_T>()) {
         /* if `json` is a raw (unsigned char) vector, we can cheat */
         return parser.parse(
@@ -347,16 +346,16 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
     }
 
     if constexpr (utils::resembles_r_string<json_T>()) {
-        if constexpr (is_file) {
+        if constexpr (is_file) { /* if `json` is a string and file path...*/
+            /* ... check for a `memDecompress()`-compatible file extension... */
             if (const auto file_type = utils::get_memDecompress_type(std::string_view(json))) {
                 return parse<Rcpp::RawVector, IS_NOT_FILE>(
-                    parser,
+                    parser, /* ... and decompress to a RawVector if so, then parse that */
                     utils::decompress(std::string(json), Rcpp::String((*file_type).data())));
-            } else { /* no file (compressed) type */
-                return parser.load(std::string(json));
             }
+            return parser.load(std::string(json)); /* otherwise, just `parser::load()` the file */
         } else {
-            return parser.parse(std::string_view(json));
+            return parser.parse(std::string_view(json)); /* if not file, just parse the string */
         }
     }
 }
@@ -372,22 +371,22 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     }
 
     if (query.empty()) {
+        /* if `query` is empty (""), parse/deserialize as if there's no query */
         return deserialize(parsed, parse_opts);
     }
 
     if constexpr (query_error_ok) {
         if (auto [queried, query_error] = parsed.at(std::string_view(query)); !query_error) {
             return deserialize(queried, parse_opts);
-        } else { /* parse_error != simdjson::error_code::SUCCESS */
-            return on_query_error;
         }
+        return on_query_error;
+
     } else { /* !query_error_ok */
         auto [queried, query_error] = parsed.at(std::string_view(query));
         if (query_error) {
             Rcpp::stop(simdjson::error_message(query_error));
-        } else { /* query_error == simdjson::error_code::SUCCESS */
-            return deserialize(queried, parse_opts);
         }
+        return deserialize(queried, parse_opts);
     }
 }
 
@@ -404,16 +403,15 @@ inline SEXP parse_and_deserialize(simdjson::dom::parser&                       p
     if constexpr (parse_error_ok) {
         if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json); !parse_error) {
             return deserialize(parsed, parse_opts);
-        } else { /* parse_error == simdjson::error_code::SUCCESS */
-            return on_parse_error;
         }
+        return on_parse_error;
+
     } else {
         auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
         if (parse_error) {
             Rcpp::stop(simdjson::error_message(parse_error));
-        } else { /* parse_error != simdjson::error_code::SUCCESS */
-            return deserialize(parsed, parse_opts);
         }
+        return deserialize(parsed, parse_opts);
     }
 }
 
@@ -432,16 +430,15 @@ inline SEXP parse_query_and_deserialize(simdjson::dom::parser&                 p
     if constexpr (parse_error_ok) {
         if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json); !parse_error) {
             return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
-        } else { /* parse_error != simdjson::error_code::SUCCESS */
-            return on_parse_error;
         }
+        return on_parse_error;
+
     } else {
         auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
         if (parse_error) {
             Rcpp::stop(simdjson::error_message(parse_error));
-        } else { /* parse_error == simdjson::error_code::SUCCESS */
-            return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
         }
+        return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
     }
 }
 
@@ -504,27 +501,22 @@ inline SEXP flat_query(const json_T&                                json,
                         out[i] = query_and_deserialize<query_error_ok>(
                             parsed, query[i], on_query_error, parse_opts);
                     }
-
                     out.attr("names") = query.attr("names");
                     return out;
-
-                } else { /* parse_error != simdjson::error_code::SUCCESS */
-                    return on_parse_error;
                 }
+                return on_parse_error;
 
             } else { /* !parse_error_ok */
                 auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
                 if (parse_error) {
                     Rcpp::stop(simdjson::error_message(parse_error));
-                } else { /* parse_error == simdjson::error_code::SUCCESS */
-                    for (R_xlen_t i = 0; i < n; ++i) {
-                        out[i] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i], on_query_error, parse_opts);
-                    }
-
-                    out.attr("names") = query.attr("names");
-                    return out;
                 }
+                for (R_xlen_t i = 0; i < n; ++i) {
+                    out[i] = query_and_deserialize<query_error_ok>(
+                        parsed, query[i], on_query_error, parse_opts);
+                }
+                out.attr("names") = query.attr("names");
+                return out;
             }
         }
 
@@ -540,7 +532,6 @@ inline SEXP flat_query(const json_T&                                json,
                                                      query_error_ok>(
                     parser, json[i], query[0], on_parse_error, on_query_error, parse_opts);
             }
-
             out.attr("names") = json.attr("names");
             return out;
 
@@ -592,29 +583,27 @@ inline SEXP nested_query(const json_T&                                json,
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
                     }
-
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;
                 }
-            } else { /* parse_error != simdjson::error_code::SUCCESS */
-                return on_parse_error;
             }
+
+            return on_parse_error;
+
         } else { /* !parse_error_ok */
             auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
             if (parse_error) {
                 Rcpp::stop(simdjson::error_message(parse_error));
-            } else { /* parse_error == simdjson::error_code::SUCCESS */
-                for (R_xlen_t i = 0; i < n; ++i) {
-                    const R_xlen_t n_queries = std::size(query[i]);
-                    Rcpp::List     res(n_queries);
-                    for (R_xlen_t j = 0; j < std::size(query[i]); ++j) {
-                        res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
-                    }
-
-                    res.attr("names") = query[i].attr("names");
-                    out[i]            = res;
+            }
+            for (R_xlen_t i = 0; i < n; ++i) {
+                const R_xlen_t n_queries = std::size(query[i]);
+                Rcpp::List     res(n_queries);
+                for (R_xlen_t j = 0; j < std::size(query[i]); ++j) {
+                    res[j] = query_and_deserialize<query_error_ok>(
+                        parsed, query[i][j], on_query_error, parse_opts);
                 }
+                res.attr("names") = query[i].attr("names");
+                out[i]            = res;
             }
         }
 
@@ -631,25 +620,25 @@ inline SEXP nested_query(const json_T&                                json,
                     }
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;
-                } else { /* parse_error != simdjson::error_code::SUCCESS */
-                    out[i] = on_parse_error;
                 }
+                out[i] = on_parse_error;
+
             } else { /* !parse_error_ok */
                 auto [parsed, parse_error] = parse<decltype(json[i]), is_file>(parser, json[i]);
                 if (parse_error) {
                     Rcpp::stop(simdjson::error_message(parse_error));
-                } else { /* parse_error == simdjson::error_code::SUCCESS */
-                    Rcpp::List res(n_queries);
-                    for (R_xlen_t j = 0; j < n_queries; ++j) {
-                        res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
-                    }
-                    res.attr("names") = query[i].attr("names");
-                    out[i]            = res;
                 }
+                Rcpp::List res(n_queries);
+                for (R_xlen_t j = 0; j < n_queries; ++j) {
+                    res[j] = query_and_deserialize<query_error_ok>(
+                        parsed, query[i][j], on_query_error, parse_opts);
+                }
+                res.attr("names") = query[i].attr("names");
+                out[i]            = res;
             }
         }
     }
+
     if (utils::is_named(query)) {
         out.attr("names") = query.attr("names");
     } else {

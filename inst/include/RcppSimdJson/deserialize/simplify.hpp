@@ -131,7 +131,7 @@ inline auto simplify_object(const simdjson::dom::object object,
     for (auto&& [key, value] : object) {
         out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
             value, empty_array, empty_object, single_null);
-        out_names[i++] = std::string(key);
+        out_names[i++] = Rcpp::String(std::string(key));
     }
 
     out.attr("names") = out_names;

@@ -167,7 +167,7 @@ inline auto build_data_frame(simdjson::dom::array                               
     auto       out_names = Rcpp::CharacterVector(std::size(cols));
 
     for (auto&& [key, col] : cols) {
-        out_names[col.index] = std::string(key);
+        out_names[col.index] = Rcpp::String(std::string(key));
 
         switch (col.schema.common_R_type()) {
             case rcpp_T::chr: {
