@@ -48,12 +48,6 @@ expect_identical(fparse(c("junk JSON", "more junk JSON"),
                         parse_error_ok = TRUE, on_parse_error = NA),
                  list(NA, NA))
 
-random_utf8 <- "լR<zٹ؄ƊGDáͽPٵ̝M5-uѵ̇˥)JYEɳĂѠ·վx?,:>й>SףޑR#цҐ5ӎ[0)ؾȸğͲ]ЉßQϧ͎ƽޜ@էϖyÎ&,uٜ w(ZP+dăվ˵  ΄ݤԨ؃0fΟӉٻkʡө_ȭv"
-expect_identical(fparse(sprintf('"%s"', random_utf8)), random_utf8)
-expect_identical(fparse(sprintf('{"%s":"%s"}', random_utf8, random_utf8)),
-                 `names<-`(list(random_utf8), random_utf8))
-
-
 #** fload() --------------------------------------------------------------------
 .write_file("1", test_file1)
 .write_file("2", test_file2)

@@ -57,7 +57,6 @@ class Type_Doctor {
 
 template <Type_Policy type_policy>
 inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcept {
-
     for (auto&& element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::ARRAY:
@@ -197,10 +196,10 @@ template <Type_Policy type_policy>
 inline constexpr auto Type_Doctor<type_policy>::is_vectorizable() const noexcept -> bool {
     if constexpr (type_policy == Type_Policy::anything_goes) {
         return !(object_ || array_);
-    }
-
-    if (object_ || array_) {
-        return false;
+    } else {
+        if (object_ || array_) {
+            return false;
+        }
     }
 
     if (chr_) {
