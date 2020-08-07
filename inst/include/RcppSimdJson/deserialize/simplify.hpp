@@ -188,7 +188,7 @@ inline auto simplify_element(simdjson::dom::element element,
             return Rcpp::wrap(element.get<bool>().first);
 
         case simdjson::dom::element_type::STRING:
-            return Rcpp::wrap(element.get<const char*>().first);
+            return Rcpp::wrap(Rcpp::String(std::string(element.get<std::string_view>().first)));
 
         case simdjson::dom::element_type::NULL_VALUE:
             return single_null;

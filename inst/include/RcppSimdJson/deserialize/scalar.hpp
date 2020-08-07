@@ -106,7 +106,7 @@ get_scalar_<double, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt
 template <>
 inline auto get_scalar_<std::string, rcpp_T::chr>(simdjson::dom::element element) noexcept(
     noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(element.get<const char*>().first);
+    return Rcpp::String(std::string(element.get<std::string_view>().first));
 }
 // uint64_t ========================================================================================
 // return Rcpp::String
