@@ -73,6 +73,10 @@ fload <- function(json,
         stop("`query=` must be `NULL`, a non-empty character vector, or a list containing non-empty character vectors.")
     }
 
+    if (is.list(query) && length(json) != length(query)) {
+        stop("`query=` is a list (nested query), but is not the same length as `json=`.")
+    }
+
     if (!.is_scalar_lgl(parse_error_ok)) {
         stop("`parse_error_ok=` must be either `TRUE` or `FALSE`.")
     }

@@ -135,7 +135,8 @@ inline SEXP resolve_int64(const std::vector<uint64_t>& x) {
 }
 
 
-inline std::optional<std::string_view> get_memDecompress_type(const std::string_view& file_path) {
+inline constexpr std::optional<std::string_view>
+get_memDecompress_type(const std::string_view& file_path) {
     if (const auto dot = std::string_view(file_path).rfind('.'); dot != std::string_view::npos) {
         if (const auto ext = file_path.substr(dot + 1); std::size(ext) >= 2) {
             if (ext == "gz") {
@@ -151,6 +152,12 @@ inline std::optional<std::string_view> get_memDecompress_type(const std::string_
     }
     return std::nullopt;
 }
+static_assert(get_memDecompress_type("test.gz") == "gzip");
+static_assert(get_memDecompress_type("test.xz") == "xz");
+static_assert(get_memDecompress_type("test.bz") == "bzip2");
+static_assert(get_memDecompress_type("test.bz2") == "bzip2");
+static_assert(get_memDecompress_type("no-file-ext") == std::nullopt);
+static_assert(get_memDecompress_type("no-file-ext.badext") == std::nullopt);
 
 
 template <typename T1, typename T2>
@@ -199,7 +206,7 @@ inline Rcpp::RawVector decompress(const file_path_T& file_path, const Rcpp::Stri
     stream.seekg(0, std::ios::beg);
     const std::size_t n(end - stream.tellg());
     if (n == 0) { /* avoid undefined behavior */
-        return Rcpp::RawVector(0);
+        return Rcpp::RawVector(1);
     }
 
     Rcpp::RawVector buffer(n);
@@ -216,12 +223,21 @@ inline constexpr std::optional<std::string_view> get_url_prefix(const std::strin
         } else if (const auto prefix = std::string_view(str).substr(0, 7);
                    prefix == "http://" || prefix == "ftps://" || prefix == "file://") {
             return prefix;
-        } else if (const auto prefix = std::string_view(str).substr(0, 5); prefix == "ftp://") {
+        } else if (const auto prefix = std::string_view(str).substr(0, 6); prefix == "ftp://") {
             return prefix;
         }
     }
     return std::nullopt;
 }
+static_assert(get_url_prefix("https://test.com") == "https://");
+static_assert(get_url_prefix("http://test.com") == "http://");
+static_assert(get_url_prefix("ftps://test.com") == "ftps://");
+static_assert(get_url_prefix("file:///test.com") == "file://");
+static_assert(get_url_prefix("ftp://test.com") == "ftp://");
+static_assert(get_url_prefix("bad12://test.com") == std::nullopt);
+static_assert(get_url_prefix("no-prefix.com") == std::nullopt);
+static_assert(get_url_prefix("short") == std::nullopt);
+
 
 
 inline constexpr std::optional<std::string_view> get_file_ext(const std::string_view& str) {
@@ -236,6 +252,9 @@ inline constexpr std::optional<std::string_view> get_file_ext(const std::string_
     }
     return std::nullopt;
 }
+static_assert(get_file_ext("ftp://test.com/no-file-ext") == std::nullopt);
+static_assert(get_file_ext("ftp://test.com/test.json") == ".json");
+static_assert(get_file_ext("ftp://test.com/test.json.gz") == ".gz");
 
 
 inline bool is_named(SEXP x) {

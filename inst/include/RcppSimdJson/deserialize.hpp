@@ -351,7 +351,7 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
             if (const auto file_type = utils::get_memDecompress_type(std::string_view(json))) {
                 return parse<Rcpp::RawVector, IS_NOT_FILE>(
                     parser, /* ... and decompress to a RawVector if so, then parse that */
-                    utils::decompress(std::string(json), Rcpp::String((*file_type).data())));
+                    utils::decompress(std::string(json), Rcpp::String(std::string(*file_type))));
             }
             return parser.load(std::string(json)); /* otherwise, just `parser::load()` the file */
         } else {
@@ -579,7 +579,7 @@ inline SEXP nested_query(const json_T&                                json,
                 for (R_xlen_t i = 0; i < n; ++i) {
                     const R_xlen_t n_queries = std::size(query[i]);
                     Rcpp::List     res(n_queries);
-                    for (R_xlen_t j = 0; j < std::size(query[i]); ++j) {
+                    for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
                     }
@@ -598,7 +598,7 @@ inline SEXP nested_query(const json_T&                                json,
             for (R_xlen_t i = 0; i < n; ++i) {
                 const R_xlen_t n_queries = std::size(query[i]);
                 Rcpp::List     res(n_queries);
-                for (R_xlen_t j = 0; j < std::size(query[i]); ++j) {
+                for (R_xlen_t j = 0; j < n_queries; ++j) {
                     res[j] = query_and_deserialize<query_error_ok>(
                         parsed, query[i][j], on_query_error, parse_opts);
                 }
