@@ -1,8 +1,27 @@
 #ifndef RCPPSIMDJSON_UTILS_HPP
 #define RCPPSIMDJSON_UTILS_HPP
 
+
 #include <Rcpp.h>
-#include <algorithm> // std::all_of
+
+
+#include <algorithm>   /* std::all_of */
+#include <fstream>     /* std::ifstream */
+#include <type_traits> /* std::remove_cv_t or std::remove_reference_t */
+
+
+#ifndef __cpp_lib_remove_cvref
+namespace std {
+
+
+template <class T>
+struct remove_cvref {
+    typedef remove_cv_t<std::remove_reference_t<T>> type;
+};
+
+
+} // namespace std
+#endif
 
 
 namespace rcppsimdjson {
@@ -113,6 +132,144 @@ template <Int64_R_Type int64_opt>
 inline SEXP resolve_int64(const std::vector<uint64_t>& x) {
     return Rcpp::CharacterVector(
         std::begin(x), std::end(x), [](uint64_t val) { return std::to_string(val); });
+}
+
+
+inline constexpr std::optional<std::string_view>
+get_memDecompress_type(const std::string_view& file_path) {
+    if (const auto dot = std::string_view(file_path).rfind('.'); dot != std::string_view::npos) {
+        if (const auto ext = file_path.substr(dot + 1); std::size(ext) >= 2) {
+            if (ext == "gz") {
+                return "gzip";
+            }
+            if (ext == "xz") {
+                return "xz";
+            }
+            if (ext == "bz" || ext == "bz2") {
+                return "bzip2";
+            }
+        }
+    }
+    return std::nullopt;
+}
+static_assert(get_memDecompress_type("test.gz") == "gzip");
+static_assert(get_memDecompress_type("test.xz") == "xz");
+static_assert(get_memDecompress_type("test.bz") == "bzip2");
+static_assert(get_memDecompress_type("test.bz2") == "bzip2");
+static_assert(get_memDecompress_type("no-file-ext") == std::nullopt);
+static_assert(get_memDecompress_type("no-file-ext.badext") == std::nullopt);
+
+
+template <typename T1, typename T2>
+inline constexpr bool is_same_ish() noexcept {
+    return std::is_same_v<std::remove_cv_t<T1>, std::remove_cv_t<T2>>;
+}
+template <typename T>
+inline constexpr bool resembles_r_string() noexcept {
+    return is_same_ish<T, Rcpp::String>() || is_same_ish<T, Rcpp::String::const_StringProxy>() ||
+           is_same_ish<T, Rcpp::String::StringProxy>();
+}
+template <typename T>
+inline constexpr bool resembles_vec_raw() noexcept {
+    return is_same_ish<T, Rcpp::ChildVector<Rcpp::RawVector>>() ||
+           is_same_ish<T, Rcpp::RawVector>() ||
+           is_same_ish<T, Rcpp::Vector<RAWSXP, Rcpp::PreserveStorage>>();
+}
+template <typename T>
+inline constexpr bool resembles_vec_chr() noexcept {
+    return is_same_ish<T, Rcpp::ChildVector<Rcpp::CharacterVector>>() ||
+           is_same_ish<T, Rcpp::CharacterVector>() ||
+           is_same_ish<T, Rcpp::Vector<STRSXP, Rcpp::PreserveStorage>>();
+}
+
+
+template <typename T>
+inline constexpr bool is_na_string(const T& x) {
+    if constexpr (resembles_r_string<T>()) {
+        return x == NA_STRING;
+    } else if constexpr (resembles_vec_chr<T>()) {
+        return x[0].get() == NA_STRING;
+    } else {
+        return false;
+    }
+}
+
+
+template <typename file_path_T>
+inline Rcpp::RawVector decompress(const file_path_T& file_path, const Rcpp::String& file_type) {
+    std::ifstream stream(file_path, std::ios::binary | std::ios::ate);
+    if (!stream) {
+        Rcpp::stop("There's a problem with this file:\n\t-%s", file_path);
+    }
+
+    const auto end = stream.tellg();
+    stream.seekg(0, std::ios::beg);
+    const std::size_t n(end - stream.tellg());
+    if (n == 0) { /* avoid undefined behavior */
+        return Rcpp::RawVector(1);
+    }
+
+    Rcpp::RawVector buffer(n);
+    stream.read(reinterpret_cast<char*>(&(buffer[0])), n);
+
+    return Rcpp::Function("memDecompress")(buffer, file_type, false);
+}
+
+
+inline constexpr std::optional<std::string_view> get_url_prefix(const std::string_view& str) {
+    if (std::size(str) > 8) {
+        if (const auto prefix = std::string_view(str).substr(0, 8); prefix == "https://") {
+            return prefix;
+        } else if (const auto prefix = std::string_view(str).substr(0, 7);
+                   prefix == "http://" || prefix == "ftps://" || prefix == "file://") {
+            return prefix;
+        } else if (const auto prefix = std::string_view(str).substr(0, 6); prefix == "ftp://") {
+            return prefix;
+        }
+    }
+    return std::nullopt;
+}
+static_assert(get_url_prefix("https://test.com") == "https://");
+static_assert(get_url_prefix("http://test.com") == "http://");
+static_assert(get_url_prefix("ftps://test.com") == "ftps://");
+static_assert(get_url_prefix("file:///test.com") == "file://");
+static_assert(get_url_prefix("ftp://test.com") == "ftp://");
+static_assert(get_url_prefix("bad12://test.com") == std::nullopt);
+static_assert(get_url_prefix("no-prefix.com") == std::nullopt);
+static_assert(get_url_prefix("short") == std::nullopt);
+
+
+
+inline constexpr std::optional<std::string_view> get_file_ext(const std::string_view& str) {
+    if (const auto dot = str.rfind('.'); dot != std::string_view::npos) {
+        if (const auto out = str.substr(dot); /* `with_dot ? dot : dot + 1` */
+            /* if the file path is a URL without an extension, we need to ensure that that we don't
+             * extract everything after the domain by checking for '/'
+             */
+            out.find("/") == std::string_view::npos) {
+            return str.substr(dot);
+        }
+    }
+    return std::nullopt;
+}
+static_assert(get_file_ext("ftp://test.com/no-file-ext") == std::nullopt);
+static_assert(get_file_ext("ftp://test.com/test.json") == ".json");
+static_assert(get_file_ext("ftp://test.com/test.json.gz") == ".gz");
+
+
+inline bool is_named(SEXP x) {
+    return !Rf_isNull(Rf_getAttrib(x, R_NamesSymbol)) ||
+           Rf_xlength(Rf_getAttrib(x, R_NamesSymbol)) != 0;
+}
+
+
+inline bool is_single_json_arg(SEXP json) {
+    return (TYPEOF(json) == RAWSXP || (TYPEOF(json) == STRSXP && Rf_xlength(json) == 1));
+}
+
+
+inline bool is_single_query_arg(SEXP query) {
+    return TYPEOF(query) == STRSXP && Rf_xlength(query) == 1;
 }
 
 

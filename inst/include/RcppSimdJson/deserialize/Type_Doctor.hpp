@@ -40,51 +40,7 @@ class Type_Doctor {
     Type_Doctor() = default;
     explicit Type_Doctor<type_policy>(simdjson::dom::array) noexcept;
 
-    constexpr auto reset() noexcept -> void {
-        ARRAY_ = false;
-        array_ = false;
-
-        OBJECT_ = false;
-        object_ = false;
-
-        STRING_ = false;
-        chr_    = false;
-
-        DOUBLE_ = false;
-        dbl_    = false;
-
-        INT64_ = false;
-        i64_   = false;
-        i32_   = false;
-
-        BOOL_ = false;
-        lgl_  = false;
-
-        NULL_VALUE_ = false;
-        null_       = false;
-
-        UINT64_ = false;
-        u64_    = false;
-    };
-
-    [[nodiscard]] constexpr auto has_ARRAY() const noexcept -> bool { return ARRAY_; };
-    [[nodiscard]] constexpr auto has_OBJECT() const noexcept -> bool { return OBJECT_; };
-    [[nodiscard]] constexpr auto has_STRING() const noexcept -> bool { return STRING_; };
-    [[nodiscard]] constexpr auto has_DOUBLE() const noexcept -> bool { return DOUBLE_; };
-    [[nodiscard]] constexpr auto has_INT64() const noexcept -> bool { return INT64_; };
-    [[nodiscard]] constexpr auto has_BOOL() const noexcept -> bool { return BOOL_; };
-    [[nodiscard]] constexpr auto has_NULL_VALUE() const noexcept -> bool { return NULL_VALUE_; };
-    [[nodiscard]] constexpr auto has_UINT64() const noexcept -> bool { return UINT64_; };
-
-    [[nodiscard]] constexpr auto has_array() const noexcept -> bool { return array_; };
-    [[nodiscard]] constexpr auto has_object() const noexcept -> bool { return OBJECT_; };
-    [[nodiscard]] constexpr auto has_chr() const noexcept -> bool { return chr_; };
-    [[nodiscard]] constexpr auto has_dbl() const noexcept -> bool { return dbl_; };
-    [[nodiscard]] constexpr auto has_i64() const noexcept -> bool { return i64_; };
-    [[nodiscard]] constexpr auto has_i32() const noexcept -> bool { return i32_; };
-    [[nodiscard]] constexpr auto has_lgl() const noexcept -> bool { return lgl_; };
     [[nodiscard]] constexpr auto has_null() const noexcept -> bool { return null_; };
-    [[nodiscard]] constexpr auto has_u64() const noexcept -> bool { return u64_; };
 
     [[nodiscard]] constexpr auto common_R_type() const noexcept -> rcpp_T;
     [[nodiscard]] constexpr auto common_element_type() const noexcept
@@ -101,7 +57,6 @@ class Type_Doctor {
 
 template <Type_Policy type_policy>
 inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcept {
-
     for (auto&& element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::ARRAY:
@@ -178,8 +133,8 @@ constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool
 }
 
 
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::strict>::common_R_type() const noexcept -> rcpp_T {
+template <Type_Policy type_policy>
+inline constexpr auto Type_Doctor<type_policy>::common_R_type() const noexcept -> rcpp_T {
     if (object_) {
         return rcpp_T::object; // # nocov
     }
@@ -187,18 +142,45 @@ inline constexpr auto Type_Doctor<Type_Policy::strict>::common_R_type() const no
         return rcpp_T::array; // # nocov
     }
 
-    if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
-        return rcpp_T::chr;
+    if constexpr (type_policy == Type_Policy::anything_goes) {
+        return chr_ ? rcpp_T::chr
+                    : u64_ ? rcpp_T::u64
+                           : dbl_ ? rcpp_T::dbl
+                                  : i64_ ? rcpp_T::i64
+                                         : i32_ ? rcpp_T::i32 : lgl_ ? rcpp_T::lgl : rcpp_T::null;
+
+    } else {
+        if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
+            return rcpp_T::chr;
+        }
+
+        if constexpr (type_policy == Type_Policy::strict) {
+            if (dbl_ && !(i64_ || i32_ || lgl_ || u64_)) {
+                return rcpp_T::dbl;
+            }
+            if (i64_ && !(i32_ || lgl_ || u64_)) {
+                return rcpp_T::i64;
+            }
+            if (i32_ && !(lgl_ || u64_)) {
+                return rcpp_T::i32;
+            }
+        }
+
+        if constexpr (type_policy == Type_Policy::ints_as_dbls) {
+            if (dbl_ && !(lgl_ || u64_)) { // any number will become double
+                return rcpp_T::dbl;
+            }
+            if (i64_ && !(lgl_ || u64_)) {
+                // only 64/32-bit integers: will follow selected Int64_R_Type option
+                return rcpp_T::i64;
+            }
+            if (i32_ && !(lgl_ || u64_)) { // only 32-bit integers remaining: will become int
+                return rcpp_T::i32;
+            }
+        }
     }
-    if (dbl_ && !(i64_ || i32_ || lgl_ || u64_)) {
-        return rcpp_T::dbl;
-    }
-    if (i64_ && !(i32_ || lgl_ || u64_)) {
-        return rcpp_T::i64;
-    }
-    if (i32_ && !(lgl_ || u64_)) {
-        return rcpp_T::i32;
-    }
+
+
     if (lgl_ && !u64_) {
         return rcpp_T::lgl;
     }
@@ -210,111 +192,43 @@ inline constexpr auto Type_Doctor<Type_Policy::strict>::common_R_type() const no
 }
 
 
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::common_R_type() const noexcept
-    -> rcpp_T {
-
-    if (object_) {
-        return rcpp_T::object; // # nocov
-    }
-    if (array_) {
-        return rcpp_T::array; // # nocov
-    }
-
-    if (chr_ && !(dbl_ || i64_ || i32_ || lgl_ || u64_)) {
-        return rcpp_T::chr;
-    }
-
-    if (dbl_ && !(lgl_ || u64_)) { // any number will become double
-        return rcpp_T::dbl;
-    }
-    if (i64_ && !(lgl_ || u64_)) {
-        // only 64/32-bit integers: will follow selected Int64_R_Type option
-        return rcpp_T::i64;
-    }
-    if (i32_ && !(lgl_ || u64_)) { // only 32-bit integers remaining: will become int
-        return rcpp_T::i32;
-    }
-
-    if (lgl_ && !u64_) {
-        return rcpp_T::lgl;
-    }
-    if (u64_) {
-        return rcpp_T::u64;
-    }
-
-    return rcpp_T::null;
-}
-
-
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::anything_goes>::common_R_type() const noexcept
-    -> rcpp_T {
-
-    return object_ ? rcpp_T::object
-                   : array_ ? rcpp_T::array
-                            : chr_ ? rcpp_T::chr
-                                   : u64_ ? rcpp_T::u64
-                                          : dbl_ ? rcpp_T::dbl
-                                                 : i64_ ? rcpp_T::i64
-                                                        : i32_ ? rcpp_T::i32
-                                                               : lgl_ ? rcpp_T::lgl : rcpp_T::null;
-}
-
-
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::strict>::is_vectorizable() const noexcept -> bool {
-    if (object_ || array_) {
-        return false;
+template <Type_Policy type_policy>
+inline constexpr auto Type_Doctor<type_policy>::is_vectorizable() const noexcept -> bool {
+    if constexpr (type_policy == Type_Policy::anything_goes) {
+        return !(object_ || array_);
+    } else {
+        if (object_ || array_) {
+            return false;
+        }
     }
 
     if (chr_) {
         return !(dbl_ || i64_ || i32_ || lgl_ || u64_);
     }
-    if (dbl_) {
-        return !(i64_ || i32_ || lgl_ || u64_);
+
+    if constexpr (type_policy == Type_Policy::strict) {
+        if (dbl_) {
+            return !(i64_ || i32_ || lgl_ || u64_);
+        }
+        if (i64_) {
+            return !(i32_ || lgl_ || u64_);
+        }
+        if (i32_) {
+            return !(lgl_ || u64_);
+        }
     }
-    if (i64_) {
-        return !(i32_ || lgl_ || u64_);
+
+    if constexpr (type_policy == Type_Policy::ints_as_dbls) {
+        if (dbl_ || i64_ || i32_) {
+            return !(lgl_ || u64_);
+        }
     }
-    if (i32_) {
-        return !(lgl_ || u64_);
-    }
+
     if (lgl_) {
         return !u64_;
     }
 
     return u64_;
-}
-
-
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::ints_as_dbls>::is_vectorizable() const noexcept
-    -> bool {
-
-    if (object_ || array_) {
-        return false;
-    }
-
-    if (chr_) {
-        return !(dbl_ || i64_ || i32_ || lgl_ || u64_);
-    }
-    if (dbl_ || i64_ || i32_) {
-        return !(lgl_ || u64_);
-    }
-    if (lgl_) {
-        return !u64_;
-    }
-
-    return u64_;
-}
-
-
-template <>
-inline constexpr auto Type_Doctor<Type_Policy::anything_goes>::is_vectorizable() const noexcept
-    -> bool {
-
-    return !(object_ || array_);
 }
 
 

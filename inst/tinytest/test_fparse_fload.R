@@ -12,17 +12,16 @@ test_file2 <- tempfile(fileext = ".json")
 
 # json =========================================================================
 #* invalid ---------------------------------------------------------------------
-json_error <- "`json=` must be a `character`"
 #** fparse() -------------------------------------------------------------------
 expect_error(fparse(1),)
 expect_error(fparse(NA_integer_))
 
-expect_error(fparse("1", error_ok = NA))
+expect_error(fparse("1", parse_error_ok = NA))
 #** fload() --------------------------------------------------------------------
 expect_error(fload(1))
 expect_error(fload(NA_integer_))
 
-expect_error(fload("1", error_ok = NA))
+expect_error(fload("1", parse_error_ok = NA))
 
 .write_file("junk JSON", test_file1)
 .write_file("more junk JSON", test_file2)
@@ -31,67 +30,74 @@ expect_error(fload(c(test_file1, test_file2)))
 
 #* valid -----------------------------------------------------------------------
 #** fparse() -------------------------------------------------------------------
-expect_identical(fparse("1"), 1L)
-expect_identical(fparse(c("1", "2")), list(1L, 2L))
-expect_identical(fparse(c(json1 = "1", json2 = "2")), list(json1 = 1L, json2 = 2L))
-expect_identical(fparse(NA_character_), NA_character_)
-expect_identical(fparse(c(NA_character_, NA_character_)), list(NA_character_, NA_character_))
-expect_identical(fparse(c("1", NA_character_)), list(1L, NA_character_))
+expect_identical(fparse("1"),
+                 1L)
+expect_identical(fparse(c("1", "2")),
+                 list(1L, 2L))
+expect_identical(fparse(c(json1 = "1", json2 = "2")),
+                 list(json1 = 1L, json2 = 2L))
+expect_identical(fparse(NA_character_),
+                 NA)
+expect_identical(fparse(c(NA_character_, NA_character_)),
+                 list(NA, NA))
+expect_identical(fparse(c("1", NA_character_)),
+                 list(1L, NA))
 expect_true(fparse("null", single_null = TRUE))
-expect_true(fparse("junk JSON", error_ok = TRUE, on_error = TRUE))
-expect_identical(fparse(
-    c("junk JSON", "more junk JSON"),
-    error_ok = TRUE,
-    on_error = NA
-),
-list(NA, NA))
+expect_true(fparse("junk JSON", parse_error_ok = TRUE, on_parse_error = TRUE))
+expect_identical(fparse(c("junk JSON", "more junk JSON"),
+                        parse_error_ok = TRUE, on_parse_error = NA),
+                 list(NA, NA))
+
 #** fload() --------------------------------------------------------------------
 .write_file("1", test_file1)
-expect_identical(fload(test_file1),
-                 1L)
 .write_file("2", test_file2)
+
+expect_identical(fload(test_file1), 1L)
 expect_identical(
     fload(c(test_file1, test_file2)),
     `names<-`(list(1L, 2L), basename(c(test_file1, test_file2)))
 )
+
 expect_identical(fload(c(json1 = test_file1, json2 = test_file2)),
                  list(json1 = 1L, json2 = 2L))
-expect_identical(fload(NA_character_), NA_character_)
-expect_identical(fload(c(NA_character_, NA_character_)), list(NA_character_, NA_character_))
-expect_identical(fload(c(test_file1, NA_character_))[[2L]], NA_character_)
+expect_identical(fload(NA_character_),
+                 NA)
+expect_identical(fload(c(NA_character_, NA_character_)),
+                 list(NA, NA))
+expect_identical(fload(c(test_file1, NA_character_))[[2L]], NA)
+
 .write_file("null", test_file1)
 expect_true(fload(test_file1, single_null = TRUE))
+
 .write_file("junk JSON", test_file1)
 .write_file("more junk JSON", test_file2)
-expect_true(fload(test_file1, error_ok = TRUE, on_error = TRUE))
-expect_identical(fload(
-    c(test_file1, test_file2),
-    error_ok = TRUE,
-    on_error = NA
-),
-`names<-`(list(NA, NA), basename(c(
-    c(test_file1, test_file2)
-))))
+
+expect_true(fload(test_file1, parse_error_ok = TRUE, on_parse_error = TRUE))
+expect_identical(
+    fload(c(test_file1, test_file2),
+          parse_error_ok = TRUE, on_parse_error = NA),
+    `names<-`(list(NA, NA), basename(c(c(test_file1, test_file2))))
+)
 # _ ============================================================================
 # query ========================================================================
 #* invalid ---------------------------------------------------------------------
 #*** fparse() ------------------------------------------------------------------
-expect_error(fparse("1", query = NA_character_))
 expect_error(fparse("1", query = c("0", "0")))
 expect_error(fparse("1", query = (not_chr <- TRUE)))
 #*** fload() -------------------------------------------------------------------
-expect_error(fload("1", query = NA_character_))
 expect_error(fload("1", query = c("0", "0")))
 expect_error(fload("1", query = (not_chr <- TRUE)))
 
 #* valid -----------------------------------------------------------------------
 #*** fparse() ------------------------------------------------------------------
+expect_identical(fparse("1", query = NA_character_), NA)
 expect_identical(fparse("[0,1]", query = "0"),
                  0L)
 expect_identical(fparse("1", query = NULL),
                  1L)
 #*** fload() -------------------------------------------------------------------
 .write_file("[0,1]", test_file1)
+expect_identical(fload(test_file1, query = NA_character_), NA)
 expect_identical(fload(test_file1, query = "0"),
                  0L)
 .write_file("1", test_file1)
@@ -486,8 +492,7 @@ sapply(all_files, function(.x) expect_error(fload(.x)))
 
 
 # fload()-specific -------------------------------------------------------------
-expect_error(fload("not-a-real-file.rcppsimdjson"),
-             "The following files don't exist")
+expect_error(fload("not-a-real-file.rcppsimdjson"))
 
 expect_error(fload("not a real file"))
 
@@ -508,9 +513,6 @@ expect_error(
           verbose = NA),
     "`verbose=` must be either `TRUE` or `FALSE`."
 )
-
-expect_error(fload("not-a-real-file.rcppsimdjson.gz"),
-             "Compressed files are not yet supported.")
 
 
 # TODO verify CRAN policies for downloading, Travis usage

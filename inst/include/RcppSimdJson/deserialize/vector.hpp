@@ -7,10 +7,11 @@ namespace rcppsimdjson {
 namespace deserialize {
 namespace vector {
 
+
 template <int RTYPE, typename in_T, rcpp_T R_Type, bool has_nulls>
-inline auto build_vector_typed(simdjson::dom::array array) -> Rcpp::Vector<RTYPE> {
-    auto out = Rcpp::Vector<RTYPE>(r_length(array));
-    auto i   = R_xlen_t(0);
+inline Rcpp::Vector<RTYPE> build_vector_typed(simdjson::dom::array array) {
+    Rcpp::Vector<RTYPE> out(std::size(array));
+    R_xlen_t            i(0L);
     for (auto&& element : array) {
         out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);
     }
@@ -19,21 +20,18 @@ inline auto build_vector_typed(simdjson::dom::array array) -> Rcpp::Vector<RTYPE
 
 
 template <bool has_nulls>
-inline auto build_vector_integer64_typed(simdjson::dom::array array) -> Rcpp::Vector<REALSXP> {
-
-    auto stl_vec_int64 = std::vector<int64_t>(std::size(array));
-    auto i             = std::size_t(0ULL);
+inline Rcpp::Vector<REALSXP> build_vector_integer64_typed(simdjson::dom::array array) {
+    std::vector<int64_t> stl_vec_int64(std::size(array));
+    std::size_t          i(0ULL);
     for (auto&& element : array) {
         stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
     }
-
     return utils::as_integer64(stl_vec_int64);
 }
 
 
 template <utils::Int64_R_Type int64_opt>
-inline auto dispatch_typed(simdjson::dom::array array, const rcpp_T R_Type, const bool has_nulls)
-    -> SEXP {
+inline SEXP dispatch_typed(simdjson::dom::array array, const rcpp_T R_Type, const bool has_nulls) {
     switch (R_Type) {
         case rcpp_T::chr:
             return has_nulls
@@ -82,21 +80,20 @@ inline auto dispatch_typed(simdjson::dom::array array, const rcpp_T R_Type, cons
 
 
 template <int RTYPE>
-inline auto build_vector_mixed(simdjson::dom::array array) -> Rcpp::Vector<RTYPE> {
-    auto out = Rcpp::Vector<RTYPE>(r_length(array));
-    auto i   = R_xlen_t(0L);
+inline Rcpp::Vector<RTYPE> build_vector_mixed(simdjson::dom::array array) {
+    Rcpp::Vector<RTYPE> out(std::size(array));
+    R_xlen_t            i(0L);
     for (auto&& element : array) {
         out[i++] = get_scalar_dispatch<RTYPE>(element);
     }
-
     return out;
 }
 
 
-inline auto build_vector_integer64_mixed(simdjson::dom::array array) -> Rcpp::Vector<REALSXP> {
+inline Rcpp::Vector<REALSXP> build_vector_integer64_mixed(simdjson::dom::array array) {
+    std::vector<int64_t> stl_vec_int64(std::size(array));
+    std::size_t          i(0ULL);
 
-    auto stl_vec_int64 = std::vector<int64_t>(std::size(array));
-    auto i             = std::size_t(0ULL);
     for (auto&& element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::INT64:
@@ -118,8 +115,7 @@ inline auto build_vector_integer64_mixed(simdjson::dom::array array) -> Rcpp::Ve
 
 
 template <utils::Int64_R_Type int64_opt>
-inline auto dispatch_mixed(simdjson::dom::array array, const rcpp_T common_R_type) -> SEXP {
-
+inline SEXP dispatch_mixed(simdjson::dom::array array, const rcpp_T common_R_type) {
     switch (common_R_type) {
         case rcpp_T::chr:
             return build_vector_mixed<STRSXP>(array);
@@ -152,10 +148,11 @@ inline auto dispatch_mixed(simdjson::dom::array array, const rcpp_T common_R_typ
             return build_vector_mixed<LGLSXP>(array);
 
         default:
-            return Rcpp::LogicalVector(r_length(array), NA_LOGICAL);
+            return Rcpp::LogicalVector(std::size(array), NA_LOGICAL);
             // # nocov end
     }
 }
+
 
 } // namespace vector
 } // namespace deserialize

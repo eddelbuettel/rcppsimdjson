@@ -1,3 +1,34 @@
+2020-08-07  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+        * src/internal-utils.cpp: Move intitial argument validation to C++
+
+        * R/fparse: Add more flexible queries (plus tests, docs, examples),
+        split error_ok/on_error parameters into parse_error_ok/on_parse_error
+        and query_error_ok/on_query_error
+        * R/fload: Idem plus support for compressed local files (.gz, .bz2, .xz)
+        and compressed downloads for remote files
+        * inst/tinytest/test_compressed_files.R: Idem
+        * R/utils: Add .prep_input to streamline downloading remote files
+
+        * src/deserialize.cpp: Rebuild deserialization routine to handle
+        JSON strings, raw vectors, JSON files, and decompression with
+        null/single/flat/nested queries (plus tests, docs, examples).
+        * inst/include/RcppSimdJson/deserialize.hpp: Idem
+        * inst/include/RcppSimdJson/utils.hpp: Idem
+        * inst/tintytest/test_deserialization.R: Idem
+
+        * inst/include/RcppSimdJson/Type_Doctor.hpp: Clean up vestigial code and
+        add explicit conversion of strings to prevent extended UTF-8 character
+        mangling on Windows (plus tests)
+        * inst/include/RcppSimdJson/dataframe.hpp: Idem
+        * inst/include/RcppSimdJson/matrix.hpp: Idem
+        * inst/include/RcppSimdJson/vector.hpp: Idem
+        * inst/include/RcppSimdJson/scalar.hpp: Idem
+        * inst/tintytest/test_encoding.R: Idem
+
+        * local/notes.Rmd: Add notes tracker
+        * local/notes.md: Idem
+
 2020-07-16  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Roll minor version

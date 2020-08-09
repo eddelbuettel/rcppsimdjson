@@ -25,12 +25,12 @@ template <Type_Policy type_policy>
 inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
     -> std::optional<Column_Schema<type_policy>> {
 
-    auto cols      = Column_Schema<type_policy>();
-    auto col_index = R_xlen_t(0L);
-
     if (std::size(array) == 0) {
         return std::nullopt;
     }
+
+    auto cols      = Column_Schema<type_policy>();
+    auto col_index = R_xlen_t(0L);
 
     for (auto&& element : array) {
         if (auto [object, error] = element.get<simdjson::dom::object>(); !error) {
@@ -167,7 +167,7 @@ inline auto build_data_frame(simdjson::dom::array                               
     auto       out_names = Rcpp::CharacterVector(std::size(cols));
 
     for (auto&& [key, col] : cols) {
-        out_names[col.index] = std::string(key);
+        out_names[col.index] = Rcpp::String(std::string(key));
 
         switch (col.schema.common_R_type()) {
             case rcpp_T::chr: {
