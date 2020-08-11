@@ -1,16 +1,16 @@
 ## RcppSimdJSON: Rcpp Bindings for the simdjson Header Library
 
 [![Build Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/rcppsimdjson)
-[![License](https://eddelbuettel.github.io/badges/GPL2+.svg)](http://www.gnu.org/licenses/gpl-2.0.html)
-[![CRAN](http://www.r-pkg.org/badges/version/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
+[![License](https://eddelbuettel.github.io/badges/GPL2+.svg)](https://www.gnu.org/licenses/gpl-2.0.html)
+[![CRAN](https://www.r-pkg.org/badges/version/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 [![Downloads](https://cranlogs.r-pkg.org/badges/RcppSimdJson?color=brightgreen)](https://www.r-pkg.org/pkg/RcppSimdJson)
 [![Last Commit](https://img.shields.io/github/last-commit/eddelbuettel/rcppsimdjson)](https://github.com/eddelbuettel/rcppsimdjson)
 
 ### Motivation
 
-[simdjson](https://github.com/lemire/simdjson) by [Daniel Lemire](https://lemire.me/en/) (with contributions by [Geoff
-Langdale](https://twitter.com/geofflangdale),  [John Keiser](https://github.com/jkeiser) and  [many others](https://github.com/lemire/simdjson/graphs/contributors)) is an
+[simdjson](https://github.com/simdjson/simdjson) by [Daniel Lemire](https://lemire.me/en/) (with contributions by [Geoff
+Langdale](https://twitter.com/geofflangdale),  [John Keiser](https://github.com/jkeiser) and  [many others](https://github.com/simdjson/simdjson/graphs/contributors)) is an
 engineering marvel.  Through very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
 it manages to parse JSON files faster than disc access. Wut? Yes you read that right: parallel
 processing with so little overhead that the net throughput is limited only by disk speed.
@@ -21,7 +21,7 @@ here we are.
 
 For further introduction, see the [arXiv paper](https://arxiv.org/abs/1902.08318) by Langdale and Lemire (out/to appear in VLDB
 Journal 28(6) as well) and/or the video of the [recent talk by Daniel Lemire at
-QCon](http://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
+QCon](https://www.youtube.com/watch?v=wlvKAT7SZIQ) (voted best talk).
 
 ### Example
 
@@ -90,7 +90,7 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
 
 ### Author
 
-For the R package, [Dirk Eddelbuettel](http://github.com/eddelbuettel) and [Brendan
+For the R package, [Dirk Eddelbuettel](https://github.com/eddelbuettel) and [Brendan
 Knapp](https://github.com/knapply).
 
 For everything pertaining to simdjson, [Daniel Lemire](https://lemire.me/en/) (and [many

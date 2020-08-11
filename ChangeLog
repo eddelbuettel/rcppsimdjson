@@ -1,3 +1,7 @@
+2020-08-11  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Corrected more http URLs to https
+
 2020-08-10  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.1
