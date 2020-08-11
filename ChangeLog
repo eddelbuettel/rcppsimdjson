@@ -1,3 +1,9 @@
+2020-08-10  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Release 0.1.1
+
+	* inst/include/simdjson.cpp: One-line change from upstream #1037
+
 2020-08-07  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
         * src/internal-utils.cpp: Move intitial argument validation to C++
