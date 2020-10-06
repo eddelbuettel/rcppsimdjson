@@ -3,6 +3,8 @@
 	* inst/tinytest/test_query.R: Adjust three tests
 	* inst/tinytest/test_fparse_fload.R: Adjust one test
 
+	* README.md: Updated one URL thanks to urlUpdate.r & urlchecker
+
 2020-10-05  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Roll version and date
