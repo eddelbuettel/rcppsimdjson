@@ -5,6 +5,14 @@
         * inst/include/simdjson.h: Upgrade to upstream version 0.5.0
         * inst/include/simdjson.cpp: Ditto
 
+	* inst/include/RcppSimdJson/deserialize.hpp: Replace two at() calls
+	with at_point()
+
+	* R/farse.R: Use leading '/' in query string
+	* man/fparse.Rd: Idem
+	* inst/tinytest/test_fparse_fload.R: Idem
+	* inst/tinytest/test_query.R: Idem
+
 2020-08-11  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Corrected more http URLs to https
