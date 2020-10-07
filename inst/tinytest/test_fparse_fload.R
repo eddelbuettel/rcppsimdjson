@@ -1,4 +1,5 @@
 if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
+library(RcppSimdJson)
 
 .read_file <- function(file_path) {
     readChar(file_path, nchars = file.size(file_path))
@@ -82,7 +83,7 @@ expect_identical(
 # query ========================================================================
 #* invalid ---------------------------------------------------------------------
 #*** fparse() ------------------------------------------------------------------
-expect_error(fparse("1", query = c("0", "0")))
+expect_identical(fparse("1", query = c("0", "0")), list(1L, 1L))
 expect_error(fparse("1", query = (not_chr <- TRUE)))
 #*** fload() -------------------------------------------------------------------
 expect_error(fload("1", query = c("0", "0")))
@@ -91,14 +92,14 @@ expect_error(fload("1", query = (not_chr <- TRUE)))
 #* valid -----------------------------------------------------------------------
 #*** fparse() ------------------------------------------------------------------
 expect_identical(fparse("1", query = NA_character_), NA)
-expect_identical(fparse("[0,1]", query = "0"),
+expect_identical(fparse("[0,1]", query = "/0"),
                  0L)
 expect_identical(fparse("1", query = NULL),
                  1L)
 #*** fload() -------------------------------------------------------------------
 .write_file("[0,1]", test_file1)
 expect_identical(fload(test_file1, query = NA_character_), NA)
-expect_identical(fload(test_file1, query = "0"),
+expect_identical(fload(test_file1, query = "/0"),
                  0L)
 .write_file("1", test_file1)
 expect_identical(fload(test_file1, query = NULL),

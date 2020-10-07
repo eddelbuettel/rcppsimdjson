@@ -94,4 +94,4 @@ For the R package, [Dirk Eddelbuettel](https://github.com/eddelbuettel) and [Bre
 Knapp](https://github.com/knapply).
 
 For everything pertaining to simdjson, [Daniel Lemire](https://lemire.me/en/) (and [many
-contributors](https://github.com/lemire/simdjson/graphs/contributors)).
+contributors](https://github.com/simdjson/simdjson/graphs/contributors)).

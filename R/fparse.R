@@ -206,28 +206,28 @@
 #'         }
 #'     }
 #' ]')
-#' fparse(json_to_query, query = "1")
-#' fparse(json_to_query, query = "1/b")
-#' fparse(json_to_query, query = "1/b/c")
-#' fparse(json_to_query, query = "1/b/c/1")
-#' fparse(json_to_query, query = "1/b/c/1/0")
+#' fparse(json_to_query, query = "/1")
+#' fparse(json_to_query, query = "/1/b")
+#' fparse(json_to_query, query = "/1/b/c")
+#' fparse(json_to_query, query = "/1/b/c/1")
+#' fparse(json_to_query, query = "/1/b/c/1/0")
 #'
 #' # handling invalid queries ==================================================
-#' fparse(json_to_query, query = "1/b/d",
+#' fparse(json_to_query, query = "/1/b/d",
 #'        query_error_ok = TRUE,
 #'        on_query_error = "d isn't a key here!")
 #'
 #' # multiple queries applied to EVERY element =================================
-#' fparse(json_to_query, query = c(query1 = "1/b/c/1/0",
-#'                                 query2 = "1/b/c/1/1",
-#'                                 query3 = "1/b/c/1/2"))
+#' fparse(json_to_query, query = c(query1 = "/1/b/c/1/0",
+#'                                 query2 = "/1/b/c/1/1",
+#'                                 query3 = "/1/b/c/1/2"))
 #'
 #' # multiple queries applied to EACH element ==================================
 #' fparse(json_to_query,
-#'        query = list(queries_for_json1 = c(c1 = "1/b/c/1/0",
-#'                                           c2 = "1/b/c/1/1"),
-#'                     queries_for_json2 = c(d1 = "1/b/d/1",
-#'                                           d2 = "1/b/d/2")))
+#'        query = list(queries_for_json1 = c(c1 = "/1/b/c/1/0",
+#'                                           c2 = "/1/b/c/1/1"),
+#'                     queries_for_json2 = c(d1 = "/1/b/d/1",
+#'                                           d2 = "/1/b/d/2")))
 #'
 #' @export
 fparse <- function(json,

@@ -376,13 +376,13 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     }
 
     if constexpr (query_error_ok) {
-        if (auto [queried, query_error] = parsed.at(std::string_view(query)); !query_error) {
+        if (auto [queried, query_error] = parsed.at_pointer(std::string_view(query)); !query_error) {
             return deserialize(queried, parse_opts);
         }
         return on_query_error;
 
     } else { /* !query_error_ok */
-        auto [queried, query_error] = parsed.at(std::string_view(query));
+        auto [queried, query_error] = parsed.at_pointer(std::string_view(query));
         if (query_error) {
             Rcpp::stop(simdjson::error_message(query_error));
         }
