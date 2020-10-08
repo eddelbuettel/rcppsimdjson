@@ -6,3 +6,4 @@ src/*.o
 src/*.so
 src/*.dll
 local/RcppSimdJson_*.tar.gz
+local/c++17.cpp

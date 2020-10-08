@@ -3,6 +3,12 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.1.2 (2020-10-07)}{
+  \itemize{
+    \item Upgraded to simdjson 0.5.0 (Dirk \ghpr{49})
+  }
+}
+
 \section{Changes in version 0.1.1 (2020-08-10)}{
   \itemize{
     \item Corrected incorrect file deletion when mixing local and remote files

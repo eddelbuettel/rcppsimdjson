@@ -8,7 +8,7 @@
 #include <algorithm>   /* std::all_of */
 #include <fstream>     /* std::ifstream */
 #include <type_traits> /* std::remove_cv_t or std::remove_reference_t */
-
+#include <optional>    /* std::optional */
 
 #ifndef __cpp_lib_remove_cvref
 namespace std {

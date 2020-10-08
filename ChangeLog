@@ -1,3 +1,9 @@
+2020-10-07  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Release 0.1.2
+
+	* inst/include/RcppSimdJson/utils.hpp: Add #include for optional
+
 2020-10-06  Dirk Eddelbuettel  <edd@debian.org>
 
 	* inst/tinytest/test_query.R: Adjust three tests
