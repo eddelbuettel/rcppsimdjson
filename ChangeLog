@@ -1,3 +1,7 @@
+2020-10-10  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (URL, BugReports): Added per Henrik's suggestion
+
 2020-10-07  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.2
