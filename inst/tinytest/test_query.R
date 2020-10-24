@@ -19,13 +19,10 @@ expect_identical(
 )
 
 # query errors =================================================================
-expect_identical(fparse("null", query = "junk"), NULL)
-expect_identical(fparse("null", query = c("junk", "junk")), list(NULL, NULL))
-expect_identical(fparse(c("null", "null"), query = list("junk", "junk")), list(list(NULL), list(NULL)))
-expect_identical(
-    fparse("null", query = "junk", query_error_ok = TRUE),
-    NULL
-)
+expect_error(identical(fparse("null", query = "junk"), NULL))
+expect_error(identical(fparse("null", query = c("junk", "junk")), list(NULL, NULL)))
+expect_error(identical(fparse(c("null", "null"), query = list("junk", "junk")), list(list(NULL), list(NULL))))
+expect_identical(fparse("null", query = "junk", query_error_ok = TRUE), NULL)
 expect_identical(
     fparse("null", query = "junk", query_error_ok = TRUE),
     NULL
