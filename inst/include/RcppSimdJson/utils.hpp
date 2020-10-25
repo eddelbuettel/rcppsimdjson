@@ -32,6 +32,7 @@ enum class Int64_R_Type : int {
     Double    = 0,
     String    = 1,
     Integer64 = 2,
+    Always    = 3,
 };
 
 
@@ -82,20 +83,24 @@ inline bool is_castable_int64_vec(std::vector<uint64_t>::const_iterator first,
 // - otherwise `x` is coerced following the provided `Int64_R_Type`
 template <Int64_R_Type int64_opt>
 inline SEXP resolve_int64(int64_t x) {
-    if (is_castable_int64(x)) {
-        return Rcpp::wrap<int>(x);
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::Double) {
-        return Rcpp::wrap<double>(x);
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::String) {
-        return Rcpp::wrap(std::to_string(x));
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::Integer64) {
+    if constexpr (int64_opt == Int64_R_Type::Always) {
         return as_integer64(x);
+    } else {
+        if (is_castable_int64(x)) {
+            return Rcpp::wrap<int>(x);
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::Double) {
+            return Rcpp::wrap<double>(x);
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::String) {
+            return Rcpp::wrap(std::to_string(x));
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::Integer64) {
+            return as_integer64(x);
+        }
     }
 }
 // Convert `std::vector<int64_t>` to `SEXP`.
@@ -103,21 +108,25 @@ inline SEXP resolve_int64(int64_t x) {
 // - otherwise `x` is coerced to an `Rcpp::Vector` following the provided `Int64_R_Type`
 template <Int64_R_Type int64_opt>
 inline SEXP resolve_int64(const std::vector<int64_t>& x) {
-    if (is_castable_int64_vec(std::begin(x), std::end(x))) {
-        return Rcpp::IntegerVector(std::begin(x), std::end(x));
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::Double) {
-        return Rcpp::NumericVector(std::begin(x), std::end(x));
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::String) {
-        return Rcpp::CharacterVector(
-            std::begin(x), std::end(x), [](int64_t val) { return std::to_string(val); });
-    }
-
-    if constexpr (int64_opt == Int64_R_Type::Integer64) {
+    if constexpr (int64_opt == Int64_R_Type::Always) {
         return as_integer64(x);
+    } else {
+        if (is_castable_int64_vec(std::begin(x), std::end(x))) {
+            return Rcpp::IntegerVector(std::begin(x), std::end(x));
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::Double) {
+            return Rcpp::NumericVector(std::begin(x), std::end(x));
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::String) {
+            return Rcpp::CharacterVector(
+                std::begin(x), std::end(x), [](int64_t val) { return std::to_string(val); });
+        }
+
+        if constexpr (int64_opt == Int64_R_Type::Integer64) {
+            return as_integer64(x);
+        }
     }
 }
 
@@ -206,7 +215,7 @@ inline Rcpp::RawVector decompress(const file_path_T& file_path, const Rcpp::Stri
     stream.seekg(0, std::ios::beg);
     const std::size_t n(end - stream.tellg());
     if (n == 0) { /* avoid undefined behavior */
-        return Rcpp::RawVector(1);
+        return Rcpp::RawVector(1); // # nocov 
     }
 
     Rcpp::RawVector buffer(n);
@@ -224,7 +233,7 @@ inline constexpr std::optional<std::string_view> get_url_prefix(const std::strin
                    prefix == "http://" || prefix == "ftps://" || prefix == "file://") {
             return prefix;
         } else if (const auto prefix = std::string_view(str).substr(0, 6); prefix == "ftp://") {
-            return prefix;
+            return prefix; // # nocov 
         }
     }
     return std::nullopt;
@@ -237,7 +246,6 @@ static_assert(get_url_prefix("ftp://test.com") == "ftp://");
 static_assert(get_url_prefix("bad12://test.com") == std::nullopt);
 static_assert(get_url_prefix("no-prefix.com") == std::nullopt);
 static_assert(get_url_prefix("short") == std::nullopt);
-
 
 
 inline constexpr std::optional<std::string_view> get_file_ext(const std::string_view& str) {

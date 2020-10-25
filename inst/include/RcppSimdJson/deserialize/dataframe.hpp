@@ -2,41 +2,43 @@
 #define RCPPSIMDJSON__DESERIALIZE__DATAFRAME_HPP
 
 
+#include "RcppSimdJson/utils.hpp"
 #include "matrix.hpp"
 
 
 namespace rcppsimdjson {
 namespace deserialize {
 
-template <Type_Policy type_policy>
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 struct Column {
-    R_xlen_t                 index  = 0L;
-    Type_Doctor<type_policy> schema = Type_Doctor<type_policy>();
+    R_xlen_t                            index  = 0L;
+    Type_Doctor<type_policy, int64_opt> schema = Type_Doctor<type_policy, int64_opt>();
 };
 
-template <Type_Policy type_policy>
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 struct Column_Schema {
-    std::unordered_map<std::string_view, Column<type_policy>> schema =
-        std::unordered_map<std::string_view, Column<type_policy>>();
+    std::unordered_map<std::string_view, Column<type_policy, int64_opt>> schema =
+        std::unordered_map<std::string_view, Column<type_policy, int64_opt>>();
 };
 
 
-template <Type_Policy type_policy>
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
-    -> std::optional<Column_Schema<type_policy>> {
+    -> std::optional<Column_Schema<type_policy, int64_opt>> {
 
-    if (std::size(array) == 0) {
-        return std::nullopt;
-    }
+    // if (std::size(array) == 0) { // already handled in `dispatch_simplify_array()`
+    //     return std::nullopt;
+    // }
 
-    auto cols      = Column_Schema<type_policy>();
+    auto cols      = Column_Schema<type_policy, int64_opt>();
     auto col_index = R_xlen_t(0L);
 
     for (auto&& element : array) {
         if (auto [object, error] = element.get<simdjson::dom::object>(); !error) {
             for (auto&& [key, value] : object) {
                 if (cols.schema.find(key) == std::end(cols.schema)) {
-                    cols.schema[key] = Column<type_policy>{col_index++, Type_Doctor<type_policy>()};
+                    cols.schema[key] = Column<type_policy, int64_opt>{
+                        col_index++, Type_Doctor<type_policy, int64_opt>()};
                 }
                 cols.schema[key].schema.add_element(value);
             }
@@ -50,10 +52,14 @@ inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSO
 }
 
 
-template <int RTYPE, typename scalar_T, rcpp_T R_Type, Type_Policy type_policy>
-inline auto build_col(simdjson::dom::array            array,
-                      const std::string_view          key,
-                      const Type_Doctor<type_policy>& type_doc) -> Rcpp::Vector<RTYPE> {
+template <int RTYPE,
+          typename scalar_T,
+          rcpp_T              R_Type,
+          Type_Policy         type_policy,
+          utils::Int64_R_Type int64_opt>
+inline auto build_col(simdjson::dom::array                       array,
+                      const std::string_view                     key,
+                      const Type_Doctor<type_policy, int64_opt>& type_doc) -> Rcpp::Vector<RTYPE> {
 
     auto out   = Rcpp::Vector<RTYPE>(std::size(array), na_val<R_Type>());
     auto i_row = R_xlen_t(0L);
@@ -94,9 +100,9 @@ inline auto build_col(simdjson::dom::array            array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline auto build_col_integer64(simdjson::dom::array           array,
-                                const std::string_view         key,
-                                const Type_Doctor<type_policy> type_doc) -> SEXP {
+inline auto build_col_integer64(simdjson::dom::array                      array,
+                                const std::string_view                    key,
+                                const Type_Doctor<type_policy, int64_opt> type_doc) -> SEXP {
 
     if constexpr (int64_opt == utils::Int64_R_Type::Double) {
         return build_col<REALSXP, int64_t, rcpp_T::dbl, type_policy>(array, key, type_doc);
@@ -106,7 +112,8 @@ inline auto build_col_integer64(simdjson::dom::array           array,
         return build_col<STRSXP, int64_t, rcpp_T::chr, type_policy>(array, key, type_doc);
     }
 
-    if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+    if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                  int64_opt == utils::Int64_R_Type::Always) {
         auto stl_vec = std::vector<int64_t>(std::size(array), NA_INTEGER64);
         auto i_row   = std::size_t(0ULL);
 
@@ -156,11 +163,12 @@ inline auto build_col_integer64(simdjson::dom::array           array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto build_data_frame(simdjson::dom::array                                             array,
-                             const std::unordered_map<std::string_view, Column<type_policy>>& cols,
-                             SEXP empty_array,
-                             SEXP empty_object,
-                             SEXP single_null) -> SEXP {
+inline auto
+build_data_frame(simdjson::dom::array                                                        array,
+                 const std::unordered_map<std::string_view, Column<type_policy, int64_opt>>& cols,
+                 SEXP empty_array,
+                 SEXP empty_object,
+                 SEXP single_null) -> SEXP {
 
     const auto n_rows    = R_xlen_t(std::size(array));
     auto       out       = Rcpp::List(std::size(cols));
@@ -202,6 +210,12 @@ inline auto build_data_frame(simdjson::dom::array                               
 
             case rcpp_T::null: {
                 out[col.index] = Rcpp::LogicalVector(n_rows, NA_LOGICAL);
+                break;
+            }
+
+            case rcpp_T::u64: {
+                out[col.index] =
+                    build_col<STRSXP, uint64_t, rcpp_T::chr, type_policy>(array, key, col.schema);
                 break;
             }
 

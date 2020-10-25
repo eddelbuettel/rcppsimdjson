@@ -14,7 +14,9 @@ test_file2 <- tempfile(fileext = ".json")
 # json =========================================================================
 #* invalid ---------------------------------------------------------------------
 #** fparse() -------------------------------------------------------------------
-expect_error(fparse(1),)
+expect_error(fparse(1))
+expect_error(fparse(integer(0L)))
+expect_error(fparse(NULL))
 expect_error(fparse(NA_integer_))
 
 expect_error(fparse("1", parse_error_ok = NA))
@@ -31,6 +33,7 @@ expect_error(fload(c(test_file1, test_file2)))
 
 #* valid -----------------------------------------------------------------------
 #** fparse() -------------------------------------------------------------------
+expect_identical(fparse(NA_character_), NA)
 expect_identical(fparse("1"),
                  1L)
 expect_identical(fparse(c("1", "2")),
@@ -50,6 +53,8 @@ expect_identical(fparse(c("junk JSON", "more junk JSON"),
                  list(NA, NA))
 
 #** fload() --------------------------------------------------------------------
+expect_identical(fload(NA_character_), NA)
+
 .write_file("1", test_file1)
 .write_file("2", test_file2)
 
@@ -451,14 +456,29 @@ if (requireNamespace("bit64", quietly = TRUE)) {
     expect_identical(fload(test_file1, int64_policy = 2L),
                      target)
 }
+#** int64_policy = "always" -------------------------------------------------
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- structure(bit64::as.integer64(c(0, 3000000000, 8, 10, NA, 1)), .Dim = 2:3)
+    #*** fparse() ------------------------------------------------------------------
+    expect_identical(fparse(test, int64_policy = "always"),
+                     target)
+    expect_identical(fparse(test, int64_policy = 3L),
+                     target)
+    #*** fload() -------------------------------------------------------------------
+    expect_identical(fload(test_file1, int64_policy = "always"),
+                     target)
+    expect_identical(fload(test_file1, int64_policy = 3L),
+                     target)
+}
 
-
-
+#** int64_policy = "string" -------------------------------------------------
 expect_identical(fparse("[3000000000, 1]"), c(3000000000, 1))
 expect_identical(fparse("[3000000000, 1]", int64_policy = "string"),
                  c("3000000000", "1"))
 expect_identical(fparse("[9999999999999999999, 1]"),
                  c("9999999999999999999", "1"))
+
+
 
 # _ ============================================================================
 # battery ======================================================================
@@ -469,12 +489,33 @@ all_files <- dir(
     pattern = "\\.json$",
     full.names = TRUE
 )
+
 #*** fparse() ------------------------------------------------------------------
-sapply(all_files, function(.x) {
-    expect_silent(fparse(.read_file(.x)))
-})
+for (i in seq_along(all_files)) {
+    expect_silent(
+        fparse(json = .read_file(all_files[[i]]))
+    )
+}
+
 #*** fload() -------------------------------------------------------------------
-sapply(all_files, function(.x) expect_silent(fload(.x)))
+opts <- expand.grid(type_policy = c("anything_goes", "numbers", "strict"),
+                    int64_policy = c("double", "string", "integer64", "always"),
+                    max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
+                    parse_error_ok = c(TRUE, FALSE),
+                    query_error_ok = c(TRUE, FALSE),
+                    file = utils::head(all_files),
+                    stringsAsFactors = FALSE)
+
+for (i in seq_len(nrow(opts))) {
+    expect_silent(
+        fload(json = opts$file[[i]],
+               type_policy = opts$type_policy[[i]],
+               int64_policy = opts$int64_policy[[i]],
+               max_simplify_lvl = opts$max_simplify_lvl[[i]],
+               parse_error_ok = opts$parse_error_ok[[i]],
+               query_error_ok = opts$query_error_ok[[i]])
+    )
+}
 
 #* NDJSON ----------------------------------------------------------------------
 all_files <- dir(
@@ -514,6 +555,25 @@ expect_error(
           verbose = NA),
     "`verbose=` must be either `TRUE` or `FALSE`."
 )
+
+.write_file('{"valid JSON":true}', test_file1)
+.write_file('{"valid JSON": true}', test_file2)
+
+expect_identical(
+    fload(c(test_file1, test_file2), query = "/valid JSON"),
+    `names<-`(list(TRUE, TRUE), basename(c(test_file1, test_file2)))
+)
+
+expect_error(
+    fload(test_file1, query = list("bad 1", "bad 2"))
+)
+expect_error(
+    fload(test_file1, query_error_ok = NA)
+)
+expect_error(
+    fload(test_file1, compressed_download = NA)
+)
+
 
 
 # TODO verify CRAN policies for downloading, Travis usage
