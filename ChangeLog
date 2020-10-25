@@ -1,3 +1,24 @@
+2020-10-25  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* R/fparse.R: Add option to "always" return integers as bit64::integer64
+	and disable coverage on unreachable code.
+	* R/fload.R: Ditto
+	* man/fparse.Rd: Ditto
+	* inst/include/RcppSimdJson/deserialize.hpp: Ditto
+	* inst/include/RcppSimdJson/utils.hpp: Ditto
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Ditto
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Ditto
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Ditto
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Ditto
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Ditto
+
+	* inst/tinytest/test_deserialization.R: Add "always" bit64::integer64 tests
+	and expand test coverage.
+	* inst/tinytest/test_fparse_fload.R: Ditto
+	* inst/tinytest/test_query.R: Ditto
+
+	* src/internal-utils.cpp: Disable coverage on unreachable code.
+
 2020-10-24  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Add coverage badge
