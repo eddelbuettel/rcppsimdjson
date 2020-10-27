@@ -93,8 +93,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Double,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::Double
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Double:
+
                 case Int64_R_Type::String: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -120,8 +121,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::String,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::String
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::String:
+
                 case Int64_R_Type::Integer64: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -147,10 +149,38 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Integer64,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    }
-                } // simplify_to
-            }     // Int64_R_Type::Integer64
-        }         // Type_Policy::anything_goes
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Integer64:
+
+                case Int64_R_Type::Always: {
+                    switch (simplify_to) {
+                        case Simplify_To::data_frame:
+                            return simplify_element<Type_Policy::anything_goes,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::data_frame>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::matrix:
+                            return simplify_element<Type_Policy::anything_goes,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::matrix>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::vector:
+                            return simplify_element<Type_Policy::anything_goes,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::vector>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::list:
+                            return simplify_element<Type_Policy::anything_goes,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::list>(
+                                parsed, empty_array, empty_object, single_null);
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Always:
+            }         // switch(int64_opt)
+        }             // case Type_Policy::anything_goes:
 
 
         case Type_Policy::ints_as_dbls: {
@@ -180,8 +210,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Double,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::Double
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Double:
+
                 case Int64_R_Type::String: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -207,8 +238,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::String,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::String
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::String:
+
                 case Int64_R_Type::Integer64: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -234,10 +266,38 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Integer64,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    }
-                } // simplify_to
-            }     // Int64_R_Type::Integer64
-        }         // Type_Policy::ints_as_dbls
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Integer64:
+
+                case Int64_R_Type::Always: {
+                    switch (simplify_to) {
+                        case Simplify_To::data_frame:
+                            return simplify_element<Type_Policy::ints_as_dbls,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::data_frame>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::matrix:
+                            return simplify_element<Type_Policy::ints_as_dbls,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::matrix>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::vector:
+                            return simplify_element<Type_Policy::ints_as_dbls,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::vector>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::list:
+                            return simplify_element<Type_Policy::ints_as_dbls,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::list>(
+                                parsed, empty_array, empty_object, single_null);
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Always:
+            }         // switch(int64_opt)
+        }             // case Type_Policy::ints_as_dbls
 
 
         case Type_Policy::strict: {
@@ -267,8 +327,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Double,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::Double
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Double:
+
                 case Int64_R_Type::String: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -294,8 +355,9 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::String,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    } // simplify_to
-                }     // Int64_R_Type::String
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::String:
+
                 case Int64_R_Type::Integer64: {
                     switch (simplify_to) {
                         case Simplify_To::data_frame:
@@ -321,10 +383,38 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
                                                     Int64_R_Type::Integer64,
                                                     Simplify_To::list>(
                                 parsed, empty_array, empty_object, single_null);
-                    }
-                } // simplify_to
-            }     // Int64_R_Type::Integer64
-        }         // Type_Policy::strict
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type:Integer64:
+
+                case Int64_R_Type::Always: {
+                    switch (simplify_to) {
+                        case Simplify_To::data_frame:
+                            return simplify_element<Type_Policy::strict,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::data_frame>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::matrix:
+                            return simplify_element<Type_Policy::strict,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::matrix>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::vector:
+                            return simplify_element<Type_Policy::strict,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::vector>(
+                                parsed, empty_array, empty_object, single_null);
+
+                        case Simplify_To::list:
+                            return simplify_element<Type_Policy::strict,
+                                                    Int64_R_Type::Always,
+                                                    Simplify_To::list>(
+                                parsed, empty_array, empty_object, single_null);
+                    } // switch(simplify_to)
+                }     // case Int64_R_Type::Always:
+            }         // switch(Int64_R_Type)
+        }             // Type_Policy::strict
     }
 
     return R_NilValue;
@@ -376,7 +466,8 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     }
 
     if constexpr (query_error_ok) {
-        if (auto [queried, query_error] = parsed.at_pointer(std::string_view(query)); !query_error) {
+        if (auto [queried, query_error] = parsed.at_pointer(std::string_view(query));
+            !query_error) {
             return deserialize(queried, parse_opts);
         }
         return on_query_error;

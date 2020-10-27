@@ -59,7 +59,8 @@ inline SEXP dispatch_typed(simdjson::dom::array array, const rcpp_T R_Type, cons
                            : build_vector_typed<STRSXP, int64_t, rcpp_T::chr, NO_NULLS>(array);
             }
 
-            if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+            if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                          int64_opt == utils::Int64_R_Type::Always) {
                 return has_nulls ? build_vector_integer64_typed<HAS_NULLS>(array)
                                  : build_vector_integer64_typed<NO_NULLS>(array);
             }
@@ -132,7 +133,8 @@ inline SEXP dispatch_mixed(simdjson::dom::array array, const rcpp_T common_R_typ
                 return build_vector_mixed<STRSXP>(array);
             }
 
-            if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+            if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                          int64_opt == utils::Int64_R_Type::Always) {
                 return build_vector_integer64_mixed(array);
             }
         }

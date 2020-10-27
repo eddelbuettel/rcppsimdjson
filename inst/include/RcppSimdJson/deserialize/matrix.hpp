@@ -16,18 +16,19 @@ struct Matrix_Diagnosis {
 };
 
 
-template <Type_Policy type_policy>
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 inline std::optional<Matrix_Diagnosis>
 diagnose(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
-    std::unordered_set<std::size_t> n_cols;
-    Type_Doctor<type_policy>        matrix_doctor;
+    std::unordered_set<std::size_t>     n_cols;
+    Type_Doctor<type_policy, int64_opt> matrix_doctor;
 
     for (auto&& element : array) {
         if (element.type() != simdjson::dom::element_type::ARRAY) {
             return std::nullopt;
         }
 
-        matrix_doctor.update(Type_Doctor<type_policy>(element.get<simdjson::dom::array>().first));
+        matrix_doctor.update(
+            Type_Doctor<type_policy, int64_opt>(element.get<simdjson::dom::array>().first));
         n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
 
         if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
@@ -159,7 +160,8 @@ inline SEXP dispatch_typed(simdjson::dom::array        array,
                                                                                         n_cols);
             }
 
-            if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+            if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                          int64_opt == utils::Int64_R_Type::Always) {
                 return has_nulls ? build_matrix_integer64_typed<HAS_NULLS>(array, n_cols)
                                  : build_matrix_integer64_typed<NO_NULLS>(array, n_cols);
             }
@@ -297,7 +299,8 @@ dispatch_mixed(simdjson::dom::array array, const rcpp_T R_Type, const std::size_
                 return build_matrix_mixed<STRSXP>(array, n_cols);
             }
 
-            if constexpr (int64_opt == utils::Int64_R_Type::Integer64) {
+            if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                          int64_opt == utils::Int64_R_Type::Always) {
                 return build_matrix_integer64_mixed(array, n_cols);
             }
         }

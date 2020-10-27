@@ -2,13 +2,15 @@
 #define RCPPSIMDJSON__DESERIALIZE__TYPE_DOCTOR_HPP
 
 #include "../common.hpp"
+#include "RcppSimdJson/utils.hpp"
+#include "simdjson.h"
 
 
 namespace rcppsimdjson {
 namespace deserialize {
 
 
-template <Type_Policy type_policy>
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 class Type_Doctor {
     bool ARRAY_ = false;
     bool array_ = false;
@@ -38,7 +40,7 @@ class Type_Doctor {
 
   public:
     Type_Doctor() = default;
-    explicit Type_Doctor<type_policy>(simdjson::dom::array) noexcept;
+    explicit Type_Doctor<type_policy, int64_opt>(simdjson::dom::array) noexcept;
 
     [[nodiscard]] constexpr auto has_null() const noexcept -> bool { return null_; };
 
@@ -51,12 +53,12 @@ class Type_Doctor {
 
     auto add_element(simdjson::dom::element) noexcept -> void;
 
-    constexpr auto update(Type_Doctor<type_policy>&&) noexcept -> void;
+    constexpr auto update(Type_Doctor<type_policy, int64_opt>&&) noexcept -> void;
 };
 
 
-template <Type_Policy type_policy>
-inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcept {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array array) noexcept {
     for (auto&& element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::ARRAY:
@@ -81,10 +83,14 @@ inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcep
 
             case simdjson::dom::element_type::INT64: {
                 INT64_ = true;
-                if (utils::is_castable_int64(element.get<int64_t>().first)) {
-                    i32_ = true;
-                } else {
+                if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                     i64_ = true;
+                } else {
+                    if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                        i32_ = true;
+                    } else {
+                        i64_ = true;
+                    }
                 }
                 break;
             }
@@ -108,8 +114,8 @@ inline Type_Doctor<type_policy>::Type_Doctor(simdjson::dom::array array) noexcep
 }
 
 
-template <Type_Policy type_policy>
-constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+constexpr bool Type_Doctor<type_policy, int64_opt>::is_homogeneous() const noexcept {
     if (ARRAY_) {
         return !(OBJECT_ || STRING_ || DOUBLE_ || INT64_ || BOOL_ || UINT64_); // # nocov
     }
@@ -133,8 +139,8 @@ constexpr auto Type_Doctor<type_policy>::is_homogeneous() const noexcept -> bool
 }
 
 
-template <Type_Policy type_policy>
-inline constexpr auto Type_Doctor<type_policy>::common_R_type() const noexcept -> rcpp_T {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline constexpr rcpp_T Type_Doctor<type_policy, int64_opt>::common_R_type() const noexcept {
     if (object_) {
         return rcpp_T::object; // # nocov
     }
@@ -192,8 +198,9 @@ inline constexpr auto Type_Doctor<type_policy>::common_R_type() const noexcept -
 }
 
 
-template <Type_Policy type_policy>
-inline constexpr auto Type_Doctor<type_policy>::is_vectorizable() const noexcept -> bool {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline constexpr auto Type_Doctor<type_policy, int64_opt>::is_vectorizable() const noexcept
+    -> bool {
     if constexpr (type_policy == Type_Policy::anything_goes) {
         return !(object_ || array_);
     } else {
@@ -232,9 +239,9 @@ inline constexpr auto Type_Doctor<type_policy>::is_vectorizable() const noexcept
 }
 
 
-template <Type_Policy type_policy>
-inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noexcept
-    -> simdjson::dom::element_type {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline constexpr simdjson::dom::element_type
+Type_Doctor<type_policy, int64_opt>::common_element_type() const noexcept {
 
     using simdjson::dom::element_type;
 
@@ -250,8 +257,8 @@ inline constexpr auto Type_Doctor<type_policy>::common_element_type() const noex
 }
 
 
-template <Type_Policy type_policy>
-auto Type_Doctor<type_policy>::add_element(simdjson::dom::element element) noexcept -> void {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element element) noexcept {
     switch (element.type()) {
         case simdjson::dom::element_type::ARRAY:
             ARRAY_ = true;
@@ -275,10 +282,14 @@ auto Type_Doctor<type_policy>::add_element(simdjson::dom::element element) noexc
 
         case simdjson::dom::element_type::INT64: {
             INT64_ = true;
-            if (utils::is_castable_int64(element.get<int64_t>().first)) {
-                i32_ = true;
-            } else {
+            if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                 i64_ = true;
+            } else {
+                if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                    i32_ = true;
+                } else {
+                    i64_ = true;
+                }
             }
             break;
         }
@@ -301,9 +312,9 @@ auto Type_Doctor<type_policy>::add_element(simdjson::dom::element element) noexc
 }
 
 
-template <Type_Policy type_policy>
-inline constexpr auto
-Type_Doctor<type_policy>::update(Type_Doctor<type_policy>&& type_doctor2) noexcept -> void {
+template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
+inline constexpr void Type_Doctor<type_policy, int64_opt>::update(
+    Type_Doctor<type_policy, int64_opt>&& type_doctor2) noexcept {
     this->ARRAY_ = this->ARRAY_ || type_doctor2.ARRAY_;
     this->array_ = this->array_ || type_doctor2.array_;
 
@@ -318,14 +329,15 @@ Type_Doctor<type_policy>::update(Type_Doctor<type_policy>&& type_doctor2) noexce
 
     this->INT64_ = this->INT64_ || type_doctor2.INT64_;
     this->i64_   = this->i64_ || type_doctor2.i64_;
+    if constexpr (int64_opt != utils::Int64_R_Type::Always) {
+        this->i32_ = this->i32_ || type_doctor2.i32_;
+    }
 
-    this->i32_  = this->i32_ || type_doctor2.i32_;
     this->BOOL_ = this->BOOL_ || type_doctor2.BOOL_;
+    this->lgl_  = this->lgl_ || type_doctor2.lgl_;
 
-    this->lgl_        = this->lgl_ || type_doctor2.lgl_;
     this->NULL_VALUE_ = this->NULL_VALUE_ || type_doctor2.NULL_VALUE_;
-
-    this->null_ = this->null_ || type_doctor2.null_;
+    this->null_       = this->null_ || type_doctor2.null_;
 
     this->UINT64_ = this->UINT64_ || type_doctor2.UINT64_;
     this->u64_    = this->u64_ || type_doctor2.u64_;

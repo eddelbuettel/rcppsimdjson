@@ -17,7 +17,7 @@ fparse(
   on_query_error = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
-  int64_policy = c("double", "string", "integer64")
+  int64_policy = c("double", "string", "integer64", "always")
 )
 
 fload(
@@ -32,7 +32,7 @@ fload(
   on_query_error = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
-  int64_policy = c("double", "string", "integer64"),
+  int64_policy = c("double", "string", "integer64", "always"),
   verbose = FALSE,
   temp_dir = tempdir(),
   keep_temp_files = FALSE,
@@ -107,6 +107,7 @@ default: \code{NULL}.}
   \item \code{"double"} or \code{0L}: big integers become \code{double}s
   \item \code{"string"} or \code{1L}: big integers become \code{character}s
   \item \code{"integer64"} or \code{2L}: big integers become \code{bit64::integer64}s
+  \item \code{"always"} or \code{3L}: all integers become \code{bit64::integer64}s
 }}
 
 \item{verbose}{Whether to display status messages.

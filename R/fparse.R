@@ -71,6 +71,7 @@
 #'     \item \code{"double"} or \code{0L}: big integers become \code{double}s
 #'     \item \code{"string"} or \code{1L}: big integers become \code{character}s
 #'     \item \code{"integer64"} or \code{2L}: big integers become \code{bit64::integer64}s
+#'     \item \code{"always"} or \code{3L}: all integers become \code{bit64::integer64}s
 #'   }
 #'
 #'
@@ -241,7 +242,7 @@ fparse <- function(json,
                    on_query_error = NULL,
                    max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                    type_policy = c("anything_goes", "numbers", "strict"),
-                   int64_policy = c("double", "string", "integer64")) {
+                   int64_policy = c("double", "string", "integer64", "always")) {
     # validate arguments =======================================================
     # types --------------------------------------------------------------------
     if (!.is_valid_json_arg(json)) {
@@ -296,14 +297,15 @@ fparse <- function(json,
     # int64_policy -------------------------------------------------------------
     if (is.character(int64_policy)) {
         int64_policy <- switch(
-            match.arg(int64_policy, c("double", "string", "integer64")),
+            match.arg(int64_policy, c("double", "string", "integer64", "always")),
             double = 0L,
             string = 1L,
             integer64 = 2L,
+            always = 3L,
             stop("Unknown `int64_policy=`.")
         )
     } else if (is.numeric(int64_policy)) {
-        stopifnot(int64_policy %in% 0:2)
+        stopifnot(int64_policy %in% 0:3)
     } else {
         stop("`int64_policy` must be of type `character` or `numeric`.")
     }

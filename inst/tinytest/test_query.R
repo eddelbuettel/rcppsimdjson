@@ -17,11 +17,23 @@ expect_identical(
     fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE),
     list(NULL, NULL)
 )
+expect_identical(
+    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE,
+           on_parse_error = NA),
+    list(NA, NA)
+)
 
 # query errors =================================================================
-expect_error(identical(fparse("null", query = "junk"), NULL))
-expect_error(identical(fparse("null", query = c("junk", "junk")), list(NULL, NULL)))
-expect_error(identical(fparse(c("null", "null"), query = list("junk", "junk")), list(list(NULL), list(NULL))))
+expect_error(fparse("null", query = TRUE))
+expect_error(fparse("null", query = character(0L)))
+expect_error(fparse("null", query_error_ok = NA))
+expect_error(fparse("null", query = "junk"))
+expect_error(fparse("null", query = c("junk", "junk")))
+expect_error(fparse(c("null", "null"), query = list("junk", "junk")))
+expect_error(fparse("null", query = list("junk", "junk")))
+expect_error(fparse(c("null", "null"), query = list(TRUE, FALSE)))
+
+
 expect_identical(fparse("null", query = "junk", query_error_ok = TRUE), NULL)
 expect_identical(
     fparse("null", query = "junk", query_error_ok = TRUE),
@@ -29,8 +41,16 @@ expect_identical(
 )
 expect_identical(
     fparse(c("null", "null"),
-           query = list(c("junk", "junk"), c("junk", "junk")), query_error_ok = TRUE),
+           query = list(c("junk", "junk"), c("junk", "junk")),
+           query_error_ok = TRUE),
     list(list(NULL, NULL), list(NULL, NULL))
+)
+expect_identical(
+    fparse(c("null", "null"),
+           query = list(c("junk", "junk"), c("junk", "junk")),
+           query_error_ok = TRUE,
+           on_query_error = NA),
+    list(list(NA, NA), list(NA, NA))
 )
 
 # single json ==================================================================

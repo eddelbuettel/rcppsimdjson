@@ -9,7 +9,8 @@ type_policy <- list(
 int64_opt <- list(
   double = 0,
   string = 1,
-  integer64 = 2
+  integer64 = 2,
+  always = 3
 )
 
 simplify_lvl <- list(
@@ -27,6 +28,13 @@ expect_identical(
   RcppSimdJson:::.deserialize_json(test),
   target
 )
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- bit64::as.integer64(target)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* double-----------------------------------------------------------------------
 test <- "1.0"
 target <- 1
@@ -65,10 +73,17 @@ expect_identical(
   RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$string),
   test
 )
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  structure(4.94065645841247e-314, class = "integer64")
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+      bit64::as.integer64(test)
+    )
+
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        bit64::as.integer64(test)
+    )
+}
 #* u64 -------------------------------------------------------------------------
 test <- "10000000000000000000"
 expect_identical(
@@ -90,6 +105,13 @@ target <- c(1L, 2L)
 expect_identical(
   RcppSimdJson:::.deserialize_json(test),
   target
+)
+#* integer - int64="always" ----------------------------------------------------
+test <- "[1,2]"
+target <- structure(c(4.94065645841247e-324, 9.88131291682493e-324), class = "integer64")
+expect_identical(
+    RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+    target
 )
 #* double ----------------------------------------------------------------------
 test <- "[1.0,2.0]"
@@ -158,6 +180,15 @@ expect_identical(
   RcppSimdJson:::.deserialize_json(test),
   target
 )
+#*** integer - int64="always"
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- bit64::as.integer64(target)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
+
 #** null last
 test <- "[1,2,null]"
 target <- c(1L, 2L, NA)
@@ -165,6 +196,14 @@ expect_identical(
   RcppSimdJson:::.deserialize_json(test),
   target
 )
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- bit64::as.integer64(target)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
+
 #* double ----------------------------------------------------------------------
 #** null first
 test <- "[null,1.0,2.0]"
@@ -212,35 +251,50 @@ expect_identical(
 )
 #* i64 -------------------------------------------------------------------------
 #** null first
-null_first <- "[null,10000000000,20000000000]"
-
+test <- "[null,10000000000,20000000000]"
 target <- c(NA, 10000000000, 20000000000)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(null_first, int64_r_type = int64_opt$double),
-  target
-)
 
-target <- c(NA, "10000000000", "20000000000")
-expect_identical(
-  RcppSimdJson:::.deserialize_json(null_first, int64_r_type = int64_opt$string),
-  target
-)
-
-target <- structure(c(0, 4.94065645841247e-314, 9.88131291682493e-314),
-  class = "integer64"
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(null_first, int64_r_type = int64_opt$integer64),
-  target
-)
-#** null last
-test <- "[10000000000,20000000000,null]"
-
-target <- c(10000000000, 20000000000, NA)
 expect_identical(
   RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$double),
   target
 )
+
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- bit64::as.integer64(target)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+        target
+    )
+}
+
+target <- as.character(target)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$string),
+  target
+)
+
+
+
+#** null last
+test <- "[10000000000,20000000000,null]"
+target <- c(10000000000, 20000000000, NA)
+
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$double),
+  target
+)
+
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- bit64::as.integer64(c(10000000000, 20000000000, NA))
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+        target
+    )
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
 
 target <- c("10000000000", "20000000000", NA)
 expect_identical(
@@ -248,13 +302,9 @@ expect_identical(
   target
 )
 
-target <- structure(c(4.94065645841247e-314, 9.88131291682493e-314, 0),
-  class = "integer64"
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  target
-)
+
+
+
 #* u64 -------------------------------------------------------------------------
 #** null first
 null_first <- "[null,10000000000000000000,10000000000000000001]"
@@ -299,11 +349,30 @@ expect_identical(
   target
 )
 
+
 target <- list(NULL, 1L, 10000000000)
 expect_identical(
   RcppSimdJson:::.deserialize_json(test, type_policy = type_policy$strict),
   target
 )
+
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target2 <- lapply(target, function(.x) if (is.double(.x)) bit64::as.integer64(.x) else .x)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64,
+                                         type_policy = type_policy$strict),
+        target2
+    )
+
+    target2 <- bit64::as.integer64(
+        unlist(lapply(target, function(.x) if (length(.x)) .x else NA))
+    )
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always,
+                                         type_policy = type_policy$strict),
+        target2
+    )
+}
 
 target <- c(NA, "1", "10000000000")
 expect_identical(
@@ -321,15 +390,6 @@ expect_identical(
   target
 )
 
-target <- list(NULL, 1L, structure(4.94065645841247e-314, class = "integer64"))
-expect_identical(
-  RcppSimdJson:::.deserialize_json(
-    test,
-    type_policy = type_policy$strict,
-    int64_r_type = int64_opt$integer64
-  ),
-  target
-)
 #* logicals and integers -------------------------------------------------------
 test <- "[null,1,true,false]"
 target <- c(NA, 1L, TRUE, FALSE)
@@ -345,27 +405,37 @@ expect_identical(
   target
 )
 #* logicals and integer64 ------------------------------------------------------
-test <- "[null,10000000000,true,false]"
-target <- structure(c(0, 4.94065645841247e-314, 4.94065645841247e-324, 0),
-  class = "integer64"
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    test <- "[null,10000000000,true,false]"
+    target <- bit64::as.integer64(c(NA, 10000000000, TRUE, FALSE))
 
-test <- "[true,false,10000000000]"
-target <- list(
-  TRUE, FALSE,
-  structure(4.94065645841247e-314, class = "integer64")
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test,
-    type_policy = type_policy$strict,
-    int64_r_type = int64_opt$integer64
-  ),
-  target
-)
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+      target
+    )
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+
+    test <- "[true,false,10000000000]"
+    target <- list(TRUE, FALSE, bit64::as.integer64("10000000000"))
+
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test,
+        type_policy = type_policy$strict,
+        int64_r_type = int64_opt$integer64
+      ),
+      target
+    )
+
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test,
+                                         type_policy = type_policy$strict,
+                                         int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* logicals and doubles --------------------------------------------------------
 test <- "[null,1.0,true,false]"
 target <- c(NA, 1, TRUE, FALSE)
@@ -389,32 +459,66 @@ expect_identical(
   target
 )
 
-target <- list(NULL, 1L, 1.1, 10000000000)
+
+target <- c(NA, 1, 1.1, 10000000000)
 expect_identical(
-  RcppSimdJson:::.deserialize_json(test, type_policy = type_policy$strict),
+    RcppSimdJson:::.deserialize_json(test),
+    target
+)
+
+
+target <- c(NA, 1L, 1.1, 10000000000)
+expect_identical(
+  RcppSimdJson:::.deserialize_json(test, type_policy = type_policy$ints_as_dbls),
   target
 )
+
 
 target <- list(NULL, 1L, 1.1, "10000000000")
 expect_identical(
   RcppSimdJson:::.deserialize_json(test,
-    type_policy = type_policy$strict,
-    int64_r_type = int64_opt$string
-  ),
+                                   type_policy = type_policy$strict,
+                                   int64_r_type = int64_opt$string),
   target
 )
 
-target <- list(
-  NULL, 1L, 1.1,
-  structure(4.94065645841247e-314, class = "integer64")
-)
+
+
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- lapply(target, function(.x) if (is.character(.x)) bit64::as.integer64(.x) else .x)
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test,
+                                       type_policy = type_policy$strict,
+                                       int64_r_type = int64_opt$integer64),
+      target
+    )
+
+    target <- lapply(target, function(.x) if (is.integer(.x)) bit64::as.integer64(.x) else .x)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test,
+                                         type_policy = type_policy$strict,
+                                         int64_r_type = int64_opt$always),
+        target
+    )
+}
+
+
+test <- '[null,"stuff",10000000000]'
+target <- c(NA, "stuff", "10000000000")
 expect_identical(
-  RcppSimdJson:::.deserialize_json(test,
-    type_policy = type_policy$strict,
-    int64_r_type = int64_opt$integer64
-  ),
-  target
+    RcppSimdJson:::.deserialize_json(test,
+                                     # type_policy = type_policy$strict,
+                                     int64_r_type = int64_opt$string),
+    target
 )
+
+test <- '[null,1,10000000000]'
+target <- c(NA, 1, 10000000000)
+expect_identical(
+    RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$double),
+    target
+)
+
 
 #* logicals, doubles, and mixed integers ---------------------------------------
 test <- "[null,true,false,1,1.1,10000000000]"
@@ -444,18 +548,23 @@ expect_identical(
   target
 )
 
-target <- list(
-  NULL, TRUE, FALSE, 1L, 1.1,
-  structure(4.94065645841247e-314, class = "integer64")
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test,
-    type_policy = type_policy$strict,
-    int64_r_type = int64_opt$integer64
-  ),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- lapply(target, function(.x) if (is.character(.x)) bit64::as.integer64(.x) else .x)
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test,
+                                       type_policy = type_policy$strict,
+                                       int64_r_type = int64_opt$integer64),
+      target
+    )
 
+    target <- lapply(target, function(.x) if (is.integer(.x)) bit64::as.integer64(.x) else .x)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test,
+                                         type_policy = type_policy$strict,
+                                         int64_r_type = int64_opt$always),
+        target
+    )
+}
 
 # homogeneous matrices =========================================================
 #* empty -----------------------------------------------------------------------
@@ -561,17 +670,17 @@ expect_identical(
   target
 )
 
-target <- structure(
-  c(
-    4.94065645841247e-314, 1.48219693752374e-313,
-    9.88131291682493e-314, 1.97626258336499e-313
-  ),
-  class = "integer64", .Dim = c(2L, 2L)
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- structure(bit64::as.integer64(target), .Dim = dim(target))
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+      target
+    )
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* u64 -------------------------------------------------------------------------
 test <- "[[10000000000000000000,10000000000000000002],
           [10000000000000000003,10000000000000000004]]"
@@ -680,17 +789,17 @@ expect_identical(
   target
 )
 
-target <- structure(
-  c(
-    0, 1.48219693752374e-313, 4.94065645841247e-314,
-    1.97626258336499e-313, 9.88131291682493e-314, 0
-  ),
-  class = "integer64", .Dim = 2:3
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- structure(bit64::as.integer64(target), .Dim = dim(target))
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+        target
+    )
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* u64 -------------------------------------------------------------------------
 test <- "[[null,10000000000000000000,10000000000000000002],
           [10000000000000000003,10000000000000000004,null]]"
@@ -761,20 +870,21 @@ expect_identical(
   target
 )
 
-target <- structure(
-  c(
-    0, 4.94065645841247e-314, 4.94065645841247e-324,
-    4.94065645841247e-324, 4.94065645841247e-314, 0
-  ),
-  class = "integer64", .Dim = 2:3
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(
-    test,
-    int64_r_type = int64_opt$integer64
-  ),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- structure(bit64::as.integer64(target), .Dim = dim(target))
+
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test,
+                                       int64_r_type = int64_opt$integer64),
+      target
+    )
+
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test,
+                                         int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* logicals and integers -------------------------------------------------------
 test <- "[[null,1,true,false],
           [false,true,1,null]]"
@@ -805,17 +915,20 @@ expect_identical(
   target
 )
 
-target <- structure(
-  c(
-    0, 0, 4.94065645841247e-314, 4.94065645841247e-324,
-    4.94065645841247e-324, 4.94065645841247e-314, 0, 0
-  ),
-  class = "integer64", .Dim = c(2L, 4L)
-)
-expect_identical(
-  RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
-  target
-)
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target <- structure(
+        bit64::as.integer64(
+            matrix(c(NA, 10000000000, TRUE, FALSE,
+                     FALSE, TRUE, 10000000000, NA),
+                   nrow = 2L, ncol = 4L, byrow = TRUE)
+        ),
+        .Dim = c(2L, 4L)
+    )
+    expect_identical(
+      RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+      target
+    )
+}
 # objects ======================================================================
 #* empty object ----------------------------------------------------------------
 test <- '{}'
@@ -901,14 +1014,18 @@ test <-
         "these": 1,
         "names": null,
         "arent": true,
-        "sorted": null
+        "sorted": null,
+        "i64": true,
+        "u64": 10000000000000000000
     },
     {
         "these": null,
         "names": "b",
         "arent": null,
         "sorted": 1.5,
-        "col_missing_from_first_row": "face"
+        "col_missing_from_first_row": "face",
+        "i64": 3000000000,
+        "u64": 10000000000000000001
     }
 ]'
 
@@ -917,6 +1034,8 @@ target <- data.frame(
   names = c(NA, "b"),
   arent = c(TRUE, NA),
   sorted = c(NA, 1.5),
+  i64 = c(1, 3000000000),
+  u64 = c("10000000000000000000", "10000000000000000001"),
   col_missing_from_first_row = c(NA, "face"),
   stringsAsFactors = FALSE
 )
@@ -925,6 +1044,19 @@ expect_identical(
   RcppSimdJson:::.deserialize_json(test),
   target
 )
+
+if (requireNamespace("bit64", quietly = TRUE)) {
+    target$i64 <- bit64::as.integer64(target$i64)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$integer64),
+        target
+    )
+    target$these <- bit64::as.integer64(target$these)
+    expect_identical(
+        RcppSimdJson:::.deserialize_json(test, int64_r_type = int64_opt$always),
+        target
+    )
+}
 #* nested data frames ----------------------------------------------------------
 test <-
   '[
