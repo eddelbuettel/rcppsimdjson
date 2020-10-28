@@ -30,7 +30,7 @@ bool is_valid_query_arg(SEXP query) {
             return Rf_xlength(query) > 0;
         case VECSXP: {
             if (Rf_xlength(query) == 0) {
-                return false;
+                return false;   // #nocov
             } else {
                 for (auto&& element : Rcpp::List(query)) {
                     if (TYPEOF(element) != STRSXP) {

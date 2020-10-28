@@ -2,6 +2,10 @@
 
         * DESCRIPTION (Version, Date): Roll version and date
 
+	* inst/tinytest/test_misc.R: Expand test coverage
+	* src/internal-utils.cpp: Mark one line #nocov
+	* R/init.R (.onAttach): Mark six lines #nocov
+
 2020-10-25  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
 	* R/fparse.R: Add option to "always" return integers as bit64::integer64
