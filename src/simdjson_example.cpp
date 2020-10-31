@@ -51,10 +51,11 @@ void parseExample() {
 
   // Iterating through an array of objects
   for (simdjson::dom::object car : cars) {
+#if !defined(__clang__) || __clang_major__ != 9
     // Accessing a field by name
     Rcpp::Rcout << "Make/Model: " << car["make"]
                 << "/" << car["model"] << std::endl;
-
+#endif
     // Casting a JSON element to an integer
     uint64_t year = car["year"];
     Rcpp::Rcout << "- This car is " << 2020 - year
@@ -69,9 +70,11 @@ void parseExample() {
                 << (total_tire_pressure / 2) << std::endl;
 
     // Writing out all the information about the car
+#if !defined(__clang__) || __clang_major__ != 9
     for (auto [key, value] : car) {
       Rcpp::Rcout << "- " << key << ": " << value << std::endl;
     }
+#endif
   }
 }
 
