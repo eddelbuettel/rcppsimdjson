@@ -13,6 +13,24 @@
     .Call(`_RcppSimdJson_exceptions_enabled`)
 }
 
+#' @rdname simdjson-utilities
+#' @export
+is_valid_json <- function(json) {
+    .Call(`_RcppSimdJson_dispatch_is_valid_json`, json)
+}
+
+#' @rdname simdjson-utilities
+#' @export
+is_valid_utf8 <- function(x) {
+    .Call(`_RcppSimdJson_dispatch_is_valid_utf8`, x)
+}
+
+#' @rdname simdjson-utilities
+#' @export
+fminify <- function(json) {
+    .Call(`_RcppSimdJson_dispatch_fminify`, json)
+}
+
 .is_valid_json_arg <- function(json) {
     .Call(`_RcppSimdJson_is_valid_json_arg`, json)
 }
