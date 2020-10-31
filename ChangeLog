@@ -5,7 +5,7 @@
 
 2020-10-28  Dirk Eddelbuettel  <edd@debian.org>
 
-    * DESCRIPTION (Version, Date): Roll version and date
+        * DESCRIPTION (Version, Date): Roll version and date
 
 	* inst/tinytest/test_misc.R: Expand test coverage
 	* src/internal-utils.cpp: Mark one line #nocov
