@@ -11,6 +11,8 @@ valid_utf8 <- c(
     "\xee\x80\x80",
     "\xef\xbb\xbf"
 )
+names(valid_utf8) <- paste0("valid_utf8_", seq_along(valid_utf8))
+
 invalid_utf8 <- c(
     "\xc3\x28",
     "\xa0\xa1",
@@ -39,7 +41,17 @@ invalid_utf8 <- c(
     "\x91\x85\x95\x9e",
     "\x6c\x02\x8e\x18"
 )
+names(invalid_utf8) <- paste0("invalid_utf8_", seq_along(invalid_utf8))
 
+
+expect_identical(
+    `names<-`(rep(TRUE, length(valid_utf8)),  paste0("valid_utf8_", seq_along(valid_utf8))),
+    is_valid_utf8(valid_utf8)
+)
+expect_identical(
+    `names<-`(rep(FALSE, length(invalid_utf8)),  paste0("invalid_utf8_", seq_along(invalid_utf8))),
+    is_valid_utf8(invalid_utf8)
+)
 
 expect_true(
     all(is_valid_utf8(valid_utf8)) &&
@@ -55,7 +67,13 @@ expect_false(
     any(validUTF8(invalid_utf8))
 )
 
+expect_identical(is_valid_utf8(NA_character_), NA)
 expect_error(is_valid_utf8(NULL))
+expect_error(is_valid_utf8(1L))
+expect_error(is_valid_utf8(3.14))
+expect_error(is_valid_utf8(TRUE))
+expect_error(is_valid_utf8(list(charToRaw('"VALID JSON"'), FALSE)))
+
 
 prettified_json <- c(
 '{
@@ -124,6 +142,15 @@ expect_error(fminify(1.0))
 expect_error(fminify(FALSE))
 expect_identical(fminify(NA_character_), NA_character_)
 
+expect_identical(fminify(NA_character_), NA_character_)
+expect_error(fminify(NULL))
+expect_error(fminify(1L))
+expect_error(fminify(3.14))
+expect_error(fminify(TRUE))
+expect_error(fminify(list(charToRaw('\n"VALID JSON"'), FALSE)))
+
+
+# is_valid_json ===============================================================
 expect_true(all(is_valid_json(minified_json[!is.na(minified_json)])))
 expect_true(is_valid_json(charToRaw(minified_json[[1L]])))
 expect_true(
@@ -134,9 +161,13 @@ expect_true(
     )
 )
 
-expect_false(any(is_valid_json(valid_utf8)))
-expect_false(any(is_valid_json(invalid_utf8)))
+expect_identical(is_valid_json(NA_character_), NA)
 expect_error(is_valid_json(NULL))
 expect_error(is_valid_json(1L))
 expect_error(is_valid_json(1.0))
 expect_error(is_valid_json(FALSE))
+expect_error(is_valid_json(list(charToRaw('"VALID JSON"'), FALSE)))
+
+expect_false(any(is_valid_json(valid_utf8)))
+expect_false(any(is_valid_json(invalid_utf8)))
+

@@ -483,32 +483,82 @@ expect_identical(fparse("[9999999999999999999, 1]"),
 # _ ============================================================================
 # battery ======================================================================
 #* vanilla JSON ----------------------------------------------------------------
-all_files <- dir(
-    system.file("jsonexamples", package = "RcppSimdJson"),
-    recursive = TRUE,
-    pattern = "\\.json$",
-    full.names = TRUE
-)
+all_files <- list.files(system.file("jsonexamples", package = "RcppSimdJson"),
+                        recursive = TRUE,
+                        pattern = "\\.json$",
+                        full.names = TRUE)
 
 #*** fparse() ------------------------------------------------------------------
 for (i in seq_along(all_files)) {
     expect_silent(
-        fparse(json = .read_file(all_files[[i]]))
+        fparse(json = c(na1 = NA_character_,
+                        file = .read_file(all_files[[i]]),
+                        na2 = NA_character_))
     )
 }
 
+
+
 #*** fload() -------------------------------------------------------------------
+.write_file("JUNK JSON", test_file1)
+.write_file('"VALID JSON"', test_file2)
+
 opts <- expand.grid(type_policy = c("anything_goes", "numbers", "strict"),
                     int64_policy = c("double", "string", "integer64", "always"),
                     max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                     parse_error_ok = c(TRUE, FALSE),
                     query_error_ok = c(TRUE, FALSE),
-                    file = utils::head(all_files),
+                    file = c(utils::head(all_files), test_file1),
                     stringsAsFactors = FALSE)
+opts <- opts[
+    opts$file != test_file1 | (opts$file == test_file1 & opts$parse_error_ok),
+]
+
 
 for (i in seq_len(nrow(opts))) {
+    if (i %% 2 == 0) {
+        json_arg <- c(opts$file[[i]], test_file2)
+        if (opts$parse_error_ok[[i]]) {
+            json_arg <- c(test_file1, json_arg)
+        }
+        junk_query <- rep("junk", length(json_arg))
+    } else {
+        json_arg <- opts$file[[i]]
+        junk_query <- list("junk")
+    }
+
+    if (!opts$query_error_ok[[i]]) {
+        query_arg <- NULL
+    } else {
+        query_arg <- junk_query
+    }
+
     expect_silent(
-        fload(json = opts$file[[i]],
+        fload(json = json_arg,
+              query = query_arg,
+              type_policy = opts$type_policy[[i]],
+              int64_policy = opts$int64_policy[[i]],
+              max_simplify_lvl = opts$max_simplify_lvl[[i]],
+              parse_error_ok = opts$parse_error_ok[[i]],
+              query_error_ok = opts$query_error_ok[[i]])
+    )
+
+    if (length(json_arg) == 1L) {
+        json_arg <- readBin(opts$file[[i]], what = "raw",
+                            n = file.size(json_arg))
+    } else {
+        json_arg <- lapply(
+            json_arg,
+            function(.x) readBin(.x, what = "raw", n = file.size(.x))
+        )
+    }
+    if (is.raw(json_arg)) {
+        query_arg <- query_arg[[1L]]
+    }
+
+    expect_silent(
+        fparse(json = json_arg,
+               query = query_arg,
                type_policy = opts$type_policy[[i]],
                int64_policy = opts$int64_policy[[i]],
                max_simplify_lvl = opts$max_simplify_lvl[[i]],

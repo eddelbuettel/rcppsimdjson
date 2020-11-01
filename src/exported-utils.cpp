@@ -12,8 +12,10 @@ Rcpp::LogicalVector is_valid_json(const vec_T json) {
 
     if constexpr (std::is_same_v<vec_T, Rcpp::CharacterVector>) {
         return Rcpp::LogicalVector(
-            std::cbegin(json), std::cend(json), [&p](const decltype(json[0]) x) -> bool {
-                return p.parse(std::string_view(x)).error() == simdjson::error_code::SUCCESS;
+            std::cbegin(json), std::cend(json), [&p](const decltype(json[0]) x) {
+                return x == NA_STRING
+                           ? NA_LOGICAL
+                           : p.parse(std::string_view(x)).error() == simdjson::error_code::SUCCESS;
             });
     }
 
@@ -30,18 +32,39 @@ Rcpp::LogicalVector is_valid_json(const vec_T json) {
 //' @export
 // [[Rcpp::export(is_valid_json)]]
 Rcpp::LogicalVector dispatch_is_valid_json(SEXP json) {
+    if (Rf_xlength(json) == 0) {
+        Rcpp::stop("`json=` must be a non-empty character vector, raw vector, or a list containing "
+                   "raw vectors.");
+    }
+
     switch (TYPEOF(json)) {
-        case STRSXP:
-            return is_valid_json<Rcpp::CharacterVector>(json);
+        case STRSXP: {
+            auto out          = is_valid_json<Rcpp::CharacterVector>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
-        case RAWSXP:
-            return is_valid_json<Rcpp::RawVector>(json);
+        case RAWSXP: {
+            auto out          = is_valid_json<Rcpp::RawVector>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
-        case VECSXP:
-            return is_valid_json<Rcpp::ListOf<Rcpp::RawVector>>(json);
+        case VECSXP: {
+            for (auto&& element : Rcpp::List(json)) {
+                if (TYPEOF(element) != RAWSXP || Rf_xlength(element) == 0) {
+                    Rcpp::stop(
+                        "If `json=` is a `list`, it should only contain non-empty raw vectors.");
+                }
+            }
+            auto out          = is_valid_json<Rcpp::ListOf<Rcpp::RawVector>>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
         default:
-            Rcpp::stop("invalid input");
+            Rcpp::stop("`json=` must be a non-empty character vector, raw vector, or a list "
+                       "containing raw vectors.");
     }
 }
 
@@ -54,8 +77,8 @@ Rcpp::LogicalVector is_valid_utf8(const vec_T x) {
     }
 
     if constexpr (std::is_same_v<vec_T, Rcpp::CharacterVector>) {
-        return Rcpp::LogicalVector(std::cbegin(x), std::cend(x), [](const auto& val) -> bool {
-            return simdjson::validate_utf8(std::string_view(val));
+        return Rcpp::LogicalVector(std::cbegin(x), std::cend(x), [](const auto& val) {
+            return val == NA_STRING ? NA_LOGICAL : simdjson::validate_utf8(std::string_view(val));
         });
     }
 
@@ -74,18 +97,39 @@ Rcpp::LogicalVector is_valid_utf8(const vec_T x) {
 //' @export
 // [[Rcpp::export(is_valid_utf8)]]
 Rcpp::LogicalVector dispatch_is_valid_utf8(SEXP x) {
+    if (Rf_xlength(x) == 0) {
+        Rcpp::stop("`x=` must be a non-empty character vector, raw vector, or a list containing "
+                   "raw vectors.");
+    }
+
     switch (TYPEOF(x)) {
-        case STRSXP:
-            return is_valid_utf8<Rcpp::CharacterVector>(x);
+        case STRSXP: {
+            auto out          = is_valid_utf8<Rcpp::CharacterVector>(x);
+            out.attr("names") = Rf_getAttrib(x, R_NamesSymbol);
+            return out;
+        }
 
-        case RAWSXP:
-            return is_valid_utf8<Rcpp::RawVector>(x);
+        case RAWSXP: {
+            auto out          = is_valid_utf8<Rcpp::RawVector>(x);
+            out.attr("names") = Rf_getAttrib(x, R_NamesSymbol);
+            return out;
+        }
 
-        case VECSXP:
-            return is_valid_utf8<Rcpp::ListOf<Rcpp::RawVector>>(x);
+        case VECSXP: {
+            for (auto&& element : Rcpp::List(x)) {
+                if (TYPEOF(element) != RAWSXP || Rf_xlength(element) == 0) {
+                    Rcpp::stop(
+                        "If `x=` is a `list`, it should only contain non-empty raw vectors.");
+                }
+            }
+            auto out          = is_valid_utf8<Rcpp::ListOf<Rcpp::RawVector>>(x);
+            out.attr("names") = Rf_getAttrib(x, R_NamesSymbol);
+            return out;
+        }
 
         default:
-            Rcpp::stop("invalid input");
+            Rcpp::stop("`json=` must be a non-empty character vector, raw vector, or a list "
+                       "containing raw vectors.");
     }
 }
 
@@ -106,13 +150,14 @@ Rcpp::CharacterVector fminify(const vec_T json) {
     if constexpr (std::is_same_v<vec_T, Rcpp::CharacterVector>) {
         return Rcpp::CharacterVector(
             std::cbegin(json), std::cend(json), [&p](const decltype(json[0]) val) -> Rcpp::String {
-                if (auto [parsed, error] = p.parse(std::string_view(val)); !error) {
-                    return simdjson::minify(parsed);
+                if (val != NA_STRING) {
+                    if (auto [parsed, error] = p.parse(std::string_view(val)); !error) {
+                        return simdjson::minify(parsed);
+                    }
                 }
                 return NA_STRING;
             });
     }
-
 
     if constexpr (std::is_same_v<vec_T, Rcpp::ListOf<Rcpp::RawVector>>) {
         return Rcpp::CharacterVector(
@@ -130,17 +175,38 @@ Rcpp::CharacterVector fminify(const vec_T json) {
 //' @export
 // [[Rcpp::export(fminify)]]
 Rcpp::CharacterVector dispatch_fminify(SEXP json) {
+    if (Rf_xlength(json) == 0) {
+        Rcpp::stop("`json=` must be a non-empty character vector, raw vector, or a list containing "
+                   "raw vectors.");
+    }
+
     switch (TYPEOF(json)) {
-        case STRSXP:
-            return fminify<Rcpp::CharacterVector>(json);
+        case STRSXP: {
+            auto out          = fminify<Rcpp::CharacterVector>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
-        case RAWSXP:
-            return fminify<Rcpp::RawVector>(json);
+        case RAWSXP: {
+            auto out          = fminify<Rcpp::RawVector>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
-        case VECSXP:
-            return fminify<Rcpp::ListOf<Rcpp::RawVector>>(json);
+        case VECSXP: {
+            for (auto&& element : Rcpp::List(json)) {
+                if (TYPEOF(element) != RAWSXP || Rf_xlength(element) == 0) {
+                    Rcpp::stop(
+                        "If `json=` is a `list`, it should only contain non-empty raw vectors.");
+                }
+            }
+            auto out          = fminify<Rcpp::ListOf<Rcpp::RawVector>>(json);
+            out.attr("names") = Rf_getAttrib(json, R_NamesSymbol);
+            return out;
+        }
 
         default:
-            Rcpp::stop("invalid input");
+            Rcpp::stop("`json=` must be a non-empty character vector, raw vector, or a list "
+                       "containing raw vectors.");
     }
 }

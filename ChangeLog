@@ -1,3 +1,13 @@
+2020-11-01  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+	* src/exported-utils.cpp: Add is_valid_utf8, is_valid_json, and
+	fminify (plus tests, docs, examples)
+	* R/exported-utils.R: Ditto
+	* inst/tinytest/test_simdjson_utils.R: Ditto
+
+	* inst/tinytest/test_fparse_fload: Expand test coverage.
+	* inst/include/RcppSimdJson/deserialize.hpp: Mark one line #nocov
+
 2020-10-31  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
 	* src/simdjson_example.cpp: Macro-guard two Rcout calls in parseExample()
