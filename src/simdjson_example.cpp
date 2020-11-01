@@ -47,10 +47,9 @@ void parseExample() {
          "tire_pressure": [ 29.8, 30.0 ] }
   ] )"_padded;
   simdjson::dom::parser parser;
-  simdjson::dom::array cars = parser.parse(cars_json).get<simdjson::dom::array>();
 
   // Iterating through an array of objects
-  for (simdjson::dom::object car : cars) {
+  for (simdjson::dom::object car : parser.parse(cars_json)) {
 #if !defined(__clang__) || __clang_major__ != 9
     // Accessing a field by name
     Rcpp::Rcout << "Make/Model: " << car["make"]
