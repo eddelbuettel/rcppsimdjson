@@ -59,6 +59,39 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// dispatch_is_valid_json
+Rcpp::LogicalVector dispatch_is_valid_json(SEXP json);
+RcppExport SEXP _RcppSimdJson_dispatch_is_valid_json(SEXP jsonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type json(jsonSEXP);
+    rcpp_result_gen = Rcpp::wrap(dispatch_is_valid_json(json));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dispatch_is_valid_utf8
+Rcpp::LogicalVector dispatch_is_valid_utf8(SEXP x);
+RcppExport SEXP _RcppSimdJson_dispatch_is_valid_utf8(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(dispatch_is_valid_utf8(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dispatch_fminify
+Rcpp::CharacterVector dispatch_fminify(SEXP json);
+RcppExport SEXP _RcppSimdJson_dispatch_fminify(SEXP jsonSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type json(jsonSEXP);
+    rcpp_result_gen = Rcpp::wrap(dispatch_fminify(json));
+    return rcpp_result_gen;
+END_RCPP
+}
 // is_valid_json_arg
 bool is_valid_json_arg(SEXP json);
 RcppExport SEXP _RcppSimdJson_is_valid_json_arg(SEXP jsonSEXP) {
@@ -147,6 +180,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_deserialize", (DL_FUNC) &_RcppSimdJson_deserialize, 12},
     {"_RcppSimdJson_load", (DL_FUNC) &_RcppSimdJson_load, 12},
     {"_RcppSimdJson_exceptions_enabled", (DL_FUNC) &_RcppSimdJson_exceptions_enabled, 0},
+    {"_RcppSimdJson_dispatch_is_valid_json", (DL_FUNC) &_RcppSimdJson_dispatch_is_valid_json, 1},
+    {"_RcppSimdJson_dispatch_is_valid_utf8", (DL_FUNC) &_RcppSimdJson_dispatch_is_valid_utf8, 1},
+    {"_RcppSimdJson_dispatch_fminify", (DL_FUNC) &_RcppSimdJson_dispatch_fminify, 1},
     {"_RcppSimdJson_is_valid_json_arg", (DL_FUNC) &_RcppSimdJson_is_valid_json_arg, 1},
     {"_RcppSimdJson_is_valid_query_arg", (DL_FUNC) &_RcppSimdJson_is_valid_query_arg, 1},
     {"_RcppSimdJson_diagnose_input", (DL_FUNC) &_RcppSimdJson_diagnose_input, 1},

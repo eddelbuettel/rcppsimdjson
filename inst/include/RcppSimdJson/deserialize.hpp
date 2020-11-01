@@ -417,7 +417,7 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
         }             // Type_Policy::strict
     }
 
-    return R_NilValue;
+    return R_NilValue; // # nocov
 }
 
 
