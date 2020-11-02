@@ -3,12 +3,15 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
-\section{Changes in version 0.1.3 (2020-10-xx)}{
+\section{Changes in version 0.1.3 (2020-11-01)}{
   \itemize{
     \item Added URLs to DESCRIPTION (Dirk closing \ghit{50}).
     \item Upgraded to simdjson 0.6.0 (Dirk in \ghpr{52}).
     \item New policy option to always convert integers to \code{int64_t}
     (Brandon in \ghpr{55} closing \ghit{54}).
+    \item Added workaround for odd clang-9 bug (Brandon in \ghpr{57}).
+    \item New utility functions \code{is_valid_utf8()},
+    \code{is_valid_json()} and \code{fminify()} (Brandon in \ghpr{58}).
   }
 }
 

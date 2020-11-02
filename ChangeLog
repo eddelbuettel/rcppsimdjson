@@ -1,5 +1,7 @@
 2020-11-01  Dirk Eddelbuettel  <edd@debian.org>
 
+        * DESCRIPTION (Version, Date): Release 0.1.3
+
 	* inst/tinytest/test_compressed_files.R: Add library(RcppSimdJson) to
 	make file self-contained; add temporary directory checks
 	* inst/tinytest/test_issues.R: Add temporary directory checks
