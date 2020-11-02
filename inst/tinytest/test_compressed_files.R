@@ -1,7 +1,8 @@
+library(RcppSimdJson)
 if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
 
 my_temp_dir <- paste0(tempdir(), "/rcppsimdjson-compressed-temp")
-dir.create(my_temp_dir)
+if (!dir.exists(my_temp_dir)) dir.create(my_temp_dir)
 
 .read_compress_write_load <- function(file_path) {
     types <- c("gzip", "bzip2", "xz")
@@ -27,4 +28,4 @@ sapply(all_files, function(.x) {
     expect_silent(.read_compress_write_load(.x))
 })
 
-unlink(my_temp_dir)
+unlink(my_temp_dir, recursive=TRUE, force=TRUE)

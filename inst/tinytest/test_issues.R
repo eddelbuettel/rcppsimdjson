@@ -1,6 +1,7 @@
 if (RcppSimdJson:::.unsupportedArchitecture()) exit_file("Unsupported chipset")
 
 my_temp_dir <- paste0(tempdir(), "/rcppsimdjson-temp")
+if (!dir.exists(my_temp_dir)) dir.create(my_temp_dir)
 
 # 33: prevent deletion of local files ==========================================
 # https://github.com/eddelbuettel/rcppsimdjson/issues/33
@@ -17,7 +18,7 @@ expect_true(all(file.exists(c(temp_file1, temp_file2))))
 
 # json_url <- "https://raw.githubusercontent.com/eddelbuettel/rcppsimdjson/master/inst/jsonexamples/small/demo.json"
 json_url <- paste0("file:///", system.file("jsonexamples/small/demo.json", package = "RcppSimdJson"))
-dir.create(my_temp_dir)
+
 fload(json_url, temp_dir = my_temp_dir, keep_temp_files = TRUE)
 expect_true(
     length(dir(my_temp_dir)) == 1L
@@ -47,4 +48,4 @@ expect_error(
 )
 
 
-unlink(my_temp_dir)
+unlink(my_temp_dir, recursive=TRUE, force=TRUE)

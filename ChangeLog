@@ -1,3 +1,9 @@
+2020-11-01  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/tinytest/test_compressed_files.R: Add library(RcppSimdJson) to
+	make file self-contained; add temporary directory checks
+	* inst/tinytest/test_issues.R: Add temporary directory checks
+
 2020-11-01  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
 	* src/exported-utils.cpp: Add is_valid_utf8, is_valid_json, and
