@@ -1,7 +1,7 @@
 Package: RcppSimdJson
 Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
-Version: 0.1.3
+Version: 0.1.3.1
 Date: 2020-11-01
 Author: Dirk Eddelbuettel, Brendan Knapp
 Maintainer: Dirk Eddelbuettel <edd@debian.org>
@@ -19,3 +19,4 @@ Suggests: bit64, tinytest
 URL: https://github.com/eddelbuettel/rcppsimdjson/
 BugReports: https://github.com/eddelbuettel/rcppsimdjson/issues
 RoxygenNote: 7.1.1
+Encoding: UTF-8

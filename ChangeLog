@@ -1,3 +1,11 @@
+2020-12-04  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Roll version and date
+
+	* R/fload.R (fload): Additional argument 'headers' to pass API headers
+	* R/utils.R (.prep_input): Idem, passes 'headers' on to curl
+	* man/fparse.Rd: Document option
+
 2020-11-01  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.3
@@ -24,7 +32,7 @@
 2020-10-28  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Roll version and date
-
+or
 	* inst/tinytest/test_misc.R: Expand test coverage
 	* src/internal-utils.cpp: Mark one line #nocov
 	* R/init.R (.onAttach): Mark six lines #nocov

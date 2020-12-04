@@ -14,9 +14,9 @@ is_valid_utf8(x)
 fminify(json)
 }
 \arguments{
-\item{json}{JSON, or raw vectors representing json.}
+\item{json}{JSON string(s), or raw vectors representing JSON string(s)}
 
-\item{x}{Text, or raw vectors representing text.}
+\item{x}{String(s), or raw vectors representing string(s).}
 }
 \description{
 simdjson Utilities

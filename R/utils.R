@@ -16,9 +16,11 @@
 .prep_input <- function(input,
                         temp_dir,
                         compressed_download,
-                        verbose) {
+                        verbose,
+                        headers = NULL) {
     input[!is.na(input)] <- path.expand(input[!is.na(input)])
     diagnosis <- .diagnose_input(input)
+    .headers <- headers
 
     if (length(missing_files <- diagnosis$input[!is.na(diagnosis$input) &
                                                 !diagnosis$is_from_url &
@@ -29,13 +31,12 @@
 
     if (any(diagnosis$is_from_url)) {
         if (compressed_download) {
-            .headers <- c(`Accept-Encoding` = "gzip")
+            .headers <- c(.headers, `Accept-Encoding` = "gzip")
             # for local files, don't attach .gz
             .fileext <- rep(NA_character_, nrow(diagnosis))
             .fileext[diagnosis$is_local_file_url] <- diagnosis$file_ext[diagnosis$is_local_file_url]
             .fileext[diagnosis$is_remote_file_url] <- sprintf("%s.gz", diagnosis$file_ext[diagnosis$is_remote_file_url])
         } else {
-            .headers <- NULL
             .fileext <-  diagnosis$file_ext[diagnosis$is_from_url]
         }
 
