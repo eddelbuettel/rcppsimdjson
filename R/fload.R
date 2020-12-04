@@ -17,7 +17,8 @@
 #'   the downloaded document, default: \code{FALSE}
 #'
 #' @param headers Optional header content which can used to pass an API token,
-#'   default: \code{NULL}
+#'   default is query \code{getOption} for key \sQuote{RcppSimdJson.header} with
+#'   fallback of \code{NULL}
 #'
 #' @examples
 #' # load JSON files ===========================================================
@@ -67,7 +68,7 @@ fload <- function(json,
                   temp_dir = tempdir(),
                   keep_temp_files = FALSE,
                   compressed_download = FALSE,
-                  headers = NULL) {
+                  headers = getOption("RcppSimdJson.header", default = NULL)) {
     # validate arguments =======================================================
     if (!.is_valid_json_arg(json)) {
         stop("`json=` must be a non-empty character vector, raw vector, or a list containing raw vectors.")
