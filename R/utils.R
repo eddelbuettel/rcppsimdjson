@@ -17,7 +17,8 @@
                         temp_dir,
                         compressed_download,
                         verbose,
-                        headers = NULL) {
+                        headers = NULL,
+                        ...) {
     input[!is.na(input)] <- path.expand(input[!is.na(input)])
     diagnosis <- .diagnose_input(input)
     .headers <- headers

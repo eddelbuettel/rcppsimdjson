@@ -16,9 +16,8 @@
 #' @param compressed_download Whether to request server-side compression on
 #'   the downloaded document, default: \code{FALSE}
 #'
-#' @param headers Optional header content which can used to pass an API token,
-#'   default is query \code{getOption} for key \sQuote{RcppSimdJson.header} with
-#'   fallback of \code{NULL}
+#' @param ... Optional arguments which can be use \emph{e.g.} to pass additional
+#' header settings
 #'
 #' @examples
 #' # load JSON files ===========================================================
@@ -68,7 +67,7 @@ fload <- function(json,
                   temp_dir = tempdir(),
                   keep_temp_files = FALSE,
                   compressed_download = FALSE,
-                  headers = getOption("RcppSimdJson.header", default = NULL)) {
+                  ...) {
     # validate arguments =======================================================
     if (!.is_valid_json_arg(json)) {
         stop("`json=` must be a non-empty character vector, raw vector, or a list containing raw vectors.")
@@ -162,7 +161,7 @@ fload <- function(json,
                              temp_dir = temp_dir,
                              compressed_download = compressed_download,
                              verbose = verbose,
-                             headers = headers)
+                             ...)
     if (!keep_temp_files) {
         on.exit(unlink(diagnosis$input[diagnosis$is_from_url]), add = TRUE)
     }
