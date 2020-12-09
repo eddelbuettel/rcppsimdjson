@@ -36,7 +36,8 @@ fload(
   verbose = FALSE,
   temp_dir = tempdir(),
   keep_temp_files = FALSE,
-  compressed_download = FALSE
+  compressed_download = FALSE,
+  ...
 )
 }
 \arguments{
@@ -122,6 +123,9 @@ default: \code{NULL}.}
 
 \item{compressed_download}{Whether to request server-side compression on
 the downloaded document, default: \code{FALSE}}
+
+\item{...}{Optional arguments which can be use \emph{e.g.} to pass additional
+header settings}
 }
 \description{
 Parse JSON strings and files to R objects.

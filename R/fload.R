@@ -16,6 +16,8 @@
 #' @param compressed_download Whether to request server-side compression on
 #'   the downloaded document, default: \code{FALSE}
 #'
+#' @param ... Optional arguments which can be use \emph{e.g.} to pass additional
+#' header settings
 #'
 #' @examples
 #' # load JSON files ===========================================================
@@ -64,7 +66,8 @@ fload <- function(json,
                   verbose = FALSE,
                   temp_dir = tempdir(),
                   keep_temp_files = FALSE,
-                  compressed_download = FALSE) {
+                  compressed_download = FALSE,
+                  ...) {
     # validate arguments =======================================================
     if (!.is_valid_json_arg(json)) {
         stop("`json=` must be a non-empty character vector, raw vector, or a list containing raw vectors.")
@@ -157,7 +160,8 @@ fload <- function(json,
     diagnosis <- .prep_input(json,
                              temp_dir = temp_dir,
                              compressed_download = compressed_download,
-                             verbose = verbose)
+                             verbose = verbose,
+                             ...)
     if (!keep_temp_files) {
         on.exit(unlink(diagnosis$input[diagnosis$is_from_url]), add = TRUE)
     }

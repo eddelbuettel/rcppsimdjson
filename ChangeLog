@@ -1,3 +1,17 @@
+2020-12-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* R/fload.R (fload): Use ... instead of explicit header argument
+	* R/utils.R (.prep_input): Support ... use
+	* man/fparse.Rd: Document ... use
+
+2020-12-04  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Roll version and date
+
+	* R/fload.R (fload): Additional argument 'headers' to pass API headers
+	* R/utils.R (.prep_input): Idem, passes 'headers' on to curl
+	* man/fparse.Rd: Document option
+
 2020-11-01  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.3
