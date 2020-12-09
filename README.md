@@ -53,11 +53,6 @@ Or in chart form:
 
 ![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_parse_benchmark.png)
 
-Admittance to CRAN meant turning off one particular optimisation ('computed
-GOTOs') by default resulting in slightly slower performance. You can get the
-behaviour back locally by removing the `-DSIMDJSON_NO_COMPUTED_GOTO` term from
-[src/Makevars.in](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars.in#L5).
-
 ### Status
 
 As of version 0.1.0, all three major OSs are supported, and JSON can be parsed from file and string
