@@ -28,7 +28,6 @@ jobs:
           - name: gcc-10
             cxx: g++-10
             cc: gcc-10
-            coverage: true
 
     steps:
       - uses: actions/checkout@v2
@@ -50,8 +49,4 @@ jobs:
 
       - name: Test
         run: ./run.sh run_tests
-
-      - name: Coverage
-        if: ${{ matrix.coverage }}
-        run: ./run.sh coverage
         
