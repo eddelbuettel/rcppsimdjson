@@ -1,3 +1,10 @@
+2021-02-10  Brendan Knapp  <brendan.g.knapp@gmail.com>
+
+        * R/fparse (fparse): Add always_list parameter.
+        * R/fload (fload): Ditto
+        * man/fparse.Rd: Document always_list use
+        * inst/tinytest/test_issues.R Test always_list
+
 2021-01-29  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Roll version and date
