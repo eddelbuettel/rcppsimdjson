@@ -196,7 +196,7 @@ fload <- function(json,
     )
 
     if (always_list && length(json) == 1L) {
-        `attr<-`(list(out), "names", names(json))
+        `names<-`(list(out), names(json))
     } else {
         out
     }
