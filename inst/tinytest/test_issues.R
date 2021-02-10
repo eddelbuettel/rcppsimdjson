@@ -50,6 +50,9 @@ expect_error(
 # 64: option to always return list (even for single-element vectors)  ==========
 # https://github.com/eddelbuettel/rcppsimdjson/issues/64
 #* fparse() --------------------------------------------------------------------
+expect_error( # invalid `always_list` arg
+    fparse('[false,true]', always_list = "not TRUE or FALSE")
+)
 expect_identical( # original behavior is unaffected
     fparse('[false,true]'),
     c(FALSE, TRUE)
@@ -63,8 +66,12 @@ expect_identical( # if `json=` is a named, single-element vector, keep the `name
     list(named_single_element_vector = c(FALSE, TRUE))
 )
 #* fload() ---------------------------------------------------------------------
+expect_error( # invalid `always_list` arg
+    fload(temp_file1, always_list = "not TRUE or FALSE")
+)
 expect_identical(
-    fload(temp_file1), "json"
+    fload(temp_file1),
+    "json"
 )
 expect_identical(
     fload(temp_file1, always_list = TRUE),
