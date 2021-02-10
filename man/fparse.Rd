@@ -17,7 +17,8 @@ fparse(
   on_query_error = NULL,
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
-  int64_policy = c("double", "string", "integer64", "always")
+  int64_policy = c("double", "string", "integer64", "always"),
+  always_list = FALSE
 )
 
 fload(
@@ -33,6 +34,7 @@ fload(
   max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
   type_policy = c("anything_goes", "numbers", "strict"),
   int64_policy = c("double", "string", "integer64", "always"),
+  always_list = FALSE,
   verbose = FALSE,
   temp_dir = tempdir(),
   keep_temp_files = FALSE,
@@ -111,6 +113,9 @@ default: \code{NULL}.}
   \item \code{"always"} or \code{3L}: all integers become \code{bit64::integer64}s
 }}
 
+\item{always_list}{Whether a \code{list} should always be returned, even when \code{length(json) == 1L}.
+default: \code{FALSE}.}
+
 \item{verbose}{Whether to display status messages.
 \code{TRUE} or \code{FALSE}, default: \code{FALSE}}
 
@@ -180,6 +185,10 @@ raw_json <- as.raw(
       0x4f, 0x4e, 0x20, 0x74, 0x6f, 0x6f, 0x21, 0x22)
 )
 fparse(raw_json)
+
+# ensuring a list is always returned ========================================
+fparse(json_string, always_list = TRUE)
+fparse(c(named_single_element_character = json_string), always_list = TRUE)
 
 # controlling type-strictness ===============================================
 fparse(json_string, type_policy = "numbers")

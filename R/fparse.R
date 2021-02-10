@@ -74,6 +74,9 @@
 #'     \item \code{"always"} or \code{3L}: all integers become \code{bit64::integer64}s
 #'   }
 #'
+#' @param always_list Whether a \code{list} should always be returned, even when \code{length(json) == 1L}.
+#'   default: \code{FALSE}.
+#'
 #'
 #' @details
 #' \itemize{
@@ -127,6 +130,10 @@
 #'       0x4f, 0x4e, 0x20, 0x74, 0x6f, 0x6f, 0x21, 0x22)
 #' )
 #' fparse(raw_json)
+#'
+#' # ensuring a list is always returned ========================================
+#' fparse(json_string, always_list = TRUE)
+#' fparse(c(named_single_element_character = json_string), always_list = TRUE)
 #'
 #' # controlling type-strictness ===============================================
 #' fparse(json_string, type_policy = "numbers")
@@ -242,7 +249,8 @@ fparse <- function(json,
                    on_query_error = NULL,
                    max_simplify_lvl = c("data_frame", "matrix", "vector", "list"),
                    type_policy = c("anything_goes", "numbers", "strict"),
-                   int64_policy = c("double", "string", "integer64", "always")) {
+                   int64_policy = c("double", "string", "integer64", "always"),
+                   always_list = FALSE) {
     # validate arguments =======================================================
     # types --------------------------------------------------------------------
     if (!.is_valid_json_arg(json)) {
@@ -261,6 +269,9 @@ fparse <- function(json,
     }
     if (!.is_scalar_lgl(query_error_ok)) {
         stop("`query_error_ok=` must be either `TRUE` or `FALSE`.")
+    }
+    if (!.is_scalar_lgl(always_list)) {
+        stop("`always_list=` must be either `TRUE` or `FALSE`.")
     }
     # prep options =============================================================
     # max_simplify_lvl ---------------------------------------------------------
@@ -317,7 +328,7 @@ fparse <- function(json,
     }
 
     # deserialize ==============================================================
-    .deserialize_json(
+    out <- .deserialize_json(
         json = json,
         query = query,
         empty_array = empty_array,
@@ -331,4 +342,10 @@ fparse <- function(json,
         type_policy = type_policy,
         int64_r_type = int64_policy
     )
+
+    if (always_list && length(json) == 1L) {
+        `names<-`(list(out), names(json))
+    } else {
+        out
+    }
 }

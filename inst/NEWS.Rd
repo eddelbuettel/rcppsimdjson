@@ -4,9 +4,13 @@
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
 \section{Changes in version 0.1.4 (2021-xx-yy)}{
-  \item Support additional headers in \code{fload} (Dirk in \ghpr{60})
-  \item Enable continuous integration via GitHub Actions using
-  \code{run.sh} from r-ci repo (Dirk in \ghpr{61}, \ghpr{62})
+  \itemize{
+    \item Support additional headers in \code{fload} (Dirk in \ghpr{60}).
+    \item Enable continuous integration via GitHub Actions using
+    \code{run.sh} from r-ci repo (Dirk in \ghpr{61}, \ghpr{62}).
+    \item Add option to always return list to \code{fparse()}/\code{fload()}
+    (Brendan in \ghpr{65} closing \ghit{64}).
+  }
 }
 
 \section{Changes in version 0.1.3 (2020-11-01)}{
