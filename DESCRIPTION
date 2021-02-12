@@ -10,7 +10,7 @@ Description: The 'JSON' format is ubiquitous for data interchange, and the
  a high-performance parser for these files which by relying on parallel 'SIMD'
  instruction manages to parse these files as faster than disk speed. See the
  <arXiv:1902.08318> paper for more details about 'simdjson'.  This package 
- parses JSON from string, file, or remote URLs under a variety of settings.
+ parses 'JSON' from string, file, or remote URLs under a variety of settings.
 License: GPL (>= 2)
 Imports: Rcpp, utils
 LinkingTo: Rcpp

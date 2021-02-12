@@ -11,3 +11,4 @@
 \.clang-format$
 \.covrignore$
 ^local
+^\.github

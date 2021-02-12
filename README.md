@@ -12,7 +12,7 @@
 ### Motivation
 
 [simdjson](https://github.com/simdjson/simdjson) by [Daniel Lemire](https://lemire.me/en/) (with contributions by [Geoff
-Langdale](https://twitter.com/geofflangdale),  [John Keiser](https://github.com/jkeiser) and  [many others](https://github.com/simdjson/simdjson/graphs/contributors)) is an
+Langdale](https://branchfree.org/),  [John Keiser](https://github.com/jkeiser) and  [many others](https://github.com/simdjson/simdjson/graphs/contributors)) is an
 engineering marvel.  Through very clever use of [SIMD instructions](https://en.wikipedia.org/wiki/SIMD),
 it manages to parse JSON files faster than disc access. Wut? Yes you read that right: parallel
 processing with so little overhead that the net throughput is limited only by disk speed.
@@ -78,7 +78,7 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
 - [jsonlite](https://cran.r-project.org/package=jsonlite) by [Jeroen
   Ooms](https://github.com/jeroen) is excellent, very versatile, and probably most-widely used;
 - [rapidjsonr](https://cran.r-project.org/package=rapidjsonr) and [jsonify](https://cran.r-project.org/package=jsonify) by [David
-  Cooley](https://twitter.com/_davecooley) bringing [RapidJSON](https://rapidjson.org/) to R;
+  Cooley](https://github.com/dcooley) bringing [RapidJSON](https://rapidjson.org/) to R;
 - [ndjson](https://cran.r-project.org/package=ndjson) by [Bob Rudis](https://rud.is/b/) builds on the
   [JSON for Modern C++](https://github.com/nlohmann/json) library by [Niels
   Lohmann](https://github.com/nlohmann);
