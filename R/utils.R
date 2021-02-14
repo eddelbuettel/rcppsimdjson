@@ -43,7 +43,8 @@
 
         temp_files <- rep(NA_character_, nrow(diagnosis))
         temp_files[diagnosis$is_from_url] <- tempfile(
-            pattern = .drop_file_ext(basename(diagnosis$input[diagnosis$is_from_url]), diagnosis$file_ext[diagnosis$is_from_url]),
+            pattern = .drop_file_ext(basename(gsub("[?]", "_", diagnosis$input[diagnosis$is_from_url])),
+                                     diagnosis$file_ext[diagnosis$is_from_url]),
             tmpdir = normalizePath(temp_dir),
             fileext = .fileext[diagnosis$is_from_url]
         )
