@@ -468,7 +468,7 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     if constexpr (query_error_ok) {
         if (auto [queried, query_error] = parsed.at_pointer(std::string_view(query));
             !query_error) {
-            return deserialize(queried, parse_opts);
+            return deserialize(queried, parse_opts);				// #nocov
         }
         return on_query_error;
 
@@ -515,7 +515,7 @@ inline SEXP parse_query_and_deserialize(simdjson::dom::parser&                 p
                                         SEXP                                   on_query_error,
                                         const Parse_Opts&                      parse_opts) {
     if (utils::is_na_string(json)) {
-        return Rcpp::LogicalVector(1, NA_LOGICAL);
+        return Rcpp::LogicalVector(1, NA_LOGICAL);				// #nocov
     }
 
     if constexpr (parse_error_ok) {
@@ -588,12 +588,12 @@ inline SEXP flat_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
                     !parse_error) {
-                    for (R_xlen_t i = 0; i < n; ++i) {
+                    for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
                         out[i] = query_and_deserialize<query_error_ok>(
                             parsed, query[i], on_query_error, parse_opts);
                     }
                     out.attr("names") = query.attr("names");
-                    return out;
+                    return out;							// #nocov end
                 }
                 return on_parse_error;
 
@@ -684,7 +684,7 @@ inline SEXP nested_query(const json_T&                                json,
         } else { /* !parse_error_ok */
             auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
             if (parse_error) {
-                Rcpp::stop(simdjson::error_message(parse_error));
+                Rcpp::stop(simdjson::error_message(parse_error));			// #nocov
             }
             for (R_xlen_t i = 0; i < n; ++i) {
                 const R_xlen_t n_queries = std::size(query[i]);
@@ -704,13 +704,13 @@ inline SEXP nested_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 if (auto [parsed, parse_error] = parse<decltype(json[i]), is_file>(parser, json[i]);
                     !parse_error) {
-                    Rcpp::List res(n_queries);
+                    Rcpp::List res(n_queries);						// #nocov start
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
                     }
                     res.attr("names") = query[i].attr("names");
-                    out[i]            = res;
+                    out[i]            = res;						// #nocov end
                 }
                 out[i] = on_parse_error;
 
@@ -775,8 +775,8 @@ inline SEXP dispatch_deserialize(
                                         query_error_ok>(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
-                default:
-                    return R_NilValue;
+                default:							// #nocov
+                    return R_NilValue;						// #nocov
             }
         }
 
@@ -798,7 +798,7 @@ inline SEXP dispatch_deserialize(
                                       query_error_ok>(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
-                case VECSXP:
+                case VECSXP:								// #nocov start
                     return nested_query<Rcpp::RawVector,
                                         is_file,
                                         SINGLE_JSON,      /* RAWSXP json always SINGLE_JSON */
@@ -808,7 +808,7 @@ inline SEXP dispatch_deserialize(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
                 default:
-                    return R_NilValue;
+                    return R_NilValue;							// #nocov end
             }
         }
 
@@ -830,7 +830,7 @@ inline SEXP dispatch_deserialize(
                                       query_error_ok>(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
-                case VECSXP:
+                case VECSXP:							// #nocov start
                     return nested_query<Rcpp::ListOf<Rcpp::RawVector>,
                                         is_file,
                                         NOT_SINGLE_JSON,  /* VECSXP json always NOT_SINGLE_JSON */
@@ -840,7 +840,7 @@ inline SEXP dispatch_deserialize(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
                 default:
-                    return R_NilValue;
+                    return R_NilValue;						// #nocov end
             }
         }
         default:

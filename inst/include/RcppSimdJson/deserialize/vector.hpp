@@ -126,11 +126,11 @@ inline SEXP dispatch_mixed(simdjson::dom::array array, const rcpp_T common_R_typ
 
         case rcpp_T::i64: {
             if constexpr (int64_opt == utils::Int64_R_Type::Double) {
-                return build_vector_mixed<REALSXP>(array);
+                return build_vector_mixed<REALSXP>(array);					// #nocov
             }
 
             if constexpr (int64_opt == utils::Int64_R_Type::String) {
-                return build_vector_mixed<STRSXP>(array);
+                return build_vector_mixed<STRSXP>(array);					// #nocov
             }
 
             if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||

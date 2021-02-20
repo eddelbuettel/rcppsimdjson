@@ -2,6 +2,10 @@
 
 	* R/utils.R: Add #nocov tags
 	* R/validateJSON.R (validateJSON): Idem
+	* inst/include/RcppSimdJson/utils.hpp (decompress): Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Idem
 
 2021-02-14  Dirk Eddelbuettel  <edd@debian.org>
 
