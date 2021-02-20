@@ -3,13 +3,13 @@
 }
 
 .is_scalar_chr <- function(x, na_ok = FALSE) {
-    length(x) == 1L && is.character(x) && (na_ok || !is.na(x))
+    length(x) == 1L && is.character(x) && (na_ok || !is.na(x)) 		# #nocov
 }
 
 .drop_file_ext <- function(file_path, file_ext) {
     mapply(function(.file_path, .file_ext) {
         if (nchar(.file_ext) == 0L) .file_path
-        else sub(sprintf("%s$", .file_ext), "", .file_path)
+        else sub(sprintf("%s$", .file_ext), "", .file_path)		# #nocov
     }, file_path, file_ext, USE.NAMES = FALSE)
 }
 
@@ -61,7 +61,7 @@
             )
         }
 
-        if (any(diagnosis$is_remote_file_url)) {
+        if (any(diagnosis$is_remote_file_url)) {			# #nocov start
             .url <- diagnosis$input[diagnosis$is_remote_file_url]
             .destfile <- temp_files[diagnosis$is_remote_file_url]
 
@@ -82,7 +82,7 @@
                         destfile = .destfile,
                         method = .method,
                         quiet = !verbose,
-                        headers = .headers
+                        headers = .headers				# #nocov end
                     )
                 }
             }

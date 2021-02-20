@@ -13,7 +13,7 @@
 ##' }
 validateJSON <- function(jsonfile) {
     if (!file.exists(jsonfile))
-        stop("No file '", jsonfile, "' found.", call.=FALSE)
+        stop("No file '", jsonfile, "' found.", call.=FALSE)		# #nocov
 
     .validateJSON(Sys.glob(jsonfile))
 }
