@@ -8,8 +8,8 @@
 
 .drop_file_ext <- function(file_path, file_ext) {
     mapply(function(.file_path, .file_ext) {
-        if (nchar(.file_ext) == 0L) .file_path
-        else sub(sprintf("%s$", .file_ext), "", .file_path)		# #nocov
+        if (nchar(.file_ext) == 0L) .file_path				# #nocov
+        else sub(sprintf("%s$", .file_ext), "", .file_path)
     }, file_path, file_ext, USE.NAMES = FALSE)
 }
 

@@ -682,7 +682,7 @@ inline SEXP nested_query(const json_T&                                json,
             return on_parse_error;
 
         } else { /* !parse_error_ok */
-            auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
+            auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);		// #nocov
             if (parse_error) {
                 Rcpp::stop(simdjson::error_message(parse_error));			// #nocov
             }
@@ -840,11 +840,11 @@ inline SEXP dispatch_deserialize(
                         json, query, on_parse_error, on_query_error, parse_opts);
 
                 default:
-                    return R_NilValue;						// #nocov end
+                    return R_NilValue;
             }
         }
         default:
-            return R_NilValue;
+            return R_NilValue;							// #nocov end
     }
 
     return R_NilValue;
