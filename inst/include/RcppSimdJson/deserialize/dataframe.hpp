@@ -150,8 +150,8 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
                             stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
-                        default:
-                            break;
+                        default:					// #nocov
+                            break;					// #nocov
                     }
                 }
                 i_row++;

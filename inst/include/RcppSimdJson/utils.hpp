@@ -208,7 +208,7 @@ template <typename file_path_T>
 inline Rcpp::RawVector decompress(const file_path_T& file_path, const Rcpp::String& file_type) {
     std::ifstream stream(file_path, std::ios::binary | std::ios::ate);
     if (!stream) {
-        Rcpp::stop("There's a problem with this file:\n\t-%s", file_path);
+      Rcpp::stop("There's a problem with this file:\n\t-%s", file_path);		// #nocov
     }
 
     const auto end = stream.tellg();

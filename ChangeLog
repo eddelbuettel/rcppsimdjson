@@ -1,3 +1,18 @@
+2021-02-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* R/utils.R: Add #nocov tags
+	* R/validateJSON.R (validateJSON): Idem
+	* inst/include/RcppSimdJson/utils.hpp (decompress): Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Idem
+
+2021-02-14  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Roll version and date
+
+	* R/utils.R (.prep_input): Sanitize filename for Windows
+
 2021-02-12  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.4
@@ -7,7 +22,7 @@
 
 2021-02-10  Dirk Eddelbuettel  <edd@debian.org>
 
-        * DESCRIPTION (Version, Date): Roll version and date
+         * DESCRIPTION (Version, Date): Roll version and date
 
 2021-02-10  Brendan Knapp  <brendan.g.knapp@gmail.com>
 
