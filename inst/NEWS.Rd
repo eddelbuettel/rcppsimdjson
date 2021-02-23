@@ -3,6 +3,14 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.1.5 (2021-02-23)}{
+  \itemize{
+    \item Temporary filenames from request URLs need an extra
+    path sanitization on Windows as seen with package \pkg{td}.
+    \item A few \code{#nocov} tags were added to the code.
+  }
+}
+
 \section{Changes in version 0.1.4 (2021-02-12)}{
   \itemize{
     \item Support additional headers in \code{fload} (Dirk in \ghpr{60}).

@@ -1,3 +1,7 @@
+2021-02-23  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Release 0.1.5
+
 2021-02-20  Dirk Eddelbuettel  <edd@debian.org>
 
 	* R/utils.R: Add #nocov tags
