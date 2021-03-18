@@ -100,7 +100,7 @@ template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
     // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get<double>().value_unsafe();
+    return element.get_double().value_unsafe();
     // Otherwise, do the following to handle errors:
     // double answer;
     // return element.get(answer) == simdjson::SUCCESS ? answer : 0.0;
