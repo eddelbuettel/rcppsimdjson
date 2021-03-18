@@ -28,8 +28,8 @@ diagnose(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
         }
 
         matrix_doctor.update(
-            Type_Doctor<type_policy, int64_opt>(element.get<simdjson::dom::array>().first));
-        n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
+            Type_Doctor<type_policy, int64_opt>(element.get_array().value_unsafe()));
+        n_cols.insert(std::size(element.get_array().value_unsafe()));
 
         if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
             return std::nullopt;
@@ -66,7 +66,7 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::dom::array array,
 
     for (auto&& sub_array : array) {
         R_xlen_t i(0L);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto&& element : sub_array.get_array().value_unsafe()) {
             out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
             i += n_rows;
         }
@@ -100,7 +100,7 @@ inline Rcpp::NumericVector build_matrix_integer64_typed(simdjson::dom::array arr
 
     for (auto&& sub_array : array) {
         std::size_t i(0ULL);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto&& element : sub_array.get_array().value_unsafe()) {
             stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
             i += n_rows;
         }
@@ -209,7 +209,7 @@ inline SEXP build_matrix_mixed(simdjson::dom::array array, std::size_t n_cols) {
 #else
     for (auto&& sub_array : array) {
         R_xlen_t i(0L);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto&& element : sub_array.get_array().value_unsafe()) {
             out[i + j] = get_scalar_dispatch<RTYPE>(element);
             i += n_rows;
         }
@@ -253,7 +253,7 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::dom::array arr
 
     for (auto&& element : array) {
         std::size_t i(0ULL);
-        for (auto&& sub_element : element.get<simdjson::dom::array>().first) {
+        for (auto&& sub_element : element.get_array().value_unsafe()) {
             switch (sub_element.type()) {
                 case simdjson::dom::element_type::INT64:
                     stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element);
