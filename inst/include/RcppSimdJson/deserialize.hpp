@@ -466,18 +466,21 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     }
 
     if constexpr (query_error_ok) {
-        if (auto [queried, query_error] = parsed.at_pointer(std::string_view(query));
-            !query_error) {
-            return deserialize(queried, parse_opts);				// #nocov
+        if (auto queried = parsed.at_pointer(std::string_view(query));
+            !queried.error()) {
+            // value_unsafe() is safe if we checked for error first, otherwise
+            // you may get garbage.
+            return deserialize(queried.value_unsafe(), parse_opts);				// #nocov
         }
         return on_query_error;
 
     } else { /* !query_error_ok */
-        auto [queried, query_error] = parsed.at_pointer(std::string_view(query));
-        if (query_error) {
-            Rcpp::stop(simdjson::error_message(query_error));
+        auto queried = parsed.at_pointer(std::string_view(query));
+        if (simdjson::error_code e = queried.error(); e != simdjson::SUCCESS) {
+            Rcpp::stop(simdjson::error_message(e));
         }
-        return deserialize(queried, parse_opts);
+        // If queried.error() == simdjson::SUCCESS, the following is safe
+        return deserialize(queried.value_unsafe(), parse_opts);
     }
 }
 
@@ -492,17 +495,19 @@ inline SEXP parse_and_deserialize(simdjson::dom::parser&                       p
     }
 
     if constexpr (parse_error_ok) {
-        if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json); !parse_error) {
-            return deserialize(parsed, parse_opts);
+        if (auto parsed = parse<json_T, is_file>(parser, json); !parsed.error()) {
+            // value_unsafe is safe because we check for errors
+            return deserialize(parsed.value_unsafe(), parse_opts);
         }
         return on_parse_error;
 
     } else {
-        auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
-        if (parse_error) {
-            Rcpp::stop(simdjson::error_message(parse_error));
+        auto parsed = parse<json_T, is_file>(parser, json);
+        if (parsed.error()) {
+            Rcpp::stop(simdjson::error_message(parsed.error()));
         }
-        return deserialize(parsed, parse_opts);
+        // value_unsafe is safe if parsed.error() == SUCCESS
+        return deserialize(parsed.value_unsafe(), parse_opts);
     }
 }
 
@@ -519,17 +524,19 @@ inline SEXP parse_query_and_deserialize(simdjson::dom::parser&                 p
     }
 
     if constexpr (parse_error_ok) {
-        if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json); !parse_error) {
-            return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
+        if (auto parsed = parse<json_T, is_file>(parser, json); !parsed.error()) {
+            // value_unsafe() is safe because we check for errors
+            return query_and_deserialize<query_error_ok>(parsed.value_unsafe(), query, on_query_error, parse_opts);
         }
         return on_parse_error;
 
     } else {
-        auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
-        if (parse_error) {
-            Rcpp::stop(simdjson::error_message(parse_error));
+        auto parsed = parse<json_T, is_file>(parser, json);
+        if (parsed.error()) {
+            Rcpp::stop(simdjson::error_message(parsed.error()));
         }
-        return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
+        // value_unsafe() is safe if parsed.error() == SUCCESS
+        return query_and_deserialize<query_error_ok>(parsed.value_unsafe(), query, on_query_error, parse_opts);
     }
 }
 
@@ -586,11 +593,11 @@ inline SEXP flat_query(const json_T&                                json,
             Rcpp::List     out(n);
 
             if constexpr (parse_error_ok) {
-                if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
-                    !parse_error) {
+                if (auto parsed = parse<json_T, is_file>(parser, json);
+                    !parsed.error()) {
                     for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
                         out[i] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i], on_query_error, parse_opts);
+                            parsed.value_unsafe(), query[i], on_query_error, parse_opts);
                     }
                     out.attr("names") = query.attr("names");
                     return out;							// #nocov end
@@ -598,13 +605,13 @@ inline SEXP flat_query(const json_T&                                json,
                 return on_parse_error;
 
             } else { /* !parse_error_ok */
-                auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);
-                if (parse_error) {
-                    Rcpp::stop(simdjson::error_message(parse_error));
+                auto parsed = parse<json_T, is_file>(parser, json);
+                if (parsed.error()) {
+                    Rcpp::stop(simdjson::error_message(parsed.error()));
                 }
                 for (R_xlen_t i = 0; i < n; ++i) {
                     out[i] = query_and_deserialize<query_error_ok>(
-                        parsed, query[i], on_query_error, parse_opts);
+                        parsed.value_unsafe(), query[i], on_query_error, parse_opts);
                 }
                 out.attr("names") = query.attr("names");
                 return out;
@@ -666,13 +673,13 @@ inline SEXP nested_query(const json_T&                                json,
 
     if constexpr (is_single_json) {
         if constexpr (parse_error_ok) {
-            if (auto [parsed, parse_error] = parse<json_T, is_file>(parser, json); !parse_error) {
+            if (auto parsed = parse<json_T, is_file>(parser, json); !parsed.error()) {
                 for (R_xlen_t i = 0; i < n; ++i) {
                     const R_xlen_t n_queries = std::size(query[i]);
                     Rcpp::List     res(n_queries);
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
+                            parsed.value_unsafe(), query[i][j], on_query_error, parse_opts);
                     }
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;
@@ -682,16 +689,16 @@ inline SEXP nested_query(const json_T&                                json,
             return on_parse_error;
 
         } else { /* !parse_error_ok */
-            auto [parsed, parse_error] = parse<json_T, is_file>(parser, json);		// #nocov
-            if (parse_error) {
-                Rcpp::stop(simdjson::error_message(parse_error));			// #nocov
+            auto parsed = parse<json_T, is_file>(parser, json);		// #nocov
+            if (parsed.error()) {
+                Rcpp::stop(simdjson::error_message(parsed.error()));			// #nocov
             }
             for (R_xlen_t i = 0; i < n; ++i) {
                 const R_xlen_t n_queries = std::size(query[i]);
                 Rcpp::List     res(n_queries);
                 for (R_xlen_t j = 0; j < n_queries; ++j) {
                     res[j] = query_and_deserialize<query_error_ok>(
-                        parsed, query[i][j], on_query_error, parse_opts);
+                        parsed.value_unsafe(), query[i][j], on_query_error, parse_opts);
                 }
                 res.attr("names") = query[i].attr("names");
                 out[i]            = res;
@@ -702,12 +709,12 @@ inline SEXP nested_query(const json_T&                                json,
         for (R_xlen_t i = 0; i < n; ++i) {
             const R_xlen_t n_queries = std::size(query[i]);
             if constexpr (parse_error_ok) {
-                if (auto [parsed, parse_error] = parse<decltype(json[i]), is_file>(parser, json[i]);
-                    !parse_error) {
+                if (auto parsed = parse<decltype(json[i]), is_file>(parser, json[i]);
+                    !parsed.error()) {
                     Rcpp::List res(n_queries);						// #nocov start
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
+                            parsed.value_unsafe(), query[i][j], on_query_error, parse_opts);
                     }
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;						// #nocov end
@@ -715,14 +722,14 @@ inline SEXP nested_query(const json_T&                                json,
                 out[i] = on_parse_error;
 
             } else { /* !parse_error_ok */
-                auto [parsed, parse_error] = parse<decltype(json[i]), is_file>(parser, json[i]);
-                if (parse_error) {
-                    Rcpp::stop(simdjson::error_message(parse_error));
+                auto parsed = parse<decltype(json[i]), is_file>(parser, json[i]);
+                if (parsed.error()) {
+                    Rcpp::stop(simdjson::error_message(parsed.error()));
                 }
                 Rcpp::List res(n_queries);
                 for (R_xlen_t j = 0; j < n_queries; ++j) {
                     res[j] = query_and_deserialize<query_error_ok>(
-                        parsed, query[i][j], on_query_error, parse_opts);
+                        parsed.value_unsafe(), query[i][j], on_query_error, parse_opts);
                 }
                 res.attr("names") = query[i].attr("names");
                 out[i]            = res;

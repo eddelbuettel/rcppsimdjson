@@ -86,7 +86,7 @@ inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array arr
                 if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                     i64_ = true;
                 } else {
-                    if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                    if (utils::is_castable_int64(element.get_int64().value_unsafe())) {
                         i32_ = true;
                     } else {
                         i64_ = true;
@@ -285,7 +285,7 @@ void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element ele
             if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                 i64_ = true;
             } else {
-                if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                if (utils::is_castable_int64(element.get_int64().value_unsafe())) {
                     i32_ = true;
                 } else {
                     i64_ = true;

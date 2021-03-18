@@ -11,7 +11,8 @@
 bool validateJSON(const std::string filename) {
 #if __cplusplus >= 201703L
   simdjson::dom::parser parser;
-  auto [doc, error] = parser.load(filename.c_str()); // do the parsing
+  simdjson::dom::element doc;
+  auto error = parser.load(filename.c_str()).get(doc); // do the parsing
   if ( error ) {
     // something went wrong
     Rcpp::stop(error_message(error));
