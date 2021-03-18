@@ -476,7 +476,7 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
     } else { /* !query_error_ok */
         simdjson::dom::element queried;
         auto error = parsed.at_pointer(std::string_view(query)).get(parsed);
-        if (!error) {
+        if (error) {
             Rcpp::stop(simdjson::error_message(error));
         }
         return deserialize(queried, parse_opts);
