@@ -34,9 +34,10 @@ inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSO
     auto col_index = R_xlen_t(0L);
 
     for (auto&& element : array) {
-        if (auto object = element.get_object(); !object.error()) {
-            // value_unsafe is safe because we checked for the error
-            for (auto&& [key, value] : object.value_unsafe()) {
+        simdjson::dom::object object;
+        auto error = element.get(object);
+        if (!error) {
+            for (auto&& [key, value] : object) {
                 if (cols.schema.find(key) == std::end(cols.schema)) {
                     cols.schema[key] = Column<type_policy, int64_opt>{
                         col_index++, Type_Doctor<type_policy, int64_opt>()};
@@ -68,9 +69,10 @@ inline auto build_col(simdjson::dom::array                       array,
     if (type_doc.is_homogeneous()) {
         if (type_doc.has_null()) {
             for (auto&& object : array) {
-                auto element = object.get_object().at_key(key);
-                if (!element.error()) {
-                    out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element.value_unsafe());
+                simdjson::dom::element element;
+                auto error = object.get_object().at_key(key).get(element);
+                if (!error) {
+                    out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element);
                 }
                 i_row++;
             }
@@ -78,9 +80,10 @@ inline auto build_col(simdjson::dom::array                       array,
         } else {
 
             for (auto&& object : array) {
-                if (auto element = object.get_object().at_key(key);
-                    !element.error()) {
-                    out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element.value_unsafe());
+                simdjson::dom::element element;
+                auto error = object.get_object().at_key(key).get(element);
+                if (!error) {
+                    out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element);
                 }
                 i_row++;
             }
@@ -89,8 +92,10 @@ inline auto build_col(simdjson::dom::array                       array,
     } else {
 
         for (auto&& object : array) {
-            if (auto element = object.get_object().at_key(key); !element.error()) {
-                out[i_row] = get_scalar_dispatch<RTYPE>(element.value_unsafe());
+            simdjson::dom::element element;
+            auto error = object.get_object().at_key(key).get(element);
+            if (!error) {
+                out[i_row] = get_scalar_dispatch<RTYPE>(element);
             }
             i_row++;
         }
@@ -121,18 +126,20 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
         if (type_doc.is_homogeneous()) {
             if (type_doc.has_null()) {
                 for (auto&& object : array) {
-                    if (auto element = object.get_object().at_key(key);
-                        !element.error()) {
-                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element.value_unsafe());
+                    simdjson::dom::element element;
+                    auto error = object.get_object().at_key(key).get(element);
+                    if (!error) {
+                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
                     }
                     i_row++;
                 }
 
             } else {
                 for (auto&& object : array) {
-                    if (auto element = object.get_object().at_key(key);
-                        !element.error()) {
-                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element.value_unsafe());
+                    simdjson::dom::element element;
+                    auto error = object.get_object().at_key(key).get(element);
+                    if (!error) {
+                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                     }
                     i_row++;
                 }
@@ -140,17 +147,17 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
 
         } else {
             for (auto&& object : array) {
-                if (auto element = object.get_object().at_key(key);
-                    !element.error()) {
+                simdjson::dom::element element;
+                auto error = object.get_object().at_key(key).get(element);
+                if (!error) {
                     switch (element.type()) {
                         case simdjson::dom::element_type::INT64:
-                            // Could do int64_t(element):
-                            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element.value_unsafe());
+                            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
                         case simdjson::dom::element_type::BOOL:
                             // Could do bool(element):
-                            stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element.value_unsafe());
+                            stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
                         default:					// #nocov
@@ -226,10 +233,11 @@ build_data_frame(simdjson::dom::array                                           
                 auto this_col = Rcpp::Vector<VECSXP>(n_rows);
                 auto i_row    = R_xlen_t(0L);
                 for (auto&& element : array) {
-                    if (auto lookup = element.get_object().at_key(key);
-                        lookup.error() == simdjson::SUCCESS) {
+                    simdjson::dom::element lookup;
+                    auto error = element.get_object().at_key(key).get(lookup);
+                    if (!error) {
                         this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
-                            lookup.value_unsafe(), empty_array, empty_object, single_null);
+                            lookup, empty_array, empty_object, single_null);
                     } else {
                         this_col[i_row++] = NA_LOGICAL;
                     }
