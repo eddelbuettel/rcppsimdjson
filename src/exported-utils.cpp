@@ -139,9 +139,10 @@ Rcpp::CharacterVector fminify(const vec_T json) {
     simdjson::dom::parser p;
 
     if constexpr (std::is_same_v<vec_T, Rcpp::RawVector>) {
-        if (auto [parsed, error] = p.parse(
-                std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
-            !error) {
+        simdjson::dom::element parsed;
+        auto error = p.parse(
+            std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json))).get(parsed);
+        if (!error) {
             return simdjson::minify(parsed);
         }
         return Rcpp::CharacterVector::create(NA_STRING);
@@ -151,7 +152,9 @@ Rcpp::CharacterVector fminify(const vec_T json) {
         return Rcpp::CharacterVector(
             std::cbegin(json), std::cend(json), [&p](const decltype(json[0]) val) -> Rcpp::String {
                 if (val != NA_STRING) {
-                    if (auto [parsed, error] = p.parse(std::string_view(val)); !error) {
+                    simdjson::dom::element parsed;
+                    auto error = p.parse(std::string_view(val)).get(parsed);
+                    if (!error) {
                         return simdjson::minify(parsed);
                     }
                 }
@@ -162,9 +165,10 @@ Rcpp::CharacterVector fminify(const vec_T json) {
     if constexpr (std::is_same_v<vec_T, Rcpp::ListOf<Rcpp::RawVector>>) {
         return Rcpp::CharacterVector(
             std::cbegin(json), std::cend(json), [&p](const Rcpp::RawVector val) -> Rcpp::String {
-                if (auto [parsed, error] = p.parse(
-                        std::string_view(reinterpret_cast<const char*>(&(val[0])), std::size(val)));
-                    !error) {
+                simdjson::dom::element parsed;
+                auto error = p.parse(
+                    std::string_view(reinterpret_cast<const char*>(&(val[0])), std::size(val))).get(parsed);
+                if (!error) {
                     return simdjson::minify(parsed);
                 }
                 return NA_STRING;
