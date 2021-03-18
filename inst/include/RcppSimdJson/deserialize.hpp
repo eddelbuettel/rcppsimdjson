@@ -467,7 +467,7 @@ inline SEXP query_and_deserialize(simdjson::dom::element                       p
 
     if constexpr (query_error_ok) {
         simdjson::dom::element queried;
-        auto error = parsed.at_pointer(std::string_view(query)).get(parsed);
+        auto error = parsed.at_pointer(std::string_view(query)).get(queried);
         if (!error) {
             return deserialize(queried, parse_opts);				// #nocov
         }
