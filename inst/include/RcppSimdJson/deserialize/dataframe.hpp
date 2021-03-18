@@ -156,7 +156,6 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
                             break;
 
                         case simdjson::dom::element_type::BOOL:
-                            // Could do bool(element):
                             stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
