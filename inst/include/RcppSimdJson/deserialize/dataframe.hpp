@@ -35,8 +35,7 @@ inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSO
 
     for (auto&& element : array) {
         simdjson::dom::object object;
-        auto error = element.get(object);
-        if (!error) {
+        if(simdjson::SUCCESS == element.get(object)) {
             for (auto&& [key, value] : object) {
                 if (cols.schema.find(key) == std::end(cols.schema)) {
                     cols.schema[key] = Column<type_policy, int64_opt>{
@@ -44,7 +43,6 @@ inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSO
                 }
                 cols.schema[key].schema.add_element(value);
             }
-
         } else {
             return std::nullopt;
         }
@@ -70,8 +68,7 @@ inline auto build_col(simdjson::dom::array                       array,
         if (type_doc.has_null()) {
             for (auto&& object : array) {
                 simdjson::dom::element element;
-                auto error = object.get_object().at_key(key).get(element);
-                if (!error) {
+                if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                     out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element);
                 }
                 i_row++;
@@ -81,8 +78,7 @@ inline auto build_col(simdjson::dom::array                       array,
 
             for (auto&& object : array) {
                 simdjson::dom::element element;
-                auto error = object.get_object().at_key(key).get(element);
-                if (!error) {
+                if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                     out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element);
                 }
                 i_row++;
@@ -93,8 +89,7 @@ inline auto build_col(simdjson::dom::array                       array,
 
         for (auto&& object : array) {
             simdjson::dom::element element;
-            auto error = object.get_object().at_key(key).get(element);
-            if (!error) {
+            if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                 out[i_row] = get_scalar_dispatch<RTYPE>(element);
             }
             i_row++;
@@ -127,8 +122,7 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
             if (type_doc.has_null()) {
                 for (auto&& object : array) {
                     simdjson::dom::element element;
-                    auto error = object.get_object().at_key(key).get(element);
-                    if (!error) {
+                    if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                         stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
                     }
                     i_row++;
@@ -137,8 +131,7 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
             } else {
                 for (auto&& object : array) {
                     simdjson::dom::element element;
-                    auto error = object.get_object().at_key(key).get(element);
-                    if (!error) {
+                    if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                         stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                     }
                     i_row++;
@@ -148,8 +141,7 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
         } else {
             for (auto&& object : array) {
                 simdjson::dom::element element;
-                auto error = object.get_object().at_key(key).get(element);
-                if (!error) {
+                if(simdjson::SUCCESS == object.get_object().at_key(key).get(element)) {
                     switch (element.type()) {
                         case simdjson::dom::element_type::INT64:
                             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
@@ -233,8 +225,7 @@ build_data_frame(simdjson::dom::array                                           
                 auto i_row    = R_xlen_t(0L);
                 for (auto&& element : array) {
                     simdjson::dom::element lookup;
-                    auto error = element.get_object().at_key(key).get(lookup);
-                    if (!error) {
+                    if(simdjson::SUCCESS == element.get_object().at_key(key).get(lookup)) {
                         this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
                             lookup, empty_array, empty_object, single_null);
                     } else {
