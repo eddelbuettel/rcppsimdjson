@@ -35,108 +35,63 @@ inline auto get_scalar(simdjson::dom::element element) noexcept(noxcpt<R_Type>()
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_bool().value_unsafe() ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
-    // Otherwise, do the following to handle errors:
-    // bool answer;
-    // answer = element.get(answer) == simdjson::SUCCESS ? answer : false;
-    // return answer ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
+    return bool(element) ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
 }
 // return double
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_bool().value_unsafe() ? 1.0 : 0.0;
-    // Otherwise, do the following to handle errors:
-    // bool answer;
-    // answer = element.get(answer) == simdjson::SUCCESS ? answer : false;
-    // return answer ? 1.0 : 0.0;
+    return bool(element) ? 1.0 : 0.0;
 }
 // return int64_t
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i64>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i64>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_bool().value_unsafe() ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
-    // Otherwise, do the following to handle errors:
-    // bool answer;
-    // answer = element.get(answer) == simdjson::SUCCESS ? answer : false;
-    // return answer ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
+    return bool(element) ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
 }
 // return int
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i32>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_bool().value_unsafe() ? 1 : 0;
-    // Otherwise, do the following to handle errors:
-    // bool answer;
-    // return element.get(answer) == simdjson::SUCCESS ? int(answer) : 0;
+    return bool(element) ? 1 : 0;
 }
 // return "bool"
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::lgl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::lgl>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_bool().value_unsafe() ? 1 : 0;
-    // Otherwise, do the following to handle errors:
-    // bool answer;
-    // return element.get(answer) == simdjson::SUCCESS ? answer : false;
+    return bool(element);
 }
 // int64_t =========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return Rcpp::String(std::to_string(element.get_int64().value_unsafe()));
-    // Otherwise, do the following to handle errors:
-    // int64_t answer;
-    // return Rcpp::String(std::to_string(element.get(answer) == simdjson::SUCCESS ? answer : 0));
+    return Rcpp::String(std::to_string(int64_t(element)));
 }
 // return double
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_double().value_unsafe();
-    // Otherwise, do the following to handle errors:
-    // double answer;
-    // return element.get(answer) == simdjson::SUCCESS ? answer : 0.0;
+    return double(element);
 }
 // return int64_t
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::i64>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i64>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_int64().value_unsafe();
-    // Otherwise, do the following to handle errors:
-    // int64_t answer;
-    // return element.get(answer) == simdjson::SUCCESS ? answer : 0;
+    return int64_t(element);
 }
 // return int
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i32>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return static_cast<int>(element.get_int64().value_unsafe());
-    // int64_t answer;
-    // To avoid exceptions, we provide a fallback value, if success is certain,
-    // we could do int(int64_t(element)).
-    // return static_cast<int>(element.get(answer) == simdjson::SUCCESS ? answer : 0);
+    return static_cast<int>(int64_t(element));
 }
 // double ==========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    auto out = std::to_string(element.get_double().value_unsafe());
-    // double answer;
-    // To avoid exceptions, we provide a fallback value, if success is certain,
-    // we could do double(element).
-    // auto out = std::to_string(element.get(answer) == simdjson::SUCCESS ? answer : 0.0);
+    auto out = std::to_string(double(element));
     out.erase(out.find_last_not_of('0') + 2, std::string::npos);
     return Rcpp::String(out);
 }
@@ -144,36 +99,21 @@ get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt
 template <>
 inline auto
 get_scalar_<double, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return element.get_double().value_unsafe();
-    // double answer;
-    // To avoid exceptions, we provide a fallback value, if success is certain,
-    // we could do double(element).
-    // return element.get(answer) == simdjson::SUCCESS ? answer : 0.0;
+    return double(element);
 }
 // std::string (really std::string_view) ===========================================================
 // return Rcpp::String
 template <>
 inline auto get_scalar_<std::string, rcpp_T::chr>(simdjson::dom::element element) noexcept(
     noxcpt<rcpp_T::chr>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return Rcpp::String(std::string(element.get_string().value_unsafe()));
-    // std::string_view answer;
-    // To avoid exceptions, we provide a fallback value, if success is certain,
-    // we could do std::string_view(element).
-    // return Rcpp::String(std::string(element.get(answer) == simdjson::SUCCESS ? answer : ""));
+    return Rcpp::String(std::string(std::string_view(element)));
 }
 // uint64_t ========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<uint64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    // The unsafe_value is safe if the type was checked prior to this stage.
-    return Rcpp::String(std::to_string(element.get_uint64().value_unsafe()));
-    // uint64_t answer;
-    // To avoid exceptions, we provide a fallback value, if success is certain,
-    // we could do uint64_t(element).
-    // return Rcpp::String(std::to_string(element.get(answer) == simdjson::SUCCESS ? answer : 0));
+    return Rcpp::String(std::to_string(uint64_t(element)));
 }
 // dispatchers =====================================================================================
 template <int RTYPE>
