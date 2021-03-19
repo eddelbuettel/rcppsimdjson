@@ -22,14 +22,14 @@ diagnose(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
     std::unordered_set<std::size_t>     n_cols;
     Type_Doctor<type_policy, int64_opt> matrix_doctor;
 
-    for (auto&& element : array) {
-        if (element.type() != simdjson::dom::element_type::ARRAY) {
+    for (auto element : array) {
+        simdjson::dom::array sub_array;
+        if(element.get(sub_array) != simdjson::SUCCESS) {
             return std::nullopt;
         }
-
         matrix_doctor.update(
-            Type_Doctor<type_policy, int64_opt>(element.get<simdjson::dom::array>().first));
-        n_cols.insert(std::size(element.get<simdjson::dom::array>().first));
+            Type_Doctor<type_policy, int64_opt>(sub_array));
+        n_cols.insert(std::size(sub_array));
 
         if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
             return std::nullopt;
@@ -55,7 +55,7 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::dom::array array,
 
     for (simdjson::dom::array sub_array : array) {
         R_xlen_t i(0L);
-        for (auto&& element : sub_array) {
+        for (auto element : sub_array) {
             out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
             i += n_rows;
         }
@@ -64,9 +64,9 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::dom::array array,
 
 #else
 
-    for (auto&& sub_array : array) {
+    for (simdjson::dom::array sub_array : array) {
         R_xlen_t i(0L);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto element : sub_array) {
             out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
             i += n_rows;
         }
@@ -98,9 +98,9 @@ inline Rcpp::NumericVector build_matrix_integer64_typed(simdjson::dom::array arr
 
 #else
 
-    for (auto&& sub_array : array) {
+    for (simdjson::dom::array sub_array : array) {
         std::size_t i(0ULL);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto element : sub_array) {
             stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
             i += n_rows;
         }
@@ -190,7 +190,6 @@ inline SEXP dispatch_typed(simdjson::dom::array        array,
 
 template <int RTYPE>
 inline SEXP build_matrix_mixed(simdjson::dom::array array, std::size_t n_cols) {
-
     const R_xlen_t      n_rows(std::size(array));
     Rcpp::Matrix<RTYPE> out(n_rows, static_cast<R_xlen_t>(n_cols));
     R_xlen_t            j(0L);
@@ -207,9 +206,9 @@ inline SEXP build_matrix_mixed(simdjson::dom::array array, std::size_t n_cols) {
     }
 
 #else
-    for (auto&& sub_array : array) {
+    for (simdjson::dom::array sub_array : array) {
         R_xlen_t i(0L);
-        for (auto&& element : sub_array.get<simdjson::dom::array>().first) {
+        for (auto element : sub_array) {
             out[i + j] = get_scalar_dispatch<RTYPE>(element);
             i += n_rows;
         }
@@ -251,9 +250,9 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::dom::array arr
 
 #else
 
-    for (auto&& element : array) {
+    for (simdjson::dom::array element : array) {
         std::size_t i(0ULL);
-        for (auto&& sub_element : element.get<simdjson::dom::array>().first) {
+        for (auto sub_element : element) {
             switch (sub_element.type()) {
                 case simdjson::dom::element_type::INT64:
                     stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element);

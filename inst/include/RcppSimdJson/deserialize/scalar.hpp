@@ -35,63 +35,63 @@ inline auto get_scalar(simdjson::dom::element element) noexcept(noxcpt<R_Type>()
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return element.get<bool>().first ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
+    return bool(element) ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
 }
 // return double
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    return element.get<bool>().first ? 1.0 : 0.0;
+    return bool(element) ? 1.0 : 0.0;
 }
 // return int64_t
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i64>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i64>()) {
-    return element.get<bool>().first ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
+    return bool(element) ? static_cast<int64_t>(1LL) : static_cast<int64_t>(0LL);
 }
 // return int
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i32>()) {
-    return element.get<bool>().first ? 1 : 0;
+    return bool(element) ? 1 : 0;
 }
 // return "bool"
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::lgl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::lgl>()) {
-    return element.get<bool>().first ? 1 : 0;
+    return bool(element);
 }
 // int64_t =========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::to_string(element.get<int64_t>().first));
+    return Rcpp::String(std::to_string(int64_t(element)));
 }
 // return double
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    return element.get<double>().first;
+    return double(element);
 }
 // return int64_t
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::i64>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i64>()) {
-    return element.get<int64_t>().first;
+    return int64_t(element);
 }
 // return int
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i32>()) {
-    return static_cast<int>(element.get<int64_t>().first);
+    return static_cast<int>(int64_t(element));
 }
 // double ==========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    auto out = std::to_string(element.get<double>().first);
+    auto out = std::to_string(double(element));
     out.erase(out.find_last_not_of('0') + 2, std::string::npos);
     return Rcpp::String(out);
 }
@@ -99,21 +99,21 @@ get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt
 template <>
 inline auto
 get_scalar_<double, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::dbl>()) {
-    return element.get<double>().first;
+    return double(element);
 }
 // std::string (really std::string_view) ===========================================================
 // return Rcpp::String
 template <>
 inline auto get_scalar_<std::string, rcpp_T::chr>(simdjson::dom::element element) noexcept(
     noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::string(element.get<std::string_view>().first));
+    return Rcpp::String(std::string(std::string_view(element)));
 }
 // uint64_t ========================================================================================
 // return Rcpp::String
 template <>
 inline auto
 get_scalar_<uint64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::to_string(element.get<uint64_t>().first));
+    return Rcpp::String(std::to_string(uint64_t(element)));
 }
 // dispatchers =====================================================================================
 template <int RTYPE>

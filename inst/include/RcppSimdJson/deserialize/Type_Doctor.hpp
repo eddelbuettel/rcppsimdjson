@@ -59,7 +59,7 @@ class Type_Doctor {
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
 inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array array) noexcept {
-    for (auto&& element : array) {
+    for (auto element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::ARRAY:
                 ARRAY_ = true;
@@ -86,7 +86,7 @@ inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array arr
                 if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                     i64_ = true;
                 } else {
-                    if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                    if (utils::is_castable_int64(int64_t(element))) {
                         i32_ = true;
                     } else {
                         i64_ = true;
@@ -285,7 +285,7 @@ void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element ele
             if constexpr (int64_opt == utils::Int64_R_Type::Always) {
                 i64_ = true;
             } else {
-                if (utils::is_castable_int64(element.get<int64_t>().first)) {
+                if (utils::is_castable_int64(int64_t(element))) {
                     i32_ = true;
                 } else {
                     i64_ = true;
