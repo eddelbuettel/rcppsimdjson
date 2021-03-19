@@ -12,7 +12,7 @@ template <int RTYPE, typename in_T, rcpp_T R_Type, bool has_nulls>
 inline Rcpp::Vector<RTYPE> build_vector_typed(simdjson::dom::array array) {
     Rcpp::Vector<RTYPE> out(std::size(array));
     R_xlen_t            i(0L);
-    for (auto&& element : array) {
+    for (auto element : array) {
         out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);
     }
     return out;
@@ -23,7 +23,7 @@ template <bool has_nulls>
 inline Rcpp::Vector<REALSXP> build_vector_integer64_typed(simdjson::dom::array array) {
     std::vector<int64_t> stl_vec_int64(std::size(array));
     std::size_t          i(0ULL);
-    for (auto&& element : array) {
+    for (auto element : array) {
         stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
     }
     return utils::as_integer64(stl_vec_int64);
@@ -84,7 +84,7 @@ template <int RTYPE>
 inline Rcpp::Vector<RTYPE> build_vector_mixed(simdjson::dom::array array) {
     Rcpp::Vector<RTYPE> out(std::size(array));
     R_xlen_t            i(0L);
-    for (auto&& element : array) {
+    for (auto element : array) {
         out[i++] = get_scalar_dispatch<RTYPE>(element);
     }
     return out;
@@ -95,7 +95,7 @@ inline Rcpp::Vector<REALSXP> build_vector_integer64_mixed(simdjson::dom::array a
     std::vector<int64_t> stl_vec_int64(std::size(array));
     std::size_t          i(0ULL);
 
-    for (auto&& element : array) {
+    for (auto element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::INT64:
                 stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
