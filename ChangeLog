@@ -1,3 +1,7 @@
+2021-08-02  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Write name as RcppSimdJson as in DESCRIPTION
+
 2021-02-23  Dirk Eddelbuettel  <edd@debian.org>
 
         * DESCRIPTION (Version, Date): Release 0.1.5
