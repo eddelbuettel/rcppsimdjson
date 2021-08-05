@@ -20,8 +20,11 @@ simplify_list(simdjson::ondemand::array array, SEXP empty_array, SEXP empty_obje
     Rcpp::List out(static_cast<R_xlen_t>(array.count_elements()));
     auto i = R_xlen_t(0);
     for (auto element : array) {
-        out[i++] = simplify_element<type_policy, int64_opt, simplify_to>(
-            element, empty_array, empty_object, single_null);
+        simdjson::ondemand::value val;
+        if (element.get(val) == simdjson::SUCCESS) {
+            out[i++] = simplify_element<type_policy, int64_opt, simplify_to>(
+                val, empty_array, empty_object, single_null);
+        }
     }
     return out;
 }
