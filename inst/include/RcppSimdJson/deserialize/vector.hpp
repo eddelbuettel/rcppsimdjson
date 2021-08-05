@@ -13,7 +13,10 @@ inline Rcpp::Vector<RTYPE> build_vector_typed(simdjson::ondemand::array array) {
     Rcpp::Vector<RTYPE> out(static_cast<R_xlen_t>(array.count_elements()));
     R_xlen_t            i(0L);
     for (auto element : array) {
-        out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);
+        simdjson::ondemand::value val;
+        if (element.get(val) == simdjson::SUCCESS) {
+            out[i++] = get_scalar<in_T, R_Type, has_nulls>(element);\
+        }
     }
     return out;
 }
@@ -24,7 +27,10 @@ inline Rcpp::Vector<REALSXP> build_vector_integer64_typed(simdjson::ondemand::ar
     std::vector<int64_t> stl_vec_int64(static_cast<R_xlen_t>(array.count_elements()));
     std::size_t          i(0ULL);
     for (auto element : array) {
-        stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+        simdjson::ondemand::value val;
+        if (element.get(val) == simdjson::SUCCESS) {
+            stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+        }
     }
     return utils::as_integer64(stl_vec_int64);
 }
@@ -85,7 +91,10 @@ inline Rcpp::Vector<RTYPE> build_vector_mixed(simdjson::ondemand::array array) {
     Rcpp::Vector<RTYPE> out(static_cast<R_xlen_t>(array.count_elements()));
     R_xlen_t            i(0L);
     for (auto element : array) {
-        out[i++] = get_scalar_dispatch<RTYPE>(element);
+        simdjson::ondemand::value val;
+        if (element.get(val) == simdjson::SUCCESS) {
+            out[i++] = get_scalar_dispatch<RTYPE>(element);
+        }
     }
     return out;
 }

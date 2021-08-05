@@ -126,7 +126,7 @@ inline SEXP simplify_object(simdjson::ondemand::object object,
     for (auto field : object) {
         out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
             field.value(), empty_array, empty_object, single_null);
-        out_names[i++] = Rcpp::String(std::string(field.key()));
+        out_names[i++] = Rcpp::String(std::string(field.key().raw()));
     }
 
     out.attr("names") = out_names;

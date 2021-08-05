@@ -67,8 +67,11 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::ondemand::array array,
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto element : sub_array) {
-            out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
-            i += n_rows;
+            simdjson::ondemand::value val;
+            if (element.get(val) == simdjson::SUCCESS) {
+                out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
+                i += n_rows;
+            }
         }
         j++;
     }
@@ -171,8 +174,11 @@ inline SEXP build_matrix_mixed(simdjson::ondemand::array array, std::size_t n_co
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto element : sub_array) {
-            out[i + j] = get_scalar_dispatch<RTYPE>(element);
-            i += n_rows;
+            simdjson::ondemand::value val;
+            if (element.get(val) == simdjson::SUCCESS) {
+                out[i + j] = get_scalar_dispatch<RTYPE>(element);
+                i += n_rows;
+            }
         }
         j++;
     }

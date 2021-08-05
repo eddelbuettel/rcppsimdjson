@@ -127,13 +127,13 @@ inline constexpr rcpp_T Type_Doctor<type_policy, int64_opt>::common_R_type() con
         }
 
         if constexpr (type_policy == Type_Policy::strict) {
-            if (dbl_ && !(lgl_)) {
+            if (num_ && !(lgl_)) {
                 return rcpp_T::dbl;
             }
         }
 
         if constexpr (type_policy == Type_Policy::ints_as_dbls) {
-            if (dbl_ && !(lgl_)) { // any number will become double
+            if (num_ && !(lgl_)) { // any number will become double
                 return rcpp_T::dbl;
             }
         }
