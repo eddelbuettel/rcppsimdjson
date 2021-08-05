@@ -106,7 +106,7 @@ inline SEXP dispatch_simplify_array(simdjson::ondemand::array array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline SEXP simplify_object(const simdjson::ondemand::object object,
+inline SEXP simplify_object(simdjson::ondemand::object object,
                             SEXP                        empty_array,
                             SEXP                        empty_object,
                             SEXP                        single_null) {

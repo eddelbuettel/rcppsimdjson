@@ -82,7 +82,7 @@ inline SEXP dispatch_typed(simdjson::ondemand::array array, const rcpp_T R_Type,
 
 template <int RTYPE>
 inline Rcpp::Vector<RTYPE> build_vector_mixed(simdjson::ondemand::array array) {
-    Rcpp::Vector<RTYPE> out(static_cast<R_xlen_t>(array,.count_elements()));
+    Rcpp::Vector<RTYPE> out(static_cast<R_xlen_t>(array.count_elements()));
     R_xlen_t            i(0L);
     for (auto element : array) {
         out[i++] = get_scalar_dispatch<RTYPE>(element);

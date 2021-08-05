@@ -142,7 +142,7 @@ inline SEXP dispatch_typed(simdjson::ondemand::array        array,
 
             // # nocov start
         case simdjson::ondemand::json_type::null:
-            return Rcpp::LogicalVector(static_cast<R_xlen_t>(array).count_elements(), NA_LOGICAL);
+            return Rcpp::LogicalVector(static_cast<R_xlen_t>(array.count_elements()), NA_LOGICAL);
 
         default:
             return R_NilValue;

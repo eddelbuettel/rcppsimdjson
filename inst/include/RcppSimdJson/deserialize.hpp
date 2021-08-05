@@ -422,7 +422,7 @@ inline auto deserialize(simdjson::ondemand::value parsed, const Parse_Opts& pars
 
 
 template <typename json_T, bool is_file>
-inline simdjson::simdjson_result<simdjson::ondemand::value> parse(simdjson::ondemand::parser& parser,
+inline simdjson::simdjson_result<simdjson::ondemand::document> parse(simdjson::ondemand::parser& parser,
                                                                const json_T&          json) {
     if constexpr (utils::resembles_vec_raw<json_T>()) {
         /* if `json` is a raw (unsigned char) vector, we can cheat */
