@@ -66,9 +66,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
     if (type_doc.is_homogeneous()) {
         if (type_doc.has_null()) {
             for (auto object : array) {
-                simdjson::ondemand::value element;
-                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
-                    out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element);
+                if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                    out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(object.get_object().find_field_unordered(key).first);
                 }
                 i_row++;
             }
@@ -77,8 +76,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
 
             for (auto object : array) {
                 simdjson::ondemand::value element;
-                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
-                    out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element);
+                if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                    out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(object.get_object().find_field_unordered(key).first);
                 }
                 i_row++;
             }
@@ -88,8 +87,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
 
         for (auto object : array) {
             simdjson::ondemand::value element;
-            if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
-                out[i_row] = get_scalar_dispatch<RTYPE>(element);
+            if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                out[i_row] = get_scalar_dispatch<RTYPE>(object.get_object().find_field_unordered(key).first);
             }
             i_row++;
         }
@@ -120,18 +119,16 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
         if (type_doc.is_homogeneous()) {
             if (type_doc.has_null()) {
                 for (auto object : array) {
-                    simdjson::ondemand::value element;
-                    if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
-                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
+                    if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(object.get_object().find_field_unordered(key).first);
                     }
                     i_row++;
                 }
 
             } else {
                 for (auto object : array) {
-                    simdjson::ondemand::value element;
-                    if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
-                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
+                    if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                        stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(object.get_object().find_field_unordered(key).first);
                     }
                     i_row++;
                 }
@@ -139,8 +136,7 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
 
         } else {
             for (auto object : array) {
-                simdjson::ondemand::value element;
-                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
+                if(object.get_object().find_field_unordered(key).first == simdjson::SUCCESS) {
                     switch (element.type()) {
                         case simdjson::ondemand::json_type::number:
                             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
@@ -223,10 +219,9 @@ build_data_frame(simdjson::ondemand::array                                      
                 auto this_col = Rcpp::Vector<VECSXP>(n_rows);
                 auto i_row    = R_xlen_t(0L);
                 for (auto element : array) {
-                    simdjson::ondemand::value lookup;
-                    if(element.get_object().find_field_unordered(key).get(lookup) == simdjson::SUCCESS) {
+                    if(element.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
                         this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
-                            lookup, empty_array, empty_object, single_null);
+                            object.get_object().find_field_unordered(key).first, empty_array, empty_object, single_null);
                     } else {
                         this_col[i_row++] = NA_LOGICAL;
                     }
