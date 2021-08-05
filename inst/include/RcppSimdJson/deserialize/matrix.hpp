@@ -56,7 +56,7 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::ondemand::array array,
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto element : sub_array) {
-            out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element);
+            out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element.first);
             i += n_rows;
         }
         j++;
@@ -67,7 +67,7 @@ inline Rcpp::Vector<RTYPE> build_matrix_typed(simdjson::ondemand::array array,
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto element : sub_array) {
-            out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element->first);
+            out[i + j] = get_scalar<in_T, R_Type, has_nulls>(element.first);
             i += n_rows;
         }
         j++;
@@ -90,7 +90,7 @@ inline Rcpp::NumericVector build_matrix_integer64_typed(simdjson::ondemand::arra
     for (simdjson::ondemand::array sub_array : array) {
         std::size_t i(0ULL);
         for (auto&& element : sub_array) {
-            stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+            stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element.first);
             i += n_rows;
         }
         j++;
@@ -101,7 +101,7 @@ inline Rcpp::NumericVector build_matrix_integer64_typed(simdjson::ondemand::arra
     for (simdjson::ondemand::array sub_array : array) {
         std::size_t i(0ULL);
         for (auto element : sub_array) {
-            stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element);
+            stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, has_nulls>(element.first);
             i += n_rows;
         }
         j++;
@@ -161,7 +161,7 @@ inline SEXP build_matrix_mixed(simdjson::ondemand::array array, std::size_t n_co
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto&& element : sub_array) {
-            out[i + j] = get_scalar_dispatch<RTYPE>(element);
+            out[i + j] = get_scalar_dispatch<RTYPE>(element.first);
             i += n_rows;
         }
         j++;
@@ -171,7 +171,7 @@ inline SEXP build_matrix_mixed(simdjson::ondemand::array array, std::size_t n_co
     for (simdjson::ondemand::array sub_array : array) {
         R_xlen_t i(0L);
         for (auto element : sub_array) {
-            out[i + j] = get_scalar_dispatch<RTYPE>(element->first);
+            out[i + j] = get_scalar_dispatch<RTYPE>(element.first);
             i += n_rows;
         }
         j++;
@@ -195,11 +195,11 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
         for (auto&& element : sub_array) {
             switch (element.type()) {
                 case simdjson::ondemand::json_type::number:
-                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
+                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element.first);
                     break;
 
                 case simdjson::ondemand::json_type::boolean:
-                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
+                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element.first);
                     break;
 
                 default:
@@ -217,11 +217,11 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
         for (auto sub_element : element) {
             switch (sub_element.type()) {
                 case simdjson::ondemand::json_type::number:
-                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element);
+                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element.first);
                     break;
 
                 case simdjson::ondemand::json_type::boolean:
-                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(sub_element);
+                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(sub_element.first);
                     break;
 
                 default:

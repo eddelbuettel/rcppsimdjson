@@ -21,7 +21,7 @@ simplify_list(simdjson::ondemand::array array, SEXP empty_array, SEXP empty_obje
     auto i = R_xlen_t(0);
     for (auto element : array) {
         out[i++] = simplify_element<type_policy, int64_opt, simplify_to>(
-            element->first, empty_array, empty_object, single_null);
+            element.first, empty_array, empty_object, single_null);
     }
     return out;
 }
