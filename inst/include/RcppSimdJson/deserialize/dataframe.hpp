@@ -23,7 +23,7 @@ struct Column_Schema {
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline auto diagnose_data_frame(simdjson::dom::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
+inline auto diagnose_data_frame(simdjson::ondemand::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS)
     -> std::optional<Column_Schema<type_policy, int64_opt>> {
     // if (std::size(array) == 0) { // already handled in `dispatch_simplify_array()`
     //     return std::nullopt;
@@ -56,7 +56,7 @@ template <int RTYPE,
           rcpp_T              R_Type,
           Type_Policy         type_policy,
           utils::Int64_R_Type int64_opt>
-inline auto build_col(simdjson::dom::array                       array,
+inline auto build_col(simdjson::ondemand::array                       array,
                       const std::string_view                     key,
                       const Type_Doctor<type_policy, int64_opt>& type_doc) -> Rcpp::Vector<RTYPE> {
 
@@ -100,7 +100,7 @@ inline auto build_col(simdjson::dom::array                       array,
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline auto build_col_integer64(simdjson::dom::array                      array,
+inline auto build_col_integer64(simdjson::ondemand::array                      array,
                                 const std::string_view                    key,
                                 const Type_Doctor<type_policy, int64_opt> type_doc) -> SEXP {
 
@@ -114,14 +114,14 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
 
     if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
                   int64_opt == utils::Int64_R_Type::Always) {
-        auto stl_vec = std::vector<int64_t>(std::size(array), NA_INTEGER64);
+        auto stl_vec = std::vector<int64_t>(static_cast<R_xlen_t>(array.count_elements()), NA_INTEGER64);
         auto i_row   = std::size_t(0ULL);
 
         if (type_doc.is_homogeneous()) {
             if (type_doc.has_null()) {
                 for (auto object : array) {
-                    simdjson::dom::element element;
-                    if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+                    simdjson::ondemand::value element;
+                    if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                         stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
                     }
                     i_row++;
@@ -129,8 +129,8 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
 
             } else {
                 for (auto object : array) {
-                    simdjson::dom::element element;
-                    if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+                    simdjson::ondemand::value element;
+                    if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                         stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                     }
                     i_row++;
@@ -139,14 +139,14 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
 
         } else {
             for (auto object : array) {
-                simdjson::dom::element element;
-                if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+                simdjson::ondemand::value element;
+                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                     switch (element.type()) {
-                        case simdjson::dom::element_type::INT64:
+                        case simdjson::ondemand::json_type::number:
                             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
-                        case simdjson::dom::element_type::BOOL:
+                        case simdjson::ondemand::json_type::boolean:
                             stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
                             break;
 
@@ -164,13 +164,13 @@ inline auto build_col_integer64(simdjson::dom::array                      array,
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline auto
-build_data_frame(simdjson::dom::array                                                        array,
+build_data_frame(simdjson::ondemand::array                                                        array,
                  const std::unordered_map<std::string_view, Column<type_policy, int64_opt>>& cols,
                  SEXP empty_array,
                  SEXP empty_object,
                  SEXP single_null) -> SEXP {
 
-    const auto n_rows    = R_xlen_t(std::size(array));
+    const auto n_rows    = static_cast<R_xlen_t>(array.count_elements());
     auto       out       = Rcpp::List(std::size(cols));
     auto       out_names = Rcpp::CharacterVector(std::size(cols));
 
@@ -223,8 +223,8 @@ build_data_frame(simdjson::dom::array                                           
                 auto this_col = Rcpp::Vector<VECSXP>(n_rows);
                 auto i_row    = R_xlen_t(0L);
                 for (auto element : array) {
-                    simdjson::dom::element lookup;
-                    if(element.get_object().at_key(key).get(lookup) == simdjson::SUCCESS) {
+                    simdjson::ondemand::value lookup;
+                    if(element.get_object().find_field_unordered(key).get(lookup) == simdjson::SUCCESS) {
                         this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
                             lookup, empty_array, empty_object, single_null);
                     } else {

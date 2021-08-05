@@ -156,7 +156,7 @@ namespace deserialize {
  * @note Forward declaration. See inst/include/RcppSimdJson/deserialize/simplify.hpp.
  */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline auto simplify_element(simdjson::dom::element element,
+inline auto simplify_element(simdjson::ondemand::value element,
                              SEXP                   empty_array,
                              SEXP                   empty_object,
                              SEXP                   single_null) -> SEXP;
