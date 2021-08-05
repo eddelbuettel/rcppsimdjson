@@ -156,12 +156,12 @@ inline SEXP simplify_object(const simdjson::ondemand::object object,
  * @note definition: forward declaration in @file inst/include/RcppSimdJson/common.hpp @file.
  */
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
-inline SEXP simplify_element(simdjson::ondemand::element element,
+inline SEXP simplify_element(simdjson::ondemand::value element,
                              SEXP                   empty_array,
                              SEXP                   empty_object,
                              SEXP                   single_null) {
     switch (element.type()) {
-        case simdjson::ondemand::element_type::array:
+        case simdjson::ondemand::json_type::array:
             return dispatch_simplify_array<type_policy, int64_opt, simplify_to>(
                 simdjson::ondemand::array(element), empty_array, empty_object, single_null);
 
