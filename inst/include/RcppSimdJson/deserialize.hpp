@@ -468,7 +468,7 @@ inline SEXP query_and_deserialize(simdjson::ondemand::value                     
     }
 
     if constexpr (query_error_ok) {
-        simdjson::ondemand::element queried;
+        simdjson::ondemand::value queried;
         if(parsed.at_pointer(std::string_view(query)).get(queried) == simdjson::SUCCESS) {
             return deserialize(queried, parse_opts);				// #nocov
         }
@@ -502,7 +502,7 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
         return on_parse_error;
 
     } else {
-        simdjson::ondemand::element parsed;
+        simdjson::ondemand::value parsed;
         auto error = parse<json_T, is_file>(parser, json).get(parsed);
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
@@ -712,7 +712,7 @@ inline SEXP nested_query(const json_T&                                json,
         for (R_xlen_t i = 0; i < n; ++i) {
             const R_xlen_t n_queries = std::size(query[i]);
             if constexpr (parse_error_ok) {
-                simdjson::dom::element parsed;
+                simdjson::ondemand::value parsed;
                 if(simdjson::SUCCESS == parse<decltype(json[i]), is_file>(parser, json[i]).get(parsed)) {
                     Rcpp::List res(n_queries);						// #nocov start
                     for (R_xlen_t j = 0; j < n_queries; ++j) {

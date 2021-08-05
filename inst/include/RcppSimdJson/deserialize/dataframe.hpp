@@ -33,14 +33,14 @@ inline auto diagnose_data_frame(simdjson::ondemand::array array) noexcept(RCPPSI
     auto col_index = R_xlen_t(0L);
 
     for (auto element : array) {
-        simdjson::dom::object object;
+        simdjson::ondemand::object object;
         if(element.get(object) == simdjson::SUCCESS) {
-            for (auto [key, value] : object) {
-                if (cols.schema.find(key) == std::end(cols.schema)) {
-                    cols.schema[key] = Column<type_policy, int64_opt>{
+            for (auto field : object) {
+                if (cols.schema.find(std::string_view(field.key())) == std::end(cols.schema)) {
+                    cols.schema[std::string_view(field.key())] = Column<type_policy, int64_opt>{
                         col_index++, Type_Doctor<type_policy, int64_opt>()};
                 }
-                cols.schema[key].schema.add_element(value);
+                cols.schema[std::string_view(field.key())].schema.add_element(field.value());
             }
         } else {
             return std::nullopt;
@@ -60,14 +60,14 @@ inline auto build_col(simdjson::ondemand::array                       array,
                       const std::string_view                     key,
                       const Type_Doctor<type_policy, int64_opt>& type_doc) -> Rcpp::Vector<RTYPE> {
 
-    auto out   = Rcpp::Vector<RTYPE>(std::size(array), na_val<R_Type>());
+    auto out   = Rcpp::Vector<RTYPE>(static_cast<R_xlen_t>(array.count_elements()), na_val<R_Type>());
     auto i_row = R_xlen_t(0L);
 
     if (type_doc.is_homogeneous()) {
         if (type_doc.has_null()) {
             for (auto object : array) {
-                simdjson::dom::element element;
-                if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+                simdjson::ondemand::value element;
+                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                     out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(element);
                 }
                 i_row++;
@@ -76,8 +76,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
         } else {
 
             for (auto object : array) {
-                simdjson::dom::element element;
-                if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+                simdjson::ondemand::value element;
+                if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                     out[i_row] = get_scalar<scalar_T, R_Type, NO_NULLS>(element);
                 }
                 i_row++;
@@ -87,8 +87,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
     } else {
 
         for (auto object : array) {
-            simdjson::dom::element element;
-            if(object.get_object().at_key(key).get(element) == simdjson::SUCCESS) {
+            simdjson::ondemand::value element;
+            if(object.get_object().find_field_unordered(key).get(element) == simdjson::SUCCESS) {
                 out[i_row] = get_scalar_dispatch<RTYPE>(element);
             }
             i_row++;
