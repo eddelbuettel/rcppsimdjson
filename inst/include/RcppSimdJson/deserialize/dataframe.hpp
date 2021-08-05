@@ -136,8 +136,8 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
 
         } else {
             for (auto object : array) {
-                if(object.get_object().find_field_unordered(key).first == simdjson::SUCCESS) {
-                    switch (element.type()) {
+                if(object.get_object().find_field_unordered(key).second == simdjson::SUCCESS) {
+                    switch (object.get_object().find_field_unordered(key).first.type()) {
                         case simdjson::ondemand::json_type::number:
                             stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                             break;
