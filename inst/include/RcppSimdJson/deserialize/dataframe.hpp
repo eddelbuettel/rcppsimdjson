@@ -143,11 +143,11 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
                 if(object.get_object().find_field_unordered(key).get(val) == simdjson::SUCCESS) {
                     switch (val.type()) {
                         case simdjson::ondemand::json_type::number:
-                            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
+                            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
                             break;
 
                         case simdjson::ondemand::json_type::boolean:
-                            stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
+                            stl_vec[i_row] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(val);
                             break;
 
                         default:					// #nocov
