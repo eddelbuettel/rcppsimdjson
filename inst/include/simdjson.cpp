@@ -1,4 +1,4 @@
-/* auto-generated on 2021-07-27 17:46:55 -0400. Do not edit! */
+/* auto-generated on 2021-08-09 12:25:24 -0400. Do not edit! */
 /* begin file src/simdjson.cpp */
 #include "simdjson.h"
 
@@ -1586,8 +1586,9 @@ namespace internal {
     { UNEXPECTED_ERROR, "Unexpected error, consider reporting this problem as you may have found a bug in simdjson" },
     { PARSER_IN_USE, "Cannot parse a new document while a document is still in use." },
     { OUT_OF_ORDER_ITERATION, "Objects and arrays can only be iterated when they are first encountered." },
-    { INSUFFICIENT_PADDING, "simdjson requires the input JSON string to have at least SIMDJSON_PADDING extra bytes allocated, beyond the string's length." },
-    { INCOMPLETE_ARRAY_OR_OBJECT, "JSON document ended early in the middle of an object or array." }
+    { INSUFFICIENT_PADDING, "simdjson requires the input JSON string to have at least SIMDJSON_PADDING extra bytes allocated, beyond the string's length. Consider using the simdjson::padded_string class if needed." },
+    { INCOMPLETE_ARRAY_OR_OBJECT, "JSON document ended early in the middle of an object or array." },
+    { SCALAR_DOCUMENT_AS_VALUE, "A JSON document made of a scalar (number, Boolean, null or string) is treated as a value. Use get_bool(), get_double(), etc. on the document instead. "}
   }; // error_messages[]
 
 } // namespace internal

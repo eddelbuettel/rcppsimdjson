@@ -1,4 +1,4 @@
-/* auto-generated on 2021-07-27 17:46:55 -0400. Do not edit! */
+/* auto-generated on 2021-08-09 12:25:24 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -500,7 +500,7 @@ constexpr size_t DEFAULT_MAX_DEPTH = 1024;
 #ifndef SIMDJSON_HAS_STRING_VIEW
 SIMDJSON_PUSH_DISABLE_ALL_WARNINGS
 /* begin file include/simdjson/nonstd/string_view.hpp */
-// Copyright 2017-2019 by Martin Moene
+// Copyright 2017-2020 by Martin Moene
 //
 // string-view lite, a C++17-like string_view for C++98 and later.
 // For more information see https://github.com/martinmoene/string-view-lite
@@ -514,7 +514,7 @@ SIMDJSON_PUSH_DISABLE_ALL_WARNINGS
 #define NONSTD_SV_LITE_H_INCLUDED
 
 #define string_view_lite_MAJOR  1
-#define string_view_lite_MINOR  4
+#define string_view_lite_MINOR  6
 #define string_view_lite_PATCH  0
 
 #define string_view_lite_VERSION  nssv_STRINGIFY(string_view_lite_MAJOR) "." nssv_STRINGIFY(string_view_lite_MINOR) "." nssv_STRINGIFY(string_view_lite_PATCH)
@@ -528,12 +528,22 @@ SIMDJSON_PUSH_DISABLE_ALL_WARNINGS
 #define nssv_STRING_VIEW_NONSTD   1
 #define nssv_STRING_VIEW_STD      2
 
-#if !defined( nssv_CONFIG_SELECT_STRING_VIEW )
-# define nssv_CONFIG_SELECT_STRING_VIEW  ( nssv_HAVE_STD_STRING_VIEW ? nssv_STRING_VIEW_STD : nssv_STRING_VIEW_NONSTD )
+// tweak header support:
+
+#ifdef __has_include
+# if __has_include(<nonstd/string_view.tweak.hpp>)
+#  include <nonstd/string_view.tweak.hpp>
+# endif
+#define nssv_HAVE_TWEAK_HEADER  1
+#else
+#define nssv_HAVE_TWEAK_HEADER  0
+//# pragma message("string_view.hpp: Note: Tweak header not supported.")
 #endif
 
-#if defined( nssv_CONFIG_SELECT_STD_STRING_VIEW ) || defined( nssv_CONFIG_SELECT_NONSTD_STRING_VIEW )
-# error nssv_CONFIG_SELECT_STD_STRING_VIEW and nssv_CONFIG_SELECT_NONSTD_STRING_VIEW are deprecated and removed, please use nssv_CONFIG_SELECT_STRING_VIEW=nssv_STRING_VIEW_...
+// string_view selection and configuration:
+
+#if !defined( nssv_CONFIG_SELECT_STRING_VIEW )
+# define nssv_CONFIG_SELECT_STRING_VIEW  ( nssv_HAVE_STD_STRING_VIEW ? nssv_STRING_VIEW_STD : nssv_STRING_VIEW_NONSTD )
 #endif
 
 #ifndef  nssv_CONFIG_STD_SV_OPERATOR
@@ -557,10 +567,17 @@ SIMDJSON_PUSH_DISABLE_ALL_WARNINGS
 # define nssv_CONFIG_CONVERSION_STD_STRING_FREE_FUNCTIONS  1
 #endif
 
+#ifndef  nssv_CONFIG_NO_STREAM_INSERTION
+# define nssv_CONFIG_NO_STREAM_INSERTION  0
+#endif
+
 // Control presence of exception handling (try and auto discover):
 
 #ifndef nssv_CONFIG_NO_EXCEPTIONS
-# if defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND)
+# if _MSC_VER
+#  include <cstddef>    // for _HAS_EXCEPTIONS
+# endif
+# if defined(__cpp_exceptions) || defined(__EXCEPTIONS) || (_HAS_EXCEPTIONS)
 #  define nssv_CONFIG_NO_EXCEPTIONS  0
 # else
 #  define nssv_CONFIG_NO_EXCEPTIONS  1
@@ -723,16 +740,21 @@ using std::operator<<;
 
 #define nssv_COMPILER_VERSION( major, minor, patch )  ( 10 * ( 10 * (major) + (minor) ) + (patch) )
 
-#if defined(__clang__)
-# define nssv_COMPILER_CLANG_VERSION  nssv_COMPILER_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
+#if defined( __apple_build_version__ )
+# define nssv_COMPILER_APPLECLANG_VERSION  nssv_COMPILER_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
+# define nssv_COMPILER_CLANG_VERSION       0
+#elif defined( __clang__ )
+# define nssv_COMPILER_APPLECLANG_VERSION  0
+# define nssv_COMPILER_CLANG_VERSION       nssv_COMPILER_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
 #else
-# define nssv_COMPILER_CLANG_VERSION    0
+# define nssv_COMPILER_APPLECLANG_VERSION  0
+# define nssv_COMPILER_CLANG_VERSION       0
 #endif
 
 #if defined(__GNUC__) && !defined(__clang__)
 # define nssv_COMPILER_GNUC_VERSION  nssv_COMPILER_VERSION(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #else
-# define nssv_COMPILER_GNUC_VERSION    0
+# define nssv_COMPILER_GNUC_VERSION  0
 #endif
 
 // half-open range [lo..hi):
@@ -794,6 +816,45 @@ using std::operator<<;
 
 #define nssv_HAVE_STD_HASH              nssv_CPP11_120
 
+// Presence of compiler intrinsics:
+
+// Providing char-type specializations for compare() and length() that
+// use compiler intrinsics can improve compile- and run-time performance.
+//
+// The challenge is in using the right combinations of builtin availability
+// and its constexpr-ness.
+//
+// | compiler | __builtin_memcmp (constexpr) | memcmp  (constexpr) |
+// |----------|------------------------------|---------------------|
+// | clang    | 4.0              (>= 4.0   ) | any     (?        ) |
+// | clang-a  | 9.0              (>= 9.0   ) | any     (?        ) |
+// | gcc      | any              (constexpr) | any     (?        ) |
+// | msvc     | >= 14.2 C++17    (>= 14.2  ) | any     (?        ) |
+
+#define nssv_HAVE_BUILTIN_VER     ( (nssv_CPP17_000 && nssv_COMPILER_MSVC_VERSION >= 142) || nssv_COMPILER_GNUC_VERSION > 0 || nssv_COMPILER_CLANG_VERSION >= 400 || nssv_COMPILER_APPLECLANG_VERSION >= 900 )
+#define nssv_HAVE_BUILTIN_CE      (  nssv_HAVE_BUILTIN_VER )
+
+#define nssv_HAVE_BUILTIN_MEMCMP  ( (nssv_HAVE_CONSTEXPR_14 && nssv_HAVE_BUILTIN_CE) || !nssv_HAVE_CONSTEXPR_14 )
+#define nssv_HAVE_BUILTIN_STRLEN  ( (nssv_HAVE_CONSTEXPR_11 && nssv_HAVE_BUILTIN_CE) || !nssv_HAVE_CONSTEXPR_11 )
+
+#ifdef __has_builtin
+# define nssv_HAVE_BUILTIN( x )  __has_builtin( x )
+#else
+# define nssv_HAVE_BUILTIN( x )  0
+#endif
+
+#if nssv_HAVE_BUILTIN(__builtin_memcmp) || nssv_HAVE_BUILTIN_VER
+# define nssv_BUILTIN_MEMCMP  __builtin_memcmp
+#else
+# define nssv_BUILTIN_MEMCMP  memcmp
+#endif
+
+#if nssv_HAVE_BUILTIN(__builtin_strlen) || nssv_HAVE_BUILTIN_VER
+# define nssv_BUILTIN_STRLEN  __builtin_strlen
+#else
+# define nssv_BUILTIN_STRLEN  strlen
+#endif
+
 // C++ feature usage:
 
 #if nssv_HAVE_CONSTEXPR_11
@@ -852,8 +913,11 @@ using std::operator<<;
 #include <cassert>
 #include <iterator>
 #include <limits>
-#include <ostream>
 #include <string>   // std::char_traits<>
+
+#if ! nssv_CONFIG_NO_STREAM_INSERTION
+# include <ostream>
+#endif
 
 #if ! nssv_CONFIG_NO_EXCEPTIONS
 # include <stdexcept>
@@ -907,39 +971,74 @@ nssv_DISABLE_MSVC_WARNINGS( 4455 26481 26472 )
 
 namespace nonstd { namespace sv_lite {
 
-#if nssv_CPP11_OR_GREATER
-
 namespace detail {
 
-#if nssv_CPP14_OR_GREATER
+// support constexpr comparison in C++14;
+// for C++17 and later, use provided traits:
 
 template< typename CharT >
-inline constexpr std::size_t length( CharT * s, std::size_t result = 0 )
+inline nssv_constexpr14 int compare( CharT const * s1, CharT const * s2, std::size_t count )
 {
-    CharT * v = s;
-    std::size_t r = result;
-    while ( *v != '\0' ) {
-       ++v;
-       ++r;
+    while ( count-- != 0 )
+    {
+        if ( *s1 < *s2 ) return -1;
+        if ( *s1 > *s2 ) return +1;
+        ++s1; ++s2;
     }
-    return r;
+    return 0;
 }
 
-#else // nssv_CPP14_OR_GREATER
+#if nssv_HAVE_BUILTIN_MEMCMP
 
+// specialization of compare() for char, see also generic compare() above:
+
+inline nssv_constexpr14 int compare( char const * s1, char const * s2, std::size_t count )
+{
+    return nssv_BUILTIN_MEMCMP( s1, s2, count );
+}
+
+#endif
+
+#if nssv_HAVE_BUILTIN_STRLEN
+
+// specialization of length() for char, see also generic length() further below:
+
+inline nssv_constexpr std::size_t length( char const * s )
+{
+    return nssv_BUILTIN_STRLEN( s );
+}
+
+#endif
+
+#if defined(__OPTIMIZE__)
+
+// gcc, clang provide __OPTIMIZE__
 // Expect tail call optimization to make length() non-recursive:
 
 template< typename CharT >
-inline constexpr std::size_t length( CharT * s, std::size_t result = 0 )
+inline nssv_constexpr std::size_t length( CharT * s, std::size_t result = 0 )
 {
     return *s == '\0' ? result : length( s + 1, result + 1 );
 }
 
-#endif // nssv_CPP14_OR_GREATER
+#else // OPTIMIZE
+
+// non-recursive:
+
+template< typename CharT >
+inline nssv_constexpr14 std::size_t length( CharT * s )
+{
+    std::size_t result = 0;
+    while ( *s++ != '\0' )
+    {
+       ++result;
+    }
+    return result;
+}
+
+#endif // OPTIMIZE
 
 } // namespace detail
-
-#endif // nssv_CPP11_OR_GREATER
 
 template
 <
@@ -1091,9 +1190,9 @@ public:
 
     nssv_constexpr14 void swap( basic_string_view & other ) nssv_noexcept
     {
-        using std::swap;
-        swap( data_, other.data_ );
-        swap( size_, other.size_ );
+        const basic_string_view tmp(other);
+        other = *this;
+        *this = tmp;
     }
 
     // 24.4.2.6 String operations:
@@ -1132,7 +1231,11 @@ public:
 
     nssv_constexpr14 int compare( basic_string_view other ) const nssv_noexcept // (1)
     {
+#if nssv_CPP17_OR_GREATER
         if ( const int result = Traits::compare( data(), other.data(), (std::min)( size(), other.size() ) ) )
+#else
+        if ( const int result = detail::compare( data(), other.data(), (std::min)( size(), other.size() ) ) )
+#endif
         {
             return result;
         }
@@ -1376,7 +1479,7 @@ private:
     {
         const basic_string_view v;
 
-        nssv_constexpr explicit not_in_view( basic_string_view v ) : v( v ) {}
+        nssv_constexpr explicit not_in_view( basic_string_view v_ ) : v( v_ ) {}
 
         nssv_constexpr bool operator()( CharT c ) const
         {
@@ -1466,37 +1569,37 @@ template< class CharT, class Traits >
 nssv_constexpr bool operator== (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) == 0 ; }
+{ return lhs.size() == rhs.size() && lhs.compare( rhs ) == 0; }
 
 template< class CharT, class Traits >
 nssv_constexpr bool operator!= (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) != 0 ; }
+{ return !( lhs == rhs ); }
 
 template< class CharT, class Traits >
 nssv_constexpr bool operator< (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) < 0 ; }
+{ return lhs.compare( rhs ) < 0; }
 
 template< class CharT, class Traits >
 nssv_constexpr bool operator<= (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) <= 0 ; }
+{ return lhs.compare( rhs ) <= 0; }
 
 template< class CharT, class Traits >
 nssv_constexpr bool operator> (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) > 0 ; }
+{ return lhs.compare( rhs ) > 0; }
 
 template< class CharT, class Traits >
 nssv_constexpr bool operator>= (
     basic_string_view <CharT, Traits> lhs,
     basic_string_view <CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) >= 0 ; }
+{ return lhs.compare( rhs ) >= 0; }
 
 // Let S be basic_string_view<CharT, Traits>, and sv be an instance of S.
 // Implementations shall provide sufficient additional overloads marked
@@ -1505,21 +1608,21 @@ nssv_constexpr bool operator>= (
 
 #if ! nssv_CPP11_OR_GREATER || nssv_BETWEEN( nssv_COMPILER_MSVC_VERSION, 100, 141 )
 
-// accomodate for older compilers:
+// accommodate for older compilers:
 
 // ==
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator==(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) == 0; }
+    CharT const * rhs ) nssv_noexcept
+{ return lhs.size() == detail::length( rhs ) && lhs.compare( rhs ) == 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator==(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
-{ return rhs.compare( lhs ) == 0; }
+{ return detail::length( lhs ) == rhs.size() && rhs.compare( lhs ) == 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator==(
@@ -1538,38 +1641,38 @@ nssv_constexpr bool operator==(
 template< class CharT, class Traits>
 nssv_constexpr bool operator!=(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) != 0; }
+    CharT const * rhs ) nssv_noexcept
+{ return !( lhs == rhs ); }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator!=(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
-{ return rhs.compare( lhs ) != 0; }
+{ return !( lhs == rhs ); }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator!=(
     basic_string_view<CharT, Traits> lhs,
     std::basic_string<CharT, Traits> rhs ) nssv_noexcept
-{ return lhs.size() != rhs.size() && lhs.compare( rhs ) != 0; }
+{ return !( lhs == rhs ); }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator!=(
     std::basic_string<CharT, Traits> rhs,
     basic_string_view<CharT, Traits> lhs ) nssv_noexcept
-{ return lhs.size() != rhs.size() || rhs.compare( lhs ) != 0; }
+{ return !( lhs == rhs ); }
 
 // <
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator<(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
+    CharT const * rhs ) nssv_noexcept
 { return lhs.compare( rhs ) < 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator<(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
 { return rhs.compare( lhs ) > 0; }
 
@@ -1590,12 +1693,12 @@ nssv_constexpr bool operator<(
 template< class CharT, class Traits>
 nssv_constexpr bool operator<=(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
+    CharT const * rhs ) nssv_noexcept
 { return lhs.compare( rhs ) <= 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator<=(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
 { return rhs.compare( lhs ) >= 0; }
 
@@ -1616,12 +1719,12 @@ nssv_constexpr bool operator<=(
 template< class CharT, class Traits>
 nssv_constexpr bool operator>(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
+    CharT const * rhs ) nssv_noexcept
 { return lhs.compare( rhs ) > 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator>(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
 { return rhs.compare( lhs ) < 0; }
 
@@ -1642,12 +1745,12 @@ nssv_constexpr bool operator>(
 template< class CharT, class Traits>
 nssv_constexpr bool operator>=(
     basic_string_view<CharT, Traits> lhs,
-    char const * rhs ) nssv_noexcept
+    CharT const * rhs ) nssv_noexcept
 { return lhs.compare( rhs ) >= 0; }
 
 template< class CharT, class Traits>
 nssv_constexpr bool operator>=(
-    char const * lhs,
+    CharT const * lhs,
     basic_string_view<CharT, Traits> rhs ) nssv_noexcept
 { return rhs.compare( lhs ) <= 0; }
 
@@ -1667,7 +1770,7 @@ nssv_constexpr bool operator>=(
 
 #define nssv_BASIC_STRING_VIEW_I(T,U)  typename std::decay< basic_string_view<T,U> >::type
 
-#if nssv_BETWEEN( nssv_COMPILER_MSVC_VERSION, 140, 150 )
+#if defined(_MSC_VER)       // issue 40
 # define nssv_MSVC_ORDER(x)  , int=x
 #else
 # define nssv_MSVC_ORDER(x)  /*, int=x*/
@@ -1679,7 +1782,7 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator==(
          basic_string_view  <CharT, Traits> lhs,
     nssv_BASIC_STRING_VIEW_I(CharT, Traits) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) == 0; }
+{ return lhs.size() == rhs.size() && lhs.compare( rhs ) == 0; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator==(
@@ -1693,13 +1796,13 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator!= (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.size() != rhs.size() || lhs.compare( rhs ) != 0 ; }
+{ return !( lhs == rhs ); }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator!= (
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) lhs,
          basic_string_view  < CharT, Traits > rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) != 0 ; }
+{ return !( lhs == rhs ); }
 
 // <
 
@@ -1707,13 +1810,13 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator< (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) < 0 ; }
+{ return lhs.compare( rhs ) < 0; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator< (
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) lhs,
          basic_string_view  < CharT, Traits > rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) < 0 ; }
+{ return lhs.compare( rhs ) < 0; }
 
 // <=
 
@@ -1721,13 +1824,13 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator<= (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) <= 0 ; }
+{ return lhs.compare( rhs ) <= 0; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator<= (
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) lhs,
          basic_string_view  < CharT, Traits > rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) <= 0 ; }
+{ return lhs.compare( rhs ) <= 0; }
 
 // >
 
@@ -1735,13 +1838,13 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator> (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) > 0 ; }
+{ return lhs.compare( rhs ) > 0; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator> (
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) lhs,
          basic_string_view  < CharT, Traits > rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) > 0 ; }
+{ return lhs.compare( rhs ) > 0; }
 
 // >=
 
@@ -1749,13 +1852,13 @@ template< class CharT, class Traits  nssv_MSVC_ORDER(1) >
 nssv_constexpr bool operator>= (
          basic_string_view  < CharT, Traits > lhs,
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) >= 0 ; }
+{ return lhs.compare( rhs ) >= 0; }
 
 template< class CharT, class Traits  nssv_MSVC_ORDER(2) >
 nssv_constexpr bool operator>= (
     nssv_BASIC_STRING_VIEW_I( CharT, Traits ) lhs,
          basic_string_view  < CharT, Traits > rhs ) nssv_noexcept
-{ return lhs.compare( rhs ) >= 0 ; }
+{ return lhs.compare( rhs ) >= 0; }
 
 #undef nssv_MSVC_ORDER
 #undef nssv_BASIC_STRING_VIEW_I
@@ -1763,6 +1866,8 @@ nssv_constexpr bool operator>= (
 #endif // compiler-dependent approach to comparisons
 
 // 24.4.4 Inserters and extractors:
+
+#if ! nssv_CONFIG_NO_STREAM_INSERTION
 
 namespace detail {
 
@@ -1812,6 +1917,8 @@ operator<<(
 {
     return detail::write_to_stream( os, sv );
 }
+
+#endif // nssv_CONFIG_NO_STREAM_INSERTION
 
 // Several typedefs for common character types are provided:
 
@@ -1961,7 +2068,9 @@ using sv_lite::operator<=;
 using sv_lite::operator>;
 using sv_lite::operator>=;
 
+#if ! nssv_CONFIG_NO_STREAM_INSERTION
 using sv_lite::operator<<;
+#endif
 
 #if nssv_CONFIG_CONVERSION_STD_STRING_FREE_FUNCTIONS
 using sv_lite::to_string;
@@ -2141,6 +2250,7 @@ enum error_code {
   OUT_OF_ORDER_ITERATION,     ///< tried to iterate an array or object out of order
   INSUFFICIENT_PADDING,       ///< The JSON doesn't have enough padding for simdjson to safely parse it.
   INCOMPLETE_ARRAY_OR_OBJECT, ///< The document ends early.
+  SCALAR_DOCUMENT_AS_VALUE,   ///< A scalar document is treated as a value.
   NUM_ERROR_CODES
 };
 
@@ -2390,7 +2500,7 @@ struct simdjson_result : public internal::simdjson_result_base<T> {
 #if SIMDJSON_EXCEPTIONS
 
 template<typename T>
-inline std::ostream& operator<<(std::ostream& out, simdjson_result<T> value) noexcept { return out << value.value(); }
+inline std::ostream& operator<<(std::ostream& out, simdjson_result<T> value) { return out << value.value(); }
 #endif // SIMDJSON_EXCEPTIONS
 
 #ifndef SIMDJSON_DISABLE_DEPRECATED_API
@@ -7408,6 +7518,7 @@ inline size_t document_stream::size_in_bytes() const noexcept {
 }
 
 inline size_t document_stream::truncated_bytes() const noexcept {
+  if(error == CAPACITY) { return len - batch_start; }
   return parser->implementation->structural_indexes[parser->implementation->n_structural_indexes] - parser->implementation->structural_indexes[parser->implementation->n_structural_indexes + 1];
 }
 
@@ -20510,9 +20621,10 @@ struct implementation_simdjson_result_base {
    * the error() method returns a value that evaluates to false.
    */
   simdjson_really_inline T&& value_unsafe() && noexcept;
-
-  T first{};
-  error_code second{UNINITIALIZED};
+protected:
+  /** users should never directly access first and second. **/
+  T first{}; /** Users should never directly access 'first'. **/
+  error_code second{UNINITIALIZED}; /** Users should never directly access 'second'. **/
 }; // struct implementation_simdjson_result_base
 
 } // namespace SIMDJSON_BUILTIN_IMPLEMENTATION
@@ -21072,9 +21184,12 @@ public:
    * Get the root value iterator
    */
   simdjson_really_inline token_position root_position() const noexcept;
-
   /**
-   * Assert if the iterator is not at the start
+   * Assert that we are at the document depth (== 1)
+   */
+  simdjson_really_inline void assert_at_document_depth() const noexcept;
+  /**
+   * Assert that we are at the root of the document
    */
   simdjson_really_inline void assert_at_root() const noexcept;
 
@@ -22087,7 +22202,7 @@ public:
    * Exists so you can declare a variable and later assign to it before use.
    */
   simdjson_really_inline document() noexcept = default;
-  simdjson_really_inline document(const document &other) noexcept = delete;
+  simdjson_really_inline document(const document &other) noexcept = delete; // pass your documents by reference, not by copy
   simdjson_really_inline document(document &&other) noexcept = default;
   simdjson_really_inline document &operator=(const document &other) noexcept = delete;
   simdjson_really_inline document &operator=(document &&other) noexcept = default;
@@ -22176,6 +22291,14 @@ public:
    */
   simdjson_really_inline simdjson_result<bool> get_bool() noexcept;
   /**
+   * Cast this JSON value to a value when the document is an object or an array.
+   *
+   * @returns A value if a JSON array or object cannot be found.
+   * @returns SCALAR_DOCUMENT_AS_VALUE error is the document is a scalar (see scalar() function).
+   */
+  simdjson_really_inline simdjson_result<value> get_value() noexcept;
+
+  /**
    * Checks if this JSON value is null.
    *
    * @returns Whether the value is null.
@@ -22208,7 +22331,9 @@ public:
   /**
    * Get this value as the given type.
    *
-   * Supported types: object, array, raw_json_string, string_view, uint64_t, int64_t, double, bool
+   * Supported types: object, array, raw_json_string, string_view, uint64_t, int64_t, double, bool, value
+   *
+   * Be mindful that the document instance must remain in scope while you are accessing object, array and value instances.
    *
    * @param out This is set to a value of the given type, parsed from the JSON. If there is an error, this may not be initialized.
    * @returns INCORRECT_TYPE If the JSON value is not an object.
@@ -22280,6 +22405,13 @@ public:
    * @exception simdjson_error(INCORRECT_TYPE) if the JSON value is not true or false.
    */
   simdjson_really_inline operator bool() noexcept(false);
+  /**
+   * Cast this JSON value to a value.
+   *
+   * @returns A value value.
+   * @exception if a JSON value cannot be found
+   */
+  simdjson_really_inline operator value() noexcept(false);
 #endif
   /**
    * This method scans the array and counts the number of elements.
@@ -22293,6 +22425,14 @@ public:
    * safe to continue.
    */
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  /**
+   * Get the value at the given index in the array. This function has linear-time complexity.
+   * This function should only be called once as the array iterator is not reset between each call.
+   *
+   * @return The value at the given index, or:
+   *         - INDEX_OUT_OF_BOUNDS if the array index is larger than an array length
+   */
+  simdjson_really_inline simdjson_result<value> at(size_t index) & noexcept;
   /**
    * Begin array iteration.
    *
@@ -22369,6 +22509,15 @@ public:
   simdjson_really_inline simdjson_result<json_type> type() noexcept;
 
   /**
+   * Checks whether the document is a scalar (string, number, null, Boolean).
+   * Returns false when there it is an array or object.
+   *
+   * @returns true if the type is string, number, null, Boolean
+   * @error TAPE_ERROR when the JSON value is a bad token like "}" "," or "alse".
+   */
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
+
+  /**
    * Get the raw JSON for this token.
    *
    * The string_view will always point into the input buffer.
@@ -22432,6 +22581,7 @@ public:
    *         - INDEX_OUT_OF_BOUNDS if an array index is larger than an array length
    *         - INCORRECT_TYPE if a non-integer is used to access an array
    *         - INVALID_JSON_POINTER if the JSON pointer is invalid and cannot be parsed
+   *         - SCALAR_DOCUMENT_AS_VALUE if the json_pointer is empty and the document is not a scalar (see scalar() function).
    */
   simdjson_really_inline simdjson_result<value> at_pointer(std::string_view json_pointer) noexcept;
   /**
@@ -22451,7 +22601,6 @@ protected:
 
   simdjson_really_inline value_iterator resume_value_iterator() noexcept;
   simdjson_really_inline value_iterator get_root_value_iterator() noexcept;
-  simdjson_really_inline simdjson_result<value> get_value_unsafe() noexcept;
   simdjson_really_inline simdjson_result<object> start_or_resume_object() noexcept;
   static simdjson_really_inline document start(ondemand::json_iterator &&iter) noexcept;
 
@@ -22489,6 +22638,8 @@ public:
   simdjson_really_inline simdjson_result<std::string_view> get_string() noexcept;
   simdjson_really_inline simdjson_result<raw_json_string> get_raw_json_string() noexcept;
   simdjson_really_inline simdjson_result<bool> get_bool() noexcept;
+  simdjson_really_inline simdjson_result<value> get_value() noexcept;
+
   simdjson_really_inline bool is_null() noexcept;
   simdjson_really_inline simdjson_result<std::string_view> raw_json() noexcept;
   simdjson_really_inline operator document&() const noexcept;
@@ -22502,8 +22653,10 @@ public:
   simdjson_really_inline operator std::string_view() noexcept(false);
   simdjson_really_inline operator raw_json_string() noexcept(false);
   simdjson_really_inline operator bool() noexcept(false);
+  simdjson_really_inline operator value() noexcept(false);
 #endif
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  simdjson_really_inline simdjson_result<value> at(size_t index) & noexcept;
   simdjson_really_inline simdjson_result<array_iterator> begin() & noexcept;
   simdjson_really_inline simdjson_result<array_iterator> end() & noexcept;
   simdjson_really_inline simdjson_result<value> find_field(std::string_view key) & noexcept;
@@ -22514,6 +22667,8 @@ public:
   simdjson_really_inline simdjson_result<value> find_field_unordered(const char *key) & noexcept;
 
   simdjson_really_inline simdjson_result<json_type> type() noexcept;
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
+
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
   simdjson_really_inline simdjson_result<value> at_pointer(std::string_view json_pointer) noexcept;
 private:
@@ -22542,6 +22697,7 @@ public:
   simdjson_really_inline simdjson_result<std::string_view> get_string() noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::raw_json_string> get_raw_json_string() noexcept;
   simdjson_really_inline simdjson_result<bool> get_bool() noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> get_value() noexcept;
   simdjson_really_inline bool is_null() noexcept;
 
   template<typename T> simdjson_really_inline simdjson_result<T> get() & noexcept;
@@ -22559,8 +22715,10 @@ public:
   simdjson_really_inline operator std::string_view() noexcept(false);
   simdjson_really_inline operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::raw_json_string() noexcept(false);
   simdjson_really_inline operator bool() noexcept(false);
+  simdjson_really_inline operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value() noexcept(false);
 #endif
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at(size_t index) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> begin() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> end() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field(std::string_view key) & noexcept;
@@ -22569,9 +22727,8 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> operator[](const char *key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(std::string_view key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(const char *key) & noexcept;
-
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::json_type> type() noexcept;
-
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
   /** @copydoc simdjson_really_inline std::string_view document::raw_json_token() const noexcept */
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
 
@@ -22600,6 +22757,7 @@ public:
   simdjson_really_inline simdjson_result<std::string_view> get_string() noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::raw_json_string> get_raw_json_string() noexcept;
   simdjson_really_inline simdjson_result<bool> get_bool() noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> get_value() noexcept;
   simdjson_really_inline bool is_null() noexcept;
 
 #if SIMDJSON_EXCEPTIONS
@@ -22611,8 +22769,10 @@ public:
   simdjson_really_inline operator std::string_view() noexcept(false);
   simdjson_really_inline operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::raw_json_string() noexcept(false);
   simdjson_really_inline operator bool() noexcept(false);
+  simdjson_really_inline operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value() noexcept(false);
 #endif
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at(size_t index) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> begin() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> end() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field(std::string_view key) & noexcept;
@@ -22621,8 +22781,8 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> operator[](const char *key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(std::string_view key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(const char *key) & noexcept;
-
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::json_type> type() noexcept;
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
 
   /** @copydoc simdjson_really_inline std::string_view document_reference::raw_json_token() const noexcept */
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
@@ -22880,6 +23040,14 @@ public:
    */
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
   /**
+   * Get the value at the given index in the array. This function has linear-time complexity.
+   * This function should only be called once as the array iterator is not reset between each call.
+   *
+   * @return The value at the given index, or:
+   *         - INDEX_OUT_OF_BOUNDS if the array index is larger than an array length
+   */
+  simdjson_really_inline simdjson_result<value> at(size_t index) noexcept;
+  /**
    * Look up a field by name on an object (order-sensitive).
    *
    * The following code reads z, then y, then x, and thus will not retrieve x or y if fed the
@@ -22948,6 +23116,14 @@ public:
    */
   simdjson_really_inline simdjson_result<json_type> type() noexcept;
 
+  /**
+   * Checks whether the value is a scalar (string, number, null, Boolean).
+   * Returns false when there it is an array or object.
+   *
+   * @returns true if the type is string, number, null, Boolean
+   * @error TAPE_ERROR when the JSON value is a bad token like "}" "," or "alse".
+   */
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
   /**
    * Get the raw JSON for this token.
    *
@@ -23100,6 +23276,7 @@ public:
   simdjson_really_inline operator bool() noexcept(false);
 #endif
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at(size_t index) noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> begin() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> end() & noexcept;
 
@@ -23162,6 +23339,7 @@ public:
    * let it throw an exception).
    */
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::json_type> type() noexcept;
+  simdjson_really_inline simdjson_result<bool> scalar() noexcept;
 
   /** @copydoc simdjson_really_inline std::string_view value::raw_json_token() const noexcept */
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
@@ -23533,6 +23711,9 @@ public:
    * Only one iteration at a time can happen per parser, and the parser *must* be kept alive during
    * iteration to ensure intermediate buffers can be accessed. Any document must be destroyed before
    * you call parse() again or destroy the parser.
+   *
+   * The ondemand::document instance holds the iterator. The document must remain in scope
+   * while you are accessing instances of ondemand::value, ondemand::object, ondemand::array.
    *
    * ### REQUIRED: Buffer Padding
    *
@@ -24816,6 +24997,10 @@ simdjson_really_inline bool json_iterator::streaming() const noexcept {
 
 simdjson_really_inline token_position json_iterator::root_position() const noexcept {
   return _root;
+}
+
+simdjson_really_inline void json_iterator::assert_at_document_depth() const noexcept {
+  SIMDJSON_ASSUME( _depth == 1 );
 }
 
 simdjson_really_inline void json_iterator::assert_at_root() const noexcept {
@@ -26310,24 +26495,30 @@ simdjson_really_inline simdjson_result<object> document::start_or_resume_object(
     return object::resume(resume_value_iterator());
   }
 }
-simdjson_really_inline simdjson_result<value> document::get_value_unsafe() noexcept {
+simdjson_really_inline simdjson_result<value> document::get_value() noexcept {
   // Make sure we start any arrays or objects before returning, so that start_root_<object/array>()
   // gets called.
+  iter.assert_at_document_depth();
   switch (*iter.peek()) {
     case '[': {
       array result;
       SIMDJSON_TRY( get_array().get(result) );
+      iter._depth = 1 ; /* undoing the potential increment so we go back at the doc depth.*/
+      iter.assert_at_document_depth();
       return value(result.iter);
     }
     case '{': {
       object result;
       SIMDJSON_TRY( get_object().get(result) );
+      iter._depth = 1 ; /* undoing the potential increment so we go back at the doc depth.*/
+      iter.assert_at_document_depth();
       return value(result.iter);
     }
     default:
-      // TODO it is still wrong to convert this to a value! get_root_bool / etc. will not be
-      // called if you do this.
-      return value(get_root_value_iterator());
+      // Unfortunately, scalar documents are a special case in simdjson and they cannot
+      // be safely converted to value instances.
+      return SCALAR_DOCUMENT_AS_VALUE;
+      // return value(get_root_value_iterator());
   }
 }
 simdjson_really_inline simdjson_result<array> document::get_array() & noexcept {
@@ -26377,6 +26568,7 @@ template<> simdjson_really_inline simdjson_result<double> document::get() & noex
 template<> simdjson_really_inline simdjson_result<uint64_t> document::get() & noexcept { return get_uint64(); }
 template<> simdjson_really_inline simdjson_result<int64_t> document::get() & noexcept { return get_int64(); }
 template<> simdjson_really_inline simdjson_result<bool> document::get() & noexcept { return get_bool(); }
+template<> simdjson_really_inline simdjson_result<value> document::get() & noexcept { return get_value(); }
 
 template<> simdjson_really_inline simdjson_result<raw_json_string> document::get() && noexcept { return get_raw_json_string(); }
 template<> simdjson_really_inline simdjson_result<std::string_view> document::get() && noexcept { return get_string(); }
@@ -26384,6 +26576,7 @@ template<> simdjson_really_inline simdjson_result<double> document::get() && noe
 template<> simdjson_really_inline simdjson_result<uint64_t> document::get() && noexcept { return std::forward<document>(*this).get_uint64(); }
 template<> simdjson_really_inline simdjson_result<int64_t> document::get() && noexcept { return std::forward<document>(*this).get_int64(); }
 template<> simdjson_really_inline simdjson_result<bool> document::get() && noexcept { return std::forward<document>(*this).get_bool(); }
+template<> simdjson_really_inline simdjson_result<value> document::get() && noexcept { return get_value(); }
 
 template<typename T> simdjson_really_inline error_code document::get(T &out) & noexcept {
   return get<T>().get(out);
@@ -26401,13 +26594,22 @@ simdjson_really_inline document::operator double() noexcept(false) { return get_
 simdjson_really_inline document::operator std::string_view() noexcept(false) { return get_string(); }
 simdjson_really_inline document::operator raw_json_string() noexcept(false) { return get_raw_json_string(); }
 simdjson_really_inline document::operator bool() noexcept(false) { return get_bool(); }
+simdjson_really_inline document::operator value() noexcept(false) { return get_value(); }
+
 #endif
 simdjson_really_inline simdjson_result<size_t> document::count_elements() & noexcept {
   auto a = get_array();
   simdjson_result<size_t> answer = a.count_elements();
   /* If there was an array, we are now left pointing at its first element. */
-  if(answer.error() == SUCCESS) { iter._depth -= 1 ; /* undoing the increment so we go back at the doc depth.*/ }
+  if(answer.error() == SUCCESS) {
+    iter._depth = 1 ; /* undoing the increment so we go back at the doc depth.*/
+    iter.assert_at_document_depth();
+  }
   return answer;
+}
+simdjson_really_inline simdjson_result<value> document::at(size_t index) & noexcept {
+  auto a = get_array();
+  return a.at(index);
 }
 simdjson_really_inline simdjson_result<array_iterator> document::begin() & noexcept {
   return get_array().begin();
@@ -26457,6 +26659,13 @@ simdjson_really_inline simdjson_result<json_type> document::type() noexcept {
   return get_root_value_iterator().type();
 }
 
+simdjson_really_inline simdjson_result<bool> document::scalar() noexcept {
+  json_type this_type;
+  auto error = type().get(this_type);
+  if(error) { return error; }
+  return ! ((this_type == json_type::array) || (this_type == json_type::object));
+}
+
 simdjson_really_inline simdjson_result<std::string_view> document::raw_json_token() noexcept {
   auto _iter = get_root_value_iterator();
   return std::string_view(reinterpret_cast<const char*>(_iter.peek_start()), _iter.peek_start_length());
@@ -26465,7 +26674,7 @@ simdjson_really_inline simdjson_result<std::string_view> document::raw_json_toke
 simdjson_really_inline simdjson_result<value> document::at_pointer(std::string_view json_pointer) noexcept {
   rewind(); // Rewind the document each time at_pointer is called
   if (json_pointer.empty()) {
-    return this->get_value_unsafe();
+    return this->get_value();
   }
   json_type t;
   SIMDJSON_TRY(type().get(t));
@@ -26505,6 +26714,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
 simdjson_really_inline simdjson_result<size_t> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::count_elements() & noexcept {
   if (error()) { return error(); }
   return first.count_elements();
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::at(size_t index) & noexcept {
+  if (error()) { return error(); }
+  return first.at(index);
 }
 simdjson_really_inline error_code simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::rewind() noexcept {
   if (error()) { return error(); }
@@ -26574,6 +26787,10 @@ simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IM
   if (error()) { return error(); }
   return first.get_bool();
 }
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::get_value() noexcept {
+  if (error()) { return error(); }
+  return first.get_value();
+}
 simdjson_really_inline bool simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::is_null() noexcept {
   if (error()) { return error(); }
   return first.is_null();
@@ -26617,6 +26834,11 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   return first.type();
 }
 
+simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::scalar() noexcept {
+  if (error()) { return error(); }
+  return first.scalar();
+}
+
 #if SIMDJSON_EXCEPTIONS
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array() & noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
@@ -26647,6 +26869,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   return first;
 }
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::operator bool() noexcept(false) {
+  if (error()) { throw simdjson_error(error()); }
+  return first;
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value() noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
   return first;
 }
@@ -26681,6 +26907,7 @@ simdjson_really_inline simdjson_result<double> document_reference::get_double() 
 simdjson_really_inline simdjson_result<std::string_view> document_reference::get_string() noexcept { return doc->get_string(); }
 simdjson_really_inline simdjson_result<raw_json_string> document_reference::get_raw_json_string() noexcept { return doc->get_raw_json_string(); }
 simdjson_really_inline simdjson_result<bool> document_reference::get_bool() noexcept { return doc->get_bool(); }
+simdjson_really_inline simdjson_result<value> document_reference::get_value() noexcept { return doc->get_value(); }
 simdjson_really_inline bool document_reference::is_null() noexcept { return doc->is_null(); }
 
 #if SIMDJSON_EXCEPTIONS
@@ -26692,8 +26919,10 @@ simdjson_really_inline document_reference::operator double() noexcept(false) { r
 simdjson_really_inline document_reference::operator std::string_view() noexcept(false) { return std::string_view(*doc); }
 simdjson_really_inline document_reference::operator raw_json_string() noexcept(false) { return raw_json_string(*doc); }
 simdjson_really_inline document_reference::operator bool() noexcept(false) { return bool(*doc); }
+simdjson_really_inline document_reference::operator value() noexcept(false) { return value(*doc); }
 #endif
 simdjson_really_inline simdjson_result<size_t> document_reference::count_elements() & noexcept { return doc->count_elements(); }
+simdjson_really_inline simdjson_result<value> document_reference::at(size_t index) & noexcept { return doc->at(index); }
 simdjson_really_inline simdjson_result<array_iterator> document_reference::begin() & noexcept { return doc->begin(); }
 simdjson_really_inline simdjson_result<array_iterator> document_reference::end() & noexcept { return doc->end(); }
 simdjson_really_inline simdjson_result<value> document_reference::find_field(std::string_view key) & noexcept { return doc->find_field(key); }
@@ -26702,8 +26931,8 @@ simdjson_really_inline simdjson_result<value> document_reference::operator[](std
 simdjson_really_inline simdjson_result<value> document_reference::operator[](const char *key) & noexcept { return (*doc)[key]; }
 simdjson_really_inline simdjson_result<value> document_reference::find_field_unordered(std::string_view key) & noexcept { return doc->find_field_unordered(key); }
 simdjson_really_inline simdjson_result<value> document_reference::find_field_unordered(const char *key) & noexcept { return doc->find_field_unordered(key); }
-
 simdjson_really_inline simdjson_result<json_type> document_reference::type() noexcept { return doc->type(); }
+simdjson_really_inline simdjson_result<bool> document_reference::scalar() noexcept { return doc->scalar(); }
 simdjson_really_inline simdjson_result<std::string_view> document_reference::raw_json_token() noexcept { return doc->raw_json_token(); }
 simdjson_really_inline simdjson_result<value> document_reference::at_pointer(std::string_view json_pointer) noexcept { return doc->at_pointer(json_pointer); }
 simdjson_really_inline simdjson_result<std::string_view> document_reference::raw_json() noexcept { return doc->raw_json();}
@@ -26723,6 +26952,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
 simdjson_really_inline simdjson_result<size_t> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::count_elements() & noexcept {
   if (error()) { return error(); }
   return first.count_elements();
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::at(size_t index) & noexcept {
+  if (error()) { return error(); }
+  return first.at(index);
 }
 simdjson_really_inline error_code simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::rewind() noexcept {
   if (error()) { return error(); }
@@ -26792,6 +27025,10 @@ simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IM
   if (error()) { return error(); }
   return first.get_bool();
 }
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::get_value() noexcept {
+  if (error()) { return error(); }
+  return first.get_value();
+}
 simdjson_really_inline bool simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::is_null() noexcept {
   if (error()) { return error(); }
   return first.is_null();
@@ -26800,7 +27037,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   if (error()) { return error(); }
   return first.type();
 }
-
+simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::scalar() noexcept {
+  if (error()) { return error(); }
+  return first.scalar();
+}
 #if SIMDJSON_EXCEPTIONS
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array() & noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
@@ -26831,6 +27071,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   return first;
 }
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::operator bool() noexcept(false) {
+  if (error()) { throw simdjson_error(error()); }
+  return first;
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value() noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
   return first;
 }
@@ -26966,6 +27210,10 @@ simdjson_really_inline simdjson_result<size_t> value::count_elements() & noexcep
   iter.move_at_start();
   return answer;
 }
+simdjson_really_inline simdjson_result<value> value::at(size_t index) noexcept {
+  auto a = get_array();
+  return a.at(index);
+}
 
 simdjson_really_inline simdjson_result<value> value::find_field(std::string_view key) noexcept {
   return start_or_resume_object().find_field(key);
@@ -26990,6 +27238,13 @@ simdjson_really_inline simdjson_result<value> value::operator[](const char *key)
 
 simdjson_really_inline simdjson_result<json_type> value::type() noexcept {
   return iter.type();
+}
+
+simdjson_really_inline simdjson_result<bool> value::scalar() noexcept {
+  json_type this_type;
+  auto error = type().get(this_type);
+  if(error) { return error; }
+  return ! ((this_type == json_type::array) || (this_type == json_type::object));
 }
 
 simdjson_really_inline std::string_view value::raw_json_token() noexcept {
@@ -27033,6 +27288,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
 simdjson_really_inline simdjson_result<size_t> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value>::count_elements() & noexcept {
   if (error()) { return error(); }
   return first.count_elements();
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value>::at(size_t index) noexcept {
+  if (error()) { return error(); }
+  return first.at(index);
 }
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value>::begin() & noexcept {
   if (error()) { return error(); }
@@ -27142,7 +27401,10 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   if (error()) { return error(); }
   return first.type();
 }
-
+simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value>::scalar() noexcept {
+  if (error()) { return error(); }
+  return first.scalar();
+}
 #if SIMDJSON_EXCEPTIONS
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array() noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
@@ -27725,6 +27987,7 @@ inline size_t document_stream::size_in_bytes() const noexcept {
 }
 
 inline size_t document_stream::truncated_bytes() const noexcept {
+  if(error == CAPACITY) { return len - batch_start; }
   return parser->implementation->structural_indexes[parser->implementation->n_structural_indexes] - parser->implementation->structural_indexes[parser->implementation->n_structural_indexes + 1];
 }
 
