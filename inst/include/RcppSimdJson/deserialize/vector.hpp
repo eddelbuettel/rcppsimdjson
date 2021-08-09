@@ -105,7 +105,7 @@ inline Rcpp::Vector<REALSXP> build_vector_integer64_mixed(simdjson::ondemand::ar
     std::size_t          i(0ULL);
 
     for (auto element : array) {
-        simdjson::ondemand:value val;
+        simdjson::ondemand::value val;
         if (element.get(val) == simdjson::SUCCESS) {
             switch (val.type()) {
                 case simdjson::ondemand::json_type::number:
