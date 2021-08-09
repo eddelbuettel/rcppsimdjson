@@ -213,11 +213,11 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
         for (auto&& element : sub_array) {
             switch (element.type()) {
                 case simdjson::ondemand::json_type::number:
-                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element.first);
+                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(element);
                     break;
 
                 case simdjson::ondemand::json_type::boolean:
-                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element.first);
+                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(element);
                     break;
 
                 default:
@@ -235,11 +235,11 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
         for (auto sub_element : element) {
             switch (sub_element.type()) {
                 case simdjson::ondemand::json_type::number:
-                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element.first);
+                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(sub_element);
                     break;
 
                 case simdjson::ondemand::json_type::boolean:
-                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(sub_element.first);
+                    stl_vec_int64[i + j] = get_scalar<bool, rcpp_T::i64, NO_NULLS>(sub_element);
                     break;
 
                 default:

@@ -107,11 +107,11 @@ inline Rcpp::Vector<REALSXP> build_vector_integer64_mixed(simdjson::ondemand::ar
     for (auto element : array) {
         switch (element.type()) {
             case simdjson::ondemand::json_type::number:
-                stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element.first);
+                stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(element);
                 break;
 
             case simdjson::ondemand::json_type::boolean:
-                stl_vec_int64[i++] = get_scalar<bool, rcpp_T::i64, HAS_NULLS>(element.first);
+                stl_vec_int64[i++] = get_scalar<bool, rcpp_T::i64, HAS_NULLS>(element);
                 break;
 
             default:
