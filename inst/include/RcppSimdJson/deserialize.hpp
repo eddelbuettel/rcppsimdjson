@@ -422,35 +422,33 @@ inline auto deserialize(simdjson::ondemand::value parsed, const Parse_Opts& pars
 
 
 template <typename json_T, bool is_file>
-inline simdjson::simdjson_result<simdjson::ondemand::document> parse(simdjson::ondemand::parser& parser,
-                                                               const json_T&          json) {
+inline simdjson::padded_string get_padded( const json_T&            json) {
     if constexpr (utils::resembles_vec_raw<json_T>()) {
         /* if `json` is a raw (unsigned char) vector, we can cheat */
-        simdjson::padded_string content =simdjson::padded_string(std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
-        return parser.iterate(content);
+        return simdjson::padded_string(std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
     }
 
     if constexpr (utils::resembles_vec_chr<json_T>()) {
+
         /* if `json` is a character vector, we're only parsing the first element */
-        return parse<decltype(json[0]), is_file>(parser, json[0]);
+       return get_padded<decltype(json[0]), is_file>(json[0]);
     }
 
     if constexpr (utils::resembles_r_string<json_T>()) {
         if constexpr (is_file) { /* if `json` is a string and file path...*/
             /* ... check for a `memDecompress()`-compatible file extension... */
             if (const auto file_type = utils::get_memDecompress_type(std::string_view(json))) {
-                return parse<Rcpp::RawVector, IS_NOT_FILE>(
-                    parser, /* ... and decompress to a RawVector if so, then parse that */
+                return get_padded<Rcpp::RawVector, IS_NOT_FILE>(
                     utils::decompress(std::string(json), Rcpp::String(std::string(*file_type))));
             }
-            simdjson::padded_string content = simdjson::padded_string::load(std::string(json));
-            return parser.iterate(content); /* otherwise, just `parser::load()` the file */
+
+            return simdjson::padded_string::load(std::string(json));
         } else {
-            simdjson::padded_string content = simdjson::padded_string(std::string_view(json));
-            return parser.iterate(content); /* if not file, just parse the string */
+            return simdjson::padded_string(std::string_view(json));
         }
     }
 }
+
 
 
 template <bool query_error_ok>
@@ -497,7 +495,8 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
     if constexpr (parse_error_ok) {
         simdjson::ondemand::value parsed;
         simdjson::ondemand::document doc;
-        if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(doc)) {
+        simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+        if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
             if (simdjson::SUCCESS == doc.get_value().get(parsed)){
                 return deserialize(parsed, parse_opts);
             }
@@ -507,7 +506,8 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
     } else {
         simdjson::ondemand::value parsed;
         simdjson::ondemand::document doc;
-        auto error = parse<json_T, is_file>(parser, json).get(doc);
+        simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+        auto error = parser.iterate(padded_json).get(doc);
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
@@ -534,7 +534,8 @@ inline SEXP parse_query_and_deserialize(simdjson::ondemand::parser&             
     if constexpr (parse_error_ok) {
         simdjson::ondemand::value parsed;
         simdjson::ondemand::document doc;
-        if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(doc)) {
+        simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+        if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
             if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                 return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
             }
@@ -544,7 +545,8 @@ inline SEXP parse_query_and_deserialize(simdjson::ondemand::parser&             
     } else {
         simdjson::ondemand::value parsed;
         simdjson::ondemand::document doc;
-        auto error = parse<json_T, is_file>(parser, json).get(doc);
+        simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+        auto error = parser.iterate(padded_json).get(doc);
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
@@ -611,7 +613,8 @@ inline SEXP flat_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(doc)) {
+                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                     if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                         for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
                             out[i] = query_and_deserialize<query_error_ok>(
@@ -626,7 +629,8 @@ inline SEXP flat_query(const json_T&                                json,
             } else { /* !parse_error_ok */
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                auto error = parse<json_T, is_file>(parser, json).get(doc);
+                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                auto error = parser.iterate(padded_json).get(doc);
                 if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
@@ -700,7 +704,8 @@ inline SEXP nested_query(const json_T&                                json,
         if constexpr (parse_error_ok) {
             simdjson::ondemand::value parsed;
             simdjson::ondemand::document doc;
-            if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(doc)) {
+            simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+            if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                 if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                     for (R_xlen_t i = 0; i < n; ++i) {
                         const R_xlen_t n_queries = std::size(query[i]);
@@ -720,7 +725,8 @@ inline SEXP nested_query(const json_T&                                json,
         } else { /* !parse_error_ok */
             simdjson::ondemand::value parsed;
             simdjson::ondemand::document doc;
-            auto error = parse<json_T, is_file>(parser, json).get(doc); // #nocov
+            simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+            auto error = parser.iterate(padded_json).get(doc); // #nocov
             if (error != simdjson::SUCCESS) {
                 Rcpp::stop(simdjson::error_message(error));			// #nocov
             }
@@ -746,7 +752,8 @@ inline SEXP nested_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                if(simdjson::SUCCESS == parse<decltype(json[i]), is_file>(parser, json[i]).get(doc)) {
+                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                     if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                         Rcpp::List res(n_queries);						// #nocov start
                         for (R_xlen_t j = 0; j < n_queries; ++j) {
@@ -762,7 +769,8 @@ inline SEXP nested_query(const json_T&                                json,
             } else { /* !parse_error_ok */
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                auto error = parse<decltype(json[i]), is_file>(parser, json[i]).get(doc);
+                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                auto error = parser.iterate(padded_json).get(doc);
                 if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
