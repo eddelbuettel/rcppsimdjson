@@ -511,7 +511,8 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
-        if (doc.get_value().get(parsed) != simdjson::SUCCESS) {
+        error = doc.get_value().get(parsed);
+        if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
         return deserialize(parsed, parse_opts);
@@ -547,7 +548,8 @@ inline SEXP parse_query_and_deserialize(simdjson::ondemand::parser&             
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
-        if (doc.get_value().get(parsed) != simdjson::SUCCESS) {
+        error = doc.get_value().get(parsed);
+        if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
         return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
@@ -628,7 +630,8 @@ inline SEXP flat_query(const json_T&                                json,
                 if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
-                if (doc.get_value().get(parsed) != simdjson::SUCCESS) {
+                error = doc.get_value().get(parsed);
+                if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
                 for (R_xlen_t i = 0; i < n; ++i) {
@@ -721,7 +724,8 @@ inline SEXP nested_query(const json_T&                                json,
             if (error != simdjson::SUCCESS) {
                 Rcpp::stop(simdjson::error_message(error));			// #nocov
             }
-            if (doc.get_value().get(parsed) != simdjson::SUCCESS) {
+            error = doc.get_value().get(parsed);
+            if (error != simdjson::SUCCESS) {
                 Rcpp::stop(simdjson::error_message(error));
             }
             for (R_xlen_t i = 0; i < n; ++i) {
@@ -762,7 +766,8 @@ inline SEXP nested_query(const json_T&                                json,
                 if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
-                if (doc.get_value().get(parsed) != simdjson::SUCCESS) {
+                error = doc.get_value().get(parsed);
+                if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
                 Rcpp::List res(n_queries);
