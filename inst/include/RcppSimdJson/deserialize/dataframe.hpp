@@ -34,7 +34,7 @@ inline auto diagnose_data_frame(simdjson::ondemand::array array) noexcept(RCPPSI
 
     for (auto element : array) {
         simdjson::ondemand::object object;
-        if(element.get(object) == simdjson::SUCCESS) {
+        if(element.get_object().get(object) == simdjson::SUCCESS) {
             for (auto field : object) {
                 std::string_view key;
                 if (field.unescaped_key().get(key) == simdjson::SUCCESS) {
@@ -98,6 +98,8 @@ inline auto build_col(simdjson::ondemand::array                       array,
             i_row++;
         }
     }
+
+    array.rewind();
 
     return out;
 }
