@@ -35,6 +35,7 @@ diagnose(simdjson::ondemand::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
             return std::nullopt;
         }
     }
+    array.rewind();
 
     return Matrix_Diagnosis{matrix_doctor.has_null(),
                             matrix_doctor.is_homogeneous(),

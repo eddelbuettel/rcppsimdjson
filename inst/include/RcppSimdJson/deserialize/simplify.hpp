@@ -118,15 +118,20 @@ inline SEXP simplify_object(simdjson::ondemand::object object,
     if (n == 0) {
         return empty_object;
     }
+    object.rewind();
 
     Rcpp::List            out(n);
     Rcpp::CharacterVector out_names(n);
 
     auto i = R_xlen_t(0L);
     for (auto field : object) {
-        out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
-            field.value(), empty_array, empty_object, single_null);
-        out_names[i++] = Rcpp::String(std::string(field.key().raw()));
+        std::string_view key;
+        if (field.unescaped_key().get(key) == simdjson::SUCCESS) {
+            out_names[i] = Rcpp::String(std::string(key));
+            out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
+                field.value(), empty_array, empty_object, single_null);
+            i++;
+        }
     }
 
     out.attr("names") = out_names;
