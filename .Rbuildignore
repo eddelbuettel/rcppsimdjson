@@ -11,4 +11,6 @@
 \.clang-format$
 \.covrignore$
 ^local
-^\.github
+^\.github^travis-tool\.sh$
+^run\.sh$
+^travis_wait_.*\.log$

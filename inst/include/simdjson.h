@@ -1,4 +1,4 @@
-/* auto-generated on 2021-08-09 12:25:24 -0400. Do not edit! */
+/* auto-generated on 2021-08-11 21:20:37 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -22052,6 +22052,16 @@ public:
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
 
   /**
+   * Reset the iterator so that we are pointing back at the
+   * beginning of the array. You should still consume values only once even if you
+   * can iterate through the array more than once. If you unescape a string within
+   * the array more than once, you have unsafe code. Note that rewinding an array
+   * means that you may need to reparse it anew: it is not a free operation.
+   *
+   * @returns true if the array contains some elements (not empty)
+   */
+  inline simdjson_result<bool> rewind() & noexcept;
+  /**
    * Get the value associated with the given JSON pointer.  We use the RFC 6901
    * https://tools.ietf.org/html/rfc6901 standard, interpreting the current node
    * as the root of its own JSON document.
@@ -22166,7 +22176,8 @@ public:
 
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> begin() noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> end() noexcept;
-  simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
+  inline simdjson_result<size_t> count_elements() & noexcept;
+  inline simdjson_result<bool> rewind() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at(size_t index) noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at_pointer(std::string_view json_pointer) noexcept;
 };
@@ -23535,6 +23546,16 @@ public:
   inline simdjson_result<value> at_pointer(std::string_view json_pointer) noexcept;
 
   /**
+   * Reset the iterator so that we are pointing back at the
+   * beginning of the object. You should still consume values only once even if you
+   * can iterate through the object more than once. If you unescape a string within
+   * the object more than once, you have unsafe code. Note that rewinding an object
+   * means that you may need to reparse it anew: it is not a free operation.
+   *
+   * @returns true if the object contains some elements (not empty)
+   */
+  inline simdjson_result<bool> rewind() & noexcept;
+  /**
    * Consumes the object and returns a string_view instance corresponding to the
    * object as represented in JSON. It points inside the original byte array containg
    * the JSON document.
@@ -23583,6 +23604,7 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> operator[](std::string_view key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> operator[](std::string_view key) && noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at_pointer(std::string_view json_pointer) noexcept;
+  inline simdjson_result<bool> rewind() noexcept;
 };
 
 } // namespace simdjson
@@ -26371,6 +26393,10 @@ simdjson_really_inline simdjson_result<size_t> array::count_elements() & noexcep
   return count;
 }
 
+inline simdjson_result<bool> array::rewind() & noexcept {
+  return iter.reset_array();
+}
+
 inline simdjson_result<value> array::at_pointer(std::string_view json_pointer) noexcept {
   if (json_pointer[0] != '/') { return INVALID_JSON_POINTER; }
   json_pointer = json_pointer.substr(1);
@@ -27674,6 +27700,11 @@ inline simdjson_result<value> object::at_pointer(std::string_view json_pointer) 
   return child;
 }
 
+
+simdjson_really_inline simdjson_result<bool> object::rewind() & noexcept {
+  return iter.reset_object();
+}
+
 } // namespace ondemand
 } // namespace SIMDJSON_BUILTIN_IMPLEMENTATION
 } // namespace simdjson
@@ -27721,6 +27752,11 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::object>::at_pointer(std::string_view json_pointer) noexcept {
   if (error()) { return error(); }
   return first.at_pointer(json_pointer);
+}
+
+inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::object>::rewind() noexcept {
+  if (error()) { return error(); }
+  return first.rewind();
 }
 
 } // namespace simdjson
