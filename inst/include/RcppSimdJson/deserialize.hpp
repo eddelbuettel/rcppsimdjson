@@ -447,6 +447,8 @@ inline simdjson::padded_string get_padded( const json_T&            json) {
             return simdjson::padded_string(std::string_view(json));
         }
     }
+
+    return simdjson::padded_string();
 }
 
 
