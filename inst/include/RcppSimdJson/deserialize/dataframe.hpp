@@ -72,7 +72,7 @@ inline auto build_col(simdjson::ondemand::array                       array,
         if (type_doc.has_null()) {
             for (auto object : array) {
                 simdjson::ondemand::value val;
-                if(object.get_object().find_field_unordered(key).get(val) == simdjson::SUCCESS) {
+                if(object.find_field_unordered(key).get(val) == simdjson::SUCCESS) {
                     out[i_row] = get_scalar<scalar_T, R_Type, HAS_NULLS>(val);
                 }
                 i_row++;
@@ -231,7 +231,7 @@ build_data_frame(simdjson::ondemand::array                                      
                 auto i_row    = R_xlen_t(0L);
                 for (auto element : array) {
                     simdjson::ondemand::value val;
-                    if(element.get_object().find_field_unordered(key).get(val) == simdjson::SUCCESS) {
+                    if(element.find_field_unordered(key).get(val) == simdjson::SUCCESS) {
                         this_col[i_row++] = simplify_element<type_policy, int64_opt, simplify_to>(
                             val, empty_array, empty_object, single_null);
                     } else {
@@ -239,6 +239,7 @@ build_data_frame(simdjson::ondemand::array                                      
                     }
                 }
                 out[col.index] = this_col;
+                array.rewind();
             }
         }
     }
