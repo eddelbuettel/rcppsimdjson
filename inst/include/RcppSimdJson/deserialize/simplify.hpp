@@ -193,6 +193,25 @@ inline SEXP simplify_element(simdjson::ondemand::value element,
     return R_NilValue; // # nocov
 }
 
+inline SEXP simplify_scalar_document(simdjson::ondemand::document_reference doc,
+                             SEXP                   single_null) {
+    switch (doc.type()) {
+        case simdjson::ondemand::json_type::number:
+            return Rcpp::wrap(double(doc));
+
+        case simdjson::ondemand::json_type::boolean:
+            return Rcpp::wrap(bool(doc));
+
+        case simdjson::ondemand::json_type::string:
+            return Rcpp::wrap(Rcpp::String(std::string(std::string_view(doc))));
+
+        case simdjson::ondemand::json_type::null:
+            return single_null;
+    }
+
+    return R_NilValue; // # nocov
+}
+
 
 } // namespace deserialize
 } // namespace rcppsimdjson
