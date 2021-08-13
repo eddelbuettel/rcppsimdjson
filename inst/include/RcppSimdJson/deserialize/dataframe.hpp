@@ -46,6 +46,7 @@ inline auto diagnose_data_frame(simdjson::ondemand::array array) noexcept(RCPPSI
                 }
             }
         } else {
+            array.rewind();
             return std::nullopt;
         }
     }
