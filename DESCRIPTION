@@ -15,8 +15,7 @@ License: GPL (>= 2)
 Imports: Rcpp, utils
 LinkingTo: Rcpp
 Suggests: bit64, tinytest
-SystemRequirements: A C++17 compiler as an optional requirement detected in configure,
- with C++11 as a fallback
+SystemRequirements: A C++17 compiler is currently required
 URL: https://github.com/eddelbuettel/rcppsimdjson/
 BugReports: https://github.com/eddelbuettel/rcppsimdjson/issues
 RoxygenNote: 7.1.1
