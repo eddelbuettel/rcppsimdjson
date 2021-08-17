@@ -82,7 +82,7 @@ inline SEXP dispatch_simplify_array(simdjson::ondemand::array array,
                                     SEXP                 empty_array,
                                     SEXP                 empty_object,
                                     SEXP                 single_null) {
-    if (array.count_elements() == 0) {
+    if (array.is_empty()) {
         return empty_array;
     }
 
@@ -113,11 +113,11 @@ inline SEXP simplify_object(simdjson::ondemand::object object,
                             SEXP                        empty_array,
                             SEXP                        empty_object,
                             SEXP                        single_null) {
-    size_t n{0};
-    for(auto f : object) { n++; }
-    if (n == 0) {
+    if (object.is_empty()) {
         return empty_object;
     }
+    size_t n{0};
+    for(auto f : object) { n++; }
     object.rewind();
 
     Rcpp::List            out(n);
