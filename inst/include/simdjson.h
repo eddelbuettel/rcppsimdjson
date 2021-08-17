@@ -1,4 +1,4 @@
-/* auto-generated on 2021-08-11 21:20:37 -0400. Do not edit! */
+/* auto-generated on 2021-08-16 19:28:17 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -22048,15 +22048,28 @@ public:
    * beginning as if it had never been accessed. If the JSON is malformed (e.g.,
    * there is a missing comma), then an error is returned and it is no longer
    * safe to continue.
+   *
+   * To check that an array is empty, it is more performant to use
+   * the is_empty() method.
    */
   simdjson_really_inline simdjson_result<size_t> count_elements() & noexcept;
-
+  /**
+   * This method scans the beginning of the array and checks whether the
+   * array is empty.
+   * The runtime complexity is constant time. After
+   * calling this function, if successful, the array is 'rewinded' at its
+   * beginning as if it had never been accessed. If the JSON is malformed (e.g.,
+   * there is a missing comma), then an error is returned and it is no longer
+   * safe to continue.
+   */
+  simdjson_really_inline simdjson_result<bool> is_empty() & noexcept;
   /**
    * Reset the iterator so that we are pointing back at the
    * beginning of the array. You should still consume values only once even if you
-   * can iterate through the array more than once. If you unescape a string within
-   * the array more than once, you have unsafe code. Note that rewinding an array
-   * means that you may need to reparse it anew: it is not a free operation.
+   * can iterate through the array more than once. If you unescape a string
+   * within the array more than once, you have unsafe code. Note that rewinding
+   * an array means that you may need to reparse it anew: it is not a free
+   * operation.
    *
    * @returns true if the array contains some elements (not empty)
    */
@@ -22177,6 +22190,7 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> begin() noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array_iterator> end() noexcept;
   inline simdjson_result<size_t> count_elements() & noexcept;
+  inline simdjson_result<bool> is_empty() & noexcept;
   inline simdjson_result<bool> rewind() & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at(size_t index) noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at_pointer(std::string_view json_pointer) noexcept;
@@ -23556,6 +23570,16 @@ public:
    */
   inline simdjson_result<bool> rewind() & noexcept;
   /**
+   * This method scans the beginning of the object and checks whether the
+   * object is empty.
+   * The runtime complexity is constant time. After
+   * calling this function, if successful, the object is 'rewinded' at its
+   * beginning as if it had never been accessed. If the JSON is malformed (e.g.,
+   * there is a missing comma), then an error is returned and it is no longer
+   * safe to continue.
+   */
+  inline simdjson_result<bool> is_empty() & noexcept;
+  /**
    * Consumes the object and returns a string_view instance corresponding to the
    * object as represented in JSON. It points inside the original byte array containg
    * the JSON document.
@@ -23605,6 +23629,8 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> operator[](std::string_view key) && noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> at_pointer(std::string_view json_pointer) noexcept;
   inline simdjson_result<bool> rewind() noexcept;
+  inline simdjson_result<bool> is_empty() noexcept;
+
 };
 
 } // namespace simdjson
@@ -26393,6 +26419,13 @@ simdjson_really_inline simdjson_result<size_t> array::count_elements() & noexcep
   return count;
 }
 
+simdjson_really_inline simdjson_result<bool> array::is_empty() & noexcept {
+  bool is_not_empty;
+  auto error = iter.reset_array().get(is_not_empty);
+  if(error) { return error; }
+  return !is_not_empty;
+}
+
 inline simdjson_result<bool> array::rewind() & noexcept {
   return iter.reset_array();
 }
@@ -26475,6 +26508,10 @@ simdjson_really_inline  simdjson_result<size_t> simdjson_result<SIMDJSON_BUILTIN
   if (error()) { return error(); }
   return first.count_elements();
 }
+simdjson_really_inline  simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array>::is_empty() & noexcept {
+  if (error()) { return error(); }
+  return first.is_empty();
+}
 simdjson_really_inline  simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array>::at(size_t index) noexcept {
   if (error()) { return error(); }
   return first.at(index);
@@ -26526,20 +26563,9 @@ simdjson_really_inline simdjson_result<value> document::get_value() noexcept {
   // gets called.
   iter.assert_at_document_depth();
   switch (*iter.peek()) {
-    case '[': {
-      array result;
-      SIMDJSON_TRY( get_array().get(result) );
-      iter._depth = 1 ; /* undoing the potential increment so we go back at the doc depth.*/
-      iter.assert_at_document_depth();
-      return value(result.iter);
-    }
-    case '{': {
-      object result;
-      SIMDJSON_TRY( get_object().get(result) );
-      iter._depth = 1 ; /* undoing the potential increment so we go back at the doc depth.*/
-      iter.assert_at_document_depth();
-      return value(result.iter);
-    }
+    case '[':
+    case '{':
+      return value(get_root_value_iterator());
     default:
       // Unfortunately, scalar documents are a special case in simdjson and they cannot
       // be safely converted to value instances.
@@ -27701,6 +27727,13 @@ inline simdjson_result<value> object::at_pointer(std::string_view json_pointer) 
 }
 
 
+simdjson_really_inline simdjson_result<bool> object::is_empty() & noexcept {
+  bool is_not_empty;
+  auto error = iter.reset_object().get(is_not_empty);
+  if(error) { return error; }
+  return !is_not_empty;
+}
+
 simdjson_really_inline simdjson_result<bool> object::rewind() & noexcept {
   return iter.reset_object();
 }
@@ -27757,6 +27790,11 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
 inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::object>::rewind() noexcept {
   if (error()) { return error(); }
   return first.rewind();
+}
+
+inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::object>::is_empty() noexcept {
+  if (error()) { return error(); }
+  return first.is_empty();
 }
 
 } // namespace simdjson
