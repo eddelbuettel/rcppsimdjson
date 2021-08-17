@@ -15,3 +15,4 @@
 ^run\.sh$
 ^travis_wait_.*\.log$
 ^run\.sh$
+^run\.sh$

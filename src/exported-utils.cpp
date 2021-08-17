@@ -3,27 +3,29 @@
 
 template <typename vec_T>
 Rcpp::LogicalVector is_valid_json(const vec_T json) {
-    simdjson::dom::parser p; // # nocov
+    simdjson::ondemand::parser p; // # nocov
 
     if constexpr (std::is_same_v<vec_T, Rcpp::RawVector>) {
-        return p.parse(std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)))
+        simdjson::padded_string padded = simdjson::padded_string(std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
+        return p.iterate(padded)
                    .error() == simdjson::error_code::SUCCESS;
     }
 
     if constexpr (std::is_same_v<vec_T, Rcpp::CharacterVector>) {
         return Rcpp::LogicalVector(
             std::cbegin(json), std::cend(json), [&p](const decltype(json[0]) x) {
+                simdjson::padded_string padded =simdjson::padded_string(std::string_view(x));
                 return x == NA_STRING
                            ? NA_LOGICAL
-                           : p.parse(std::string_view(x)).error() == simdjson::error_code::SUCCESS;
+                           : p.iterate(padded).error() == simdjson::error_code::SUCCESS;
             });
     }
 
     if constexpr (std::is_same_v<vec_T, Rcpp::ListOf<Rcpp::RawVector>>) {
         return Rcpp::LogicalVector(
             std::cbegin(json), std::cend(json), [&p](const Rcpp::RawVector& x) -> bool {
-                return p.parse(
-                            std::string_view(reinterpret_cast<const char*>(&(x[0])), std::size(x)))
+                simdjson::padded_string padded = simdjson::padded_string(std::string_view(reinterpret_cast<const char*>(&(x[0])), std::size(x)));
+                return p.iterate(padded)
                            .error() == simdjson::error_code::SUCCESS;
             });
     }

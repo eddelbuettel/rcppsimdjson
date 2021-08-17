@@ -1,4 +1,4 @@
-/* auto-generated on 2021-08-16 19:28:17 -0400. Do not edit! */
+/* auto-generated on 2021-08-17 15:03:21 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -6334,7 +6334,7 @@ dom::parser build_parsed_json(const char *buf) noexcept = delete;
 
 #include <cstring>
 #include <string>
-#include <iostream>
+#include <ostream>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
@@ -6344,7 +6344,7 @@ dom::parser build_parsed_json(const char *buf) noexcept = delete;
 #define SIMDJSON_INTERNAL_JSONFORMATUTILS_H
 
 #include <iomanip>
-#include <iostream>
+#include <ostream>
 #include <sstream>
 
 namespace simdjson {
