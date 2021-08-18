@@ -9,19 +9,31 @@ expect_identical(
     fparse("junk", query = "", parse_error_ok = TRUE),
     NULL
 )
-expect_identical(
-    fparse("junk", query = c("", ""), parse_error_ok = TRUE),
-    NULL
+
+#Change to expect_error. By design, On Demand does not detect broken JSON until it is accessed/parsed.
+expect_error(
+    fparse("junk", query = c("", ""), parse_error_ok = TRUE)
 )
-expect_identical(
-    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE),
-    list(NULL, NULL)
+expect_error(
+    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE)
 )
-expect_identical(
+expect_error(
     fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE,
            on_parse_error = NA),
-    list(NA, NA)
 )
+#expect_identical(
+#    fparse("junk", query = c("", ""), parse_error_ok = TRUE),
+#    NULL
+#)
+#expect_identical(
+#    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE),
+#    list(NULL, NULL)
+#)
+#expect_identical(
+#    fparse(c("junk", "junk"), query = list("", ""), parse_error_ok = TRUE,
+#           on_parse_error = NA),
+#    list(NA, NA)
+#)
 
 # query errors =================================================================
 expect_error(fparse("null", query = TRUE))

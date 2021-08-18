@@ -47,10 +47,15 @@ expect_identical(fparse(c(NA_character_, NA_character_)),
 expect_identical(fparse(c("1", NA_character_)),
                  list(1L, NA))
 expect_true(fparse("null", single_null = TRUE))
-expect_true(fparse("junk JSON", parse_error_ok = TRUE, on_parse_error = TRUE))
-expect_identical(fparse(c("junk JSON", "more junk JSON"),
-                        parse_error_ok = TRUE, on_parse_error = NA),
-                 list(NA, NA))
+
+#Change to expect_error. By design, On Demand does not detect broken JSON until it is accessed/parsed.
+expect_error(fparse("junk JSON", parse_error_ok = TRUE, on_parse_error = TRUE))
+expect_error(fparse(c("junk JSON", "more junk JSON"),
+                        parse_error_ok = TRUE, on_parse_error = NA))
+#expect_true(fparse("junk JSON", parse_error_ok = TRUE, on_parse_error = TRUE))
+#expect_identical(fparse(c("junk JSON", "more junk JSON"),
+#                        parse_error_ok = TRUE, on_parse_error = NA),
+#                 list(NA, NA))
 
 #** fload() --------------------------------------------------------------------
 expect_identical(fload(NA_character_), NA)
@@ -78,12 +83,17 @@ expect_true(fload(test_file1, single_null = TRUE))
 .write_file("junk JSON", test_file1)
 .write_file("more junk JSON", test_file2)
 
-expect_true(fload(test_file1, parse_error_ok = TRUE, on_parse_error = TRUE))
-expect_identical(
+#Change to expect_error. By design, On Demand does not detect broken JSON until it is accessed/parsed.
+expect_error(fload(test_file1, parse_error_ok = TRUE, on_parse_error = TRUE))
+expect_error(
     fload(c(test_file1, test_file2),
-          parse_error_ok = TRUE, on_parse_error = NA),
-    `names<-`(list(NA, NA), basename(c(c(test_file1, test_file2))))
-)
+          parse_error_ok = TRUE, on_parse_error = NA))
+#expect_true(fload(test_file1, parse_error_ok = TRUE, on_parse_error = TRUE))
+#expect_identical(
+#    fload(c(test_file1, test_file2),
+#          parse_error_ok = TRUE, on_parse_error = NA),
+#    `names<-`(list(NA, NA), basename(c(c(test_file1, test_file2))))
+#)
 # _ ============================================================================
 # query ========================================================================
 #* invalid ---------------------------------------------------------------------
