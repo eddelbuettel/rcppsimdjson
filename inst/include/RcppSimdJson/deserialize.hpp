@@ -546,7 +546,11 @@ inline SEXP parse_query_and_deserialize(simdjson::ondemand::parser&             
         simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
         if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
             if (doc.scalar()) {
-                return simplify_scalar_document(doc, parse_opts.single_null);
+                if (query.empty()) {
+                    return simplify_scalar_document(doc, parse_opts.single_null);
+                } else {
+                    return on_query_error;
+                }
             } else if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                 return query_and_deserialize<query_error_ok>(parsed, query, on_query_error, parse_opts);
             }
@@ -631,11 +635,20 @@ inline SEXP flat_query(const json_T&                                json,
                 simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
                 if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                     if (doc.scalar()) {
-                        return simplify_scalar_document(doc, parse_opts.single_null);
+                        for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
+                            // Any query on scalar document other than "" is incorrect
+                            out[i] = query[i].empty() ?
+                                        simplify_scalar_document(doc, parse_opts.single_null) :
+                                        on_query_error;
+                        }
+                        out.attr("names") = query.attr("names");
+                        return out;							// #nocov end
                     } else if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                         for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
                             out[i] = query_and_deserialize<query_error_ok>(
                                 parsed, query[i], on_query_error, parse_opts);
+                            doc.rewind();
+                            doc.get_value().get(parsed);
                         }
                         out.attr("names") = query.attr("names");
                         return out;							// #nocov end
@@ -652,7 +665,14 @@ inline SEXP flat_query(const json_T&                                json,
                     Rcpp::stop(simdjson::error_message(error));
                 }
                 if (doc.scalar()) {
-                    return simplify_scalar_document(doc, parse_opts.single_null);
+                    for (R_xlen_t i = 0; i < n; ++i) {				// #nocov start
+                        // Any query on scalar document other than "" is incorrect
+                        out[i] = query[i].empty() ?
+                                    simplify_scalar_document(doc, parse_opts.single_null) :
+                                    on_query_error;
+                    }
+                    out.attr("names") = query.attr("names");
+                    return out;							// #nocov end
                 } else {
                     error = doc.get_value().get(parsed);
                     if (error != simdjson::SUCCESS) {
@@ -661,6 +681,8 @@ inline SEXP flat_query(const json_T&                                json,
                     for (R_xlen_t i = 0; i < n; ++i) {
                         out[i] = query_and_deserialize<query_error_ok>(
                             parsed, query[i], on_query_error, parse_opts);
+                        doc.rewind();
+                        doc.get_value().get(parsed);
                     }
                     out.attr("names") = query.attr("names");
                     return out;
@@ -728,7 +750,17 @@ inline SEXP nested_query(const json_T&                                json,
             simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
             if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                 if (doc.scalar()) {
-                    return simplify_scalar_document(doc, parse_opts.single_null);
+                    for (R_xlen_t i = 0; i < n; ++i) {
+                        const R_xlen_t n_queries = std::size(query[i]);
+                        Rcpp::List     res(n_queries);
+                        for (R_xlen_t j = 0; j < n_queries; ++j) {
+                            res[j] = query[i][j].empty() ?
+                                        simplify_scalar_document(doc, parse_opts.single_null) :
+                                        on_query_error;
+                        }
+                        res.attr("names") = query[i].attr("names");
+                        out[i]            = res;
+                    }
                 } else if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                     for (R_xlen_t i = 0; i < n; ++i) {
                         const R_xlen_t n_queries = std::size(query[i]);
@@ -736,6 +768,8 @@ inline SEXP nested_query(const json_T&                                json,
                         for (R_xlen_t j = 0; j < n_queries; ++j) {
                             res[j] = query_and_deserialize<query_error_ok>(
                                 parsed, query[i][j], on_query_error, parse_opts);
+                            doc.rewind();
+                            doc.get_value().get(parsed);
                         }
                         res.attr("names") = query[i].attr("names");
                         out[i]            = res;
@@ -754,7 +788,17 @@ inline SEXP nested_query(const json_T&                                json,
                 Rcpp::stop(simdjson::error_message(error));			// #nocov
             }
             if (doc.scalar()) {
-                return simplify_scalar_document(doc, parse_opts.single_null);
+                for (R_xlen_t i = 0; i < n; ++i) {
+                    const R_xlen_t n_queries = std::size(query[i]);
+                    Rcpp::List     res(n_queries);
+                    for (R_xlen_t j = 0; j < n_queries; ++j) {
+                        res[j] = query[i][j].empty() ?
+                                        simplify_scalar_document(doc, parse_opts.single_null) :
+                                        on_query_error;
+                    }
+                    res.attr("names") = query[i].attr("names");
+                    out[i]            = res;
+                }
             } else {
                 error = doc.get_value().get(parsed);
                 if (error != simdjson::SUCCESS) {
@@ -766,6 +810,8 @@ inline SEXP nested_query(const json_T&                                json,
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
+                        doc.rewind();
+                        doc.get_value().get(parsed);
                     }
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;
@@ -779,15 +825,24 @@ inline SEXP nested_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                simdjson::padded_string padded_json = get_padded<decltype(json[i]), is_file>(json[i]);
                 if(simdjson::SUCCESS == parser.iterate(padded_json).get(doc)) {
                     if (doc.scalar()) {
-                        return simplify_scalar_document(doc, parse_opts.single_null);
+                        Rcpp::List res(n_queries);						// #nocov start
+                        for (R_xlen_t j = 0; j < n_queries; ++j) {
+                            res[j] = query[i][j].empty() ?
+                                        simplify_scalar_document(doc, parse_opts.single_null) :
+                                        on_query_error;
+                        }
+                        res.attr("names") = query[i].attr("names");
+                        out[i]            = res;						// #nocov end
                     } else if (simdjson::SUCCESS == doc.get_value().get(parsed)) {
                         Rcpp::List res(n_queries);						// #nocov start
                         for (R_xlen_t j = 0; j < n_queries; ++j) {
                             res[j] = query_and_deserialize<query_error_ok>(
                                 parsed, query[i][j], on_query_error, parse_opts);
+                            doc.rewind();
+                            doc.get_value().get(parsed);
                         }
                         res.attr("names") = query[i].attr("names");
                         out[i]            = res;						// #nocov end
@@ -798,13 +853,20 @@ inline SEXP nested_query(const json_T&                                json,
             } else { /* !parse_error_ok */
                 simdjson::ondemand::value parsed;
                 simdjson::ondemand::document doc;
-                simdjson::padded_string padded_json = get_padded<json_T, is_file>(json);
+                simdjson::padded_string padded_json = get_padded<decltype(json[i]), is_file>(json[i]);
                 auto error = parser.iterate(padded_json).get(doc);
                 if (error != simdjson::SUCCESS) {
                     Rcpp::stop(simdjson::error_message(error));
                 }
                 if (doc.scalar()) {
-                    return simplify_scalar_document(doc, parse_opts.single_null);
+                    Rcpp::List res(n_queries);
+                    for (R_xlen_t j = 0; j < n_queries; ++j) {
+                        res[j] = query[i][j].empty() ?
+                                    simplify_scalar_document(doc, parse_opts.single_null) :
+                                    on_query_error;
+                    }
+                    res.attr("names") = query[i].attr("names");
+                    out[i]            = res;
                 } else {
                     error = doc.get_value().get(parsed);
                     if (error != simdjson::SUCCESS) {
@@ -814,6 +876,8 @@ inline SEXP nested_query(const json_T&                                json,
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
+                        doc.rewind();
+                        doc.get_value().get(parsed);
                     }
                     res.attr("names") = query[i].attr("names");
                     out[i]            = res;

@@ -5,10 +5,14 @@ library(RcppSimdJson)
 expect_error(fparse("junk", query = ""))
 expect_error(fparse("junk", query = c("", "")))
 expect_error(fparse(c("junk", "junk"), query = list("", "")))
-expect_identical(
-    fparse("junk", query = "", parse_error_ok = TRUE),
-    NULL
+# Change to expect_error. By design, On Demand does not detect broken JSON until it is accessed/parsed
+expect_error(
+    fparse("junk", query = "", parse_error_ok = TRUE)
 )
+#expect_identical(
+#    fparse("junk", query = "", parse_error_ok = TRUE),
+#    NULL
+#)
 
 #Change to expect_error. By design, On Demand does not detect broken JSON until it is accessed/parsed.
 expect_error(
