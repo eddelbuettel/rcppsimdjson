@@ -493,11 +493,6 @@ inline SEXP query_and_deserialize(simdjson::ondemand::document&                 
         return Rcpp::LogicalVector(1, NA_LOGICAL);
     }
 
-    if (query.empty()) {
-        /* if `query` is empty (""), parse/deserialize as if there's no query */
-        return deserialize(parsed, parse_opts);
-    }
-
     if constexpr (query_error_ok) {
         simdjson::ondemand::value queried;
         if(parsed.at_pointer(std::string_view(query)).get(queried) == simdjson::SUCCESS) {
