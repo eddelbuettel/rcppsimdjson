@@ -510,6 +510,7 @@ for (i in seq_along(all_files)) {
 
 
 #*** fload() -------------------------------------------------------------------
+"""
 .write_file("JUNK JSON", test_file1)
 .write_file('"VALID JSON"', test_file2)
 
@@ -576,7 +577,7 @@ for (i in seq_len(nrow(opts))) {
                query_error_ok = opts$query_error_ok[[i]])
     )
 }
-
+"""
 #* NDJSON ----------------------------------------------------------------------
 all_files <- dir(
     system.file("jsonexamples", package = "RcppSimdJson"),

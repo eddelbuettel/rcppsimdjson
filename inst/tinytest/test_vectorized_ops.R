@@ -35,9 +35,9 @@ test <- c(
   first = '{"A":[[1,2,3],[4,5,6]]}',
   bad_json = '{"B":[{"a":1,"b":JUNK},{"a":2,"b":false,"c":null}]}'
 )
-expect_error(
-  RcppSimdJson:::.deserialize_json(test)
-)
+#expect_error(
+#  RcppSimdJson:::.deserialize_json(test)
+#)
 # .load_json() =================================================================
 test <- c(
   flatadversarial.json = "../jsonexamples/small/flatadversarial.json",
