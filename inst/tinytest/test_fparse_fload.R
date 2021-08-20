@@ -586,11 +586,12 @@ all_files <- dir(
     full.names = TRUE
 )
 #*** fparse() ------------------------------------------------------------------
-sapply(all_files, function(.x) {
-    expect_error(fparse(.read_file(.x)))
-})
+# Do not expect .ndjson to fail at parsing since On Demand only run stage 1 with iterate().
+#sapply(all_files, function(.x) {
+#    expect_error(fparse(.read_file(.x)))
+#})
 #*** fload() -------------------------------------------------------------------
-sapply(all_files, function(.x) expect_error(fload(.x)))
+#sapply(all_files, function(.x) expect_error(fload(.x)))
 
 
 
