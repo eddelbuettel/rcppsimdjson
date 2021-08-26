@@ -528,7 +528,7 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
             if (simdjson::SUCCESS == doc.get_value().get(parsed)){
                 return deserialize(parsed, parse_opts);
             }
-            else if (doc.scalar()) {
+            else if (doc.is_scalar()) {
                 return simplify_scalar_document(doc, parse_opts.single_null);
             }
         }
@@ -542,7 +542,7 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
         if (error != simdjson::SUCCESS) {
             Rcpp::stop(simdjson::error_message(error));
         }
-        if (doc.scalar()) {
+        if (doc.is_scalar()) {
             return simplify_scalar_document(doc, parse_opts.single_null);
         } else {
             error = doc.get_value().get(parsed);

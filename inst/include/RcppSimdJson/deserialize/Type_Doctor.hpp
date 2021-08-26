@@ -85,7 +85,7 @@ inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::ondemand::arra
                 break;
         }
     }
-    array.rewind();
+    array.reset();
 }
 
 

@@ -46,11 +46,11 @@ inline auto diagnose_data_frame(simdjson::ondemand::array array) noexcept(RCPPSI
                 }
             }
         } else {
-            array.rewind();
+            array.reset();
             return std::nullopt;
         }
     }
-    array.rewind();
+    array.reset();
 
     return cols;
 }
@@ -100,7 +100,7 @@ inline auto build_col(simdjson::ondemand::array                       array,
         }
     }
 
-    array.rewind();
+    array.reset();
 
     return out;
 }
@@ -239,7 +239,7 @@ build_data_frame(simdjson::ondemand::array                                      
                     }
                 }
                 out[col.index] = this_col;
-                array.rewind();
+                array.reset();
             }
         }
     }

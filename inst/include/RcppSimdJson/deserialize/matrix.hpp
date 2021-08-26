@@ -25,7 +25,7 @@ diagnose(simdjson::ondemand::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
     for (auto element : array) {
         simdjson::ondemand::array sub_array;
         if(element.get(sub_array) != simdjson::SUCCESS) {
-            array.rewind();
+            array.reset();
             return std::nullopt;
         }
         matrix_doctor.update(
@@ -33,11 +33,11 @@ diagnose(simdjson::ondemand::array array) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
         n_cols.insert(static_cast<size_t>(sub_array.count_elements()));
 
         if (std::size(n_cols) > 1 || !matrix_doctor.is_vectorizable()) {
-            array.rewind();
+            array.reset();
             return std::nullopt;
         }
     }
-    array.rewind();
+    array.reset();
 
     return Matrix_Diagnosis{matrix_doctor.has_null(),
                             matrix_doctor.is_homogeneous(),

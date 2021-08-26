@@ -118,7 +118,7 @@ inline SEXP simplify_object(simdjson::ondemand::object object,
     }
     size_t n{0};
     for(auto f : object) { n++; }
-    object.rewind();
+    object.reset();
 
     Rcpp::List            out(n);
     Rcpp::CharacterVector out_names(n);
@@ -178,7 +178,19 @@ inline SEXP simplify_element(simdjson::ondemand::value element,
                 simdjson::ondemand::object(element), empty_array, empty_object, single_null);
 
         case simdjson::ondemand::json_type::number:
-            return Rcpp::wrap(double(element));
+            {
+                simdjson::ondemand::number num = element.get_number();
+                simdjson::ondemand::number_type t = num.get_number_type();
+                switch (t) {
+                    case simdjson::ondemand::number_type::signed_integer:
+                        return utils::resolve_int64<int64_opt>(num.get_int64());
+                    case simdjson::ondemand::number_type::unsigned_integer:
+                        return Rcpp::wrap(std::to_string(num.get_uint64()));
+                    case simdjson::ondemand::number_type::floating_point_number:
+                        return Rcpp::wrap(num.get_double());
+                }
+            }
+            break;
 
         case simdjson::ondemand::json_type::boolean:
             return Rcpp::wrap(bool(element));
