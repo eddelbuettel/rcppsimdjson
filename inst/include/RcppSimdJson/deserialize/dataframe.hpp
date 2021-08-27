@@ -150,7 +150,12 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
                 if(object.get_object().find_field_unordered(key).get(val) == simdjson::SUCCESS) {
                     switch (val.type()) {
                         case simdjson::ondemand::json_type::number:
-                            stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                            {
+                                simdjson::ondemand::number num = val.get_number();
+                                if(num.get_number_type() == simdjson::ondemand::number_type::signed_integer) {
+                                    stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                }
+                            }
                             break;
 
                         case simdjson::ondemand::json_type::boolean:
@@ -164,6 +169,7 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
                 i_row++;
             }
         }
+        array.reset();
         return utils::as_integer64(stl_vec);
     }
 }
