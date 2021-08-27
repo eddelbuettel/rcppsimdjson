@@ -1,4 +1,4 @@
-/* auto-generated on 2021-08-26 12:16:44 -0400. Do not edit! */
+/* auto-generated on 2021-08-27 13:41:59 -0400. Do not edit! */
 /* begin file include/simdjson.h */
 #ifndef SIMDJSON_H
 #define SIMDJSON_H
@@ -2251,6 +2251,7 @@ enum error_code {
   INSUFFICIENT_PADDING,       ///< The JSON doesn't have enough padding for simdjson to safely parse it.
   INCOMPLETE_ARRAY_OR_OBJECT, ///< The document ends early.
   SCALAR_DOCUMENT_AS_VALUE,   ///< A scalar document is treated as a value.
+  OUT_OF_BOUNDS,              ///< Attempted to access location outside of document.
   NUM_ERROR_CODES
 };
 
@@ -20767,6 +20768,7 @@ struct number {
    * return the value as a uint64_t, only valid if is_uint64() is true.
    */
   simdjson_really_inline uint64_t get_uint64() const noexcept;
+  simdjson_really_inline operator uint64_t() const noexcept;
 
   /**
    * return true if the automatically determined type of
@@ -20777,6 +20779,7 @@ struct number {
    * return the value as a int64_t, only valid if is_int64() is true.
    */
   simdjson_really_inline int64_t get_int64() const noexcept;
+  simdjson_really_inline operator int64_t() const noexcept;
 
 
   /**
@@ -20788,13 +20791,13 @@ struct number {
    * return the value as a double, only valid if is_double() is true.
    */
   simdjson_really_inline double get_double() const noexcept;
+  simdjson_really_inline operator double() const noexcept;
+
   /**
    * Convert the number to a double. Though it always succeed, the conversion
    * may be lossy if the number cannot be represented exactly.
    */
   simdjson_really_inline double as_double() const noexcept;
-
-
 
 
 protected:
@@ -21507,6 +21510,12 @@ public:
 #endif
   /* Useful for debugging and logging purposes. */
   inline std::string to_string() const noexcept;
+
+  /**
+   * Returns the current location in the document if in bounds.
+   */
+  inline simdjson_result<const char *> current_location() noexcept;
+
   /**
    * Updates this json iterator so that it is back at the beginning of the document,
    * as if it had just been created.
@@ -21856,6 +21865,9 @@ public:
   simdjson_warn_unused simdjson_really_inline simdjson_result<double> get_root_double() noexcept;
   simdjson_warn_unused simdjson_really_inline simdjson_result<double> get_root_double_in_string() noexcept;
   simdjson_warn_unused simdjson_really_inline simdjson_result<bool> get_root_bool() noexcept;
+  simdjson_warn_unused simdjson_really_inline bool is_root_negative() noexcept;
+  simdjson_warn_unused simdjson_really_inline simdjson_result<bool> is_root_integer() noexcept;
+  simdjson_warn_unused simdjson_really_inline simdjson_result<number> get_root_number() noexcept;
   simdjson_really_inline bool is_root_null() noexcept;
 
   simdjson_really_inline error_code error() const noexcept;
@@ -22716,6 +22728,50 @@ public:
   simdjson_really_inline simdjson_result<bool> is_scalar() noexcept;
 
   /**
+   * Checks whether the document is a negative number.
+   *
+   * @returns true if the number if negative.
+   */
+  simdjson_really_inline bool is_negative() noexcept;
+  /**
+   * Checks whether the document is an integer number. Note that
+   * this requires to partially parse the number string. If
+   * the value is determined to be an integer, it may still
+   * not parse properly as an integer in subsequent steps
+   * (e.g., it might overflow).
+   *
+   * @returns true if the number if negative.
+   */
+  simdjson_really_inline simdjson_result<bool> is_integer() noexcept;
+  /**
+   * Attempt to parse an ondemand::number. An ondemand::number may
+   * contain an integer value or a floating-point value, the simdjson
+   * library will autodetect the type. Thus it is a dynamically typed
+   * number. Before accessing the value, you must determine the detected
+   * type.
+   *
+   * number.get_number_type() is number_type::signed_integer if we have
+   * a integer in [-9223372036854775808,9223372036854775808)
+   * You can recover the value by calling number.get_int64() and you
+   * have that number.is_int64() is true.
+   *
+   * number.get_number_type() is number_type::unsigned_integer if we have
+   * an integer in [9223372036854775808,18446744073709551616)
+   * You can recover the value by calling number.get_uint64() and you
+   * have that number.is_uint64() is true.
+   *
+   * Otherwise, number.get_number_type() has value number_type::floating_point_number
+   * and we have a binary64 number.
+   * You can recover the value by calling number.get_double() and you
+   * have that number.is_double() is true.
+   *
+   * You must check the type before accessing the value: it is an error
+   * to call "get_int64()" when number.get_number_type() is not
+   * number_type::signed_integer and when number.is_int64() is false.
+   */
+  simdjson_warn_unused simdjson_really_inline simdjson_result<number> get_number() noexcept;
+
+  /**
    * Get the raw JSON for this token.
    *
    * The string_view will always point into the input buffer.
@@ -22754,6 +22810,11 @@ public:
    * The is_alive() method returns true when the document is still suitable.
    */
   inline bool is_alive() noexcept;
+
+  /**
+   * Returns the current location in the document if in bounds.
+   */
+  inline simdjson_result<const char *> current_location() noexcept;
 
   /**
    * Get the value associated with the given JSON pointer.  We use the RFC 6901
@@ -22872,6 +22933,10 @@ public:
   simdjson_really_inline simdjson_result<json_type> type() noexcept;
   simdjson_really_inline simdjson_result<bool> is_scalar() noexcept;
 
+  simdjson_really_inline simdjson_result<const char *> current_location() noexcept;
+  simdjson_really_inline bool is_negative() noexcept;
+  simdjson_really_inline simdjson_result<bool> is_integer() noexcept;
+  simdjson_really_inline simdjson_result<number> get_number() noexcept;
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
   simdjson_really_inline simdjson_result<value> at_pointer(std::string_view json_pointer) noexcept;
 private:
@@ -22932,6 +22997,10 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(const char *key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::json_type> type() noexcept;
   simdjson_really_inline simdjson_result<bool> is_scalar() noexcept;
+  simdjson_really_inline simdjson_result<const char *> current_location() noexcept;
+  simdjson_really_inline bool is_negative() noexcept;
+  simdjson_really_inline simdjson_result<bool> is_integer() noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::number> get_number() noexcept;
   /** @copydoc simdjson_really_inline std::string_view document::raw_json_token() const noexcept */
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
 
@@ -22986,7 +23055,10 @@ public:
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::value> find_field_unordered(const char *key) & noexcept;
   simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::json_type> type() noexcept;
   simdjson_really_inline simdjson_result<bool> is_scalar() noexcept;
-
+  simdjson_really_inline simdjson_result<const char *> current_location() noexcept;
+  simdjson_really_inline bool is_negative() noexcept;
+  simdjson_really_inline simdjson_result<bool> is_integer() noexcept;
+  simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::number> get_number() noexcept;
   /** @copydoc simdjson_really_inline std::string_view document_reference::raw_json_token() const noexcept */
   simdjson_really_inline simdjson_result<std::string_view> raw_json_token() noexcept;
 
@@ -24692,6 +24764,10 @@ simdjson_really_inline uint64_t number::get_uint64() const noexcept {
   return payload.unsigned_integer;
 }
 
+simdjson_really_inline number::operator uint64_t() const noexcept {
+  return get_uint64();
+}
+
 
 simdjson_really_inline bool number::is_int64() const noexcept {
   return get_number_type() == number_type::signed_integer;
@@ -24701,12 +24777,20 @@ simdjson_really_inline int64_t number::get_int64() const noexcept {
   return payload.signed_integer;
 }
 
+simdjson_really_inline number::operator int64_t() const noexcept {
+  return get_int64();
+}
+
 simdjson_really_inline bool number::is_double() const noexcept {
     return get_number_type() == number_type::floating_point_number;
 }
 
 simdjson_really_inline double number::get_double() const noexcept {
   return payload.floating_point_number;
+}
+
+simdjson_really_inline number::operator double() const noexcept {
+  return get_double();
 }
 
 simdjson_really_inline double number::as_double() const noexcept {
@@ -25393,6 +25477,20 @@ inline std::string json_iterator::to_string() const noexcept {
           + std::string(" ]");
 }
 
+inline simdjson_result<const char *> json_iterator::current_location() noexcept {
+  if (!is_alive()) {    // Unrecoverable error
+    if (!at_root()) {
+      return reinterpret_cast<const char *>(token.peek(-1));
+    } else {
+      return reinterpret_cast<const char *>(token.peek());
+    }
+  }
+  if (at_end()) {
+    return OUT_OF_BOUNDS;
+  }
+  return reinterpret_cast<const char *>(token.peek());
+}
+
 simdjson_really_inline bool json_iterator::is_alive() const noexcept {
   return parser;
 }
@@ -26045,6 +26143,9 @@ simdjson_really_inline bool value_iterator::is_null() noexcept {
 simdjson_really_inline bool value_iterator::is_negative() noexcept {
   return numberparsing::is_negative(peek_non_root_scalar("numbersign"));
 }
+simdjson_really_inline bool value_iterator::is_root_negative() noexcept {
+  return numberparsing::is_negative(peek_root_scalar("numbersign"));
+}
 simdjson_really_inline simdjson_result<bool> value_iterator::is_integer() noexcept {
   return numberparsing::is_integer(peek_non_root_scalar("integer"));
 }
@@ -26052,6 +26153,36 @@ simdjson_really_inline simdjson_result<bool> value_iterator::is_integer() noexce
 simdjson_really_inline simdjson_result<number> value_iterator::get_number() noexcept {
   number num;
   error_code error =  numberparsing::parse_number(peek_non_root_scalar("number"), num);
+  if(error) { return error; }
+  return num;
+}
+
+
+simdjson_really_inline simdjson_result<bool> value_iterator::is_root_integer() noexcept {
+  auto max_len = peek_start_length();
+  auto json = peek_root_scalar("is_root_integer");
+  uint8_t tmpbuf[20+1]; // <20 digits> is the longest possible unsigned integer
+  if (!_json_iter->copy_to_buffer(json, max_len, tmpbuf)) {
+    return false; // if there are more than 20 characters, it cannot be represented as an integer.
+  }
+  return numberparsing::is_integer(tmpbuf);
+}
+
+simdjson_really_inline simdjson_result<number> value_iterator::get_root_number() noexcept {
+  auto max_len = peek_start_length();
+  auto json = peek_root_scalar("number");
+  // Per https://www.exploringbinary.com/maximum-number-of-decimal-digits-in-binary-floating-point-numbers/,
+  // 1074 is the maximum number of significant fractional digits. Add 8 more digits for the biggest
+  // number: -0.<fraction>e-308.
+  uint8_t tmpbuf[1074+8+1];
+  if (!_json_iter->copy_to_buffer(json, max_len, tmpbuf)) {
+    logger::log_error(*_json_iter, start_position(), depth(), "Root number more than 1082 characters");
+    return NUMBER_ERROR;
+  }
+  number num;
+  error_code error =  numberparsing::parse_number(tmpbuf, num);
+  if(error == INCORRECT_TYPE) { return error; }
+  advance_root_scalar("number"); // we consume!
   if(error) { return error; }
   return num;
 }
@@ -26862,6 +26993,11 @@ inline void document::rewind() noexcept {
 inline std::string document::to_debug_string() noexcept {
   return iter.to_string();
 }
+
+inline simdjson_result<const char *> document::current_location() noexcept {
+  return iter.current_location();
+}
+
 inline bool document::is_alive() noexcept {
   return iter.is_alive();
 }
@@ -27038,6 +27174,19 @@ simdjson_really_inline simdjson_result<bool> document::is_scalar() noexcept {
   return ! ((this_type == json_type::array) || (this_type == json_type::object));
 }
 
+simdjson_really_inline bool document::is_negative() noexcept {
+  return get_root_value_iterator().is_root_negative();
+}
+
+simdjson_really_inline simdjson_result<bool> document::is_integer() noexcept {
+  return get_root_value_iterator().is_root_integer();
+}
+
+simdjson_really_inline simdjson_result<number> document::get_number() noexcept {
+  return get_root_value_iterator().get_root_number();
+}
+
+
 simdjson_really_inline simdjson_result<std::string_view> document::raw_json_token() noexcept {
   auto _iter = get_root_value_iterator();
   return std::string_view(reinterpret_cast<const char*>(_iter.peek_start()), _iter.peek_start_length());
@@ -27211,6 +27360,23 @@ simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IM
   return first.is_scalar();
 }
 
+
+simdjson_really_inline bool simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::is_negative() noexcept {
+  if (error()) { return error(); }
+  return first.is_negative();
+}
+
+simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::is_integer() noexcept {
+  if (error()) { return error(); }
+  return first.is_integer();
+}
+
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::number> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::get_number() noexcept {
+  if (error()) { return error(); }
+  return first.get_number();
+}
+
+
 #if SIMDJSON_EXCEPTIONS
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array() & noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
@@ -27249,6 +27415,12 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   return first;
 }
 #endif
+
+
+simdjson_really_inline simdjson_result<const char *> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::current_location() noexcept {
+  if (error()) { return error(); }
+  return first.current_location();
+}
 
 simdjson_really_inline simdjson_result<std::string_view> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document>::raw_json_token() noexcept {
   if (error()) { return error(); }
@@ -27305,6 +27477,10 @@ simdjson_really_inline simdjson_result<value> document_reference::find_field_uno
 simdjson_really_inline simdjson_result<value> document_reference::find_field_unordered(const char *key) & noexcept { return doc->find_field_unordered(key); }
 simdjson_really_inline simdjson_result<json_type> document_reference::type() noexcept { return doc->type(); }
 simdjson_really_inline simdjson_result<bool> document_reference::is_scalar() noexcept { return doc->is_scalar(); }
+simdjson_really_inline simdjson_result<const char *> document_reference::current_location() noexcept { return doc->current_location(); };
+simdjson_really_inline bool document_reference::is_negative() noexcept { return doc->is_negative(); }
+simdjson_really_inline simdjson_result<bool> document_reference::is_integer() noexcept { return doc->is_integer(); }
+simdjson_really_inline simdjson_result<number> document_reference::get_number() noexcept { return doc->get_number(); }
 simdjson_really_inline simdjson_result<std::string_view> document_reference::raw_json_token() noexcept { return doc->raw_json_token(); }
 simdjson_really_inline simdjson_result<value> document_reference::at_pointer(std::string_view json_pointer) noexcept { return doc->at_pointer(json_pointer); }
 simdjson_really_inline simdjson_result<std::string_view> document_reference::raw_json() noexcept { return doc->raw_json();}
@@ -27413,6 +27589,18 @@ simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IM
   if (error()) { return error(); }
   return first.is_scalar();
 }
+simdjson_really_inline bool simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::is_negative() noexcept {
+  if (error()) { return error(); }
+  return first.is_negative();
+}
+simdjson_really_inline simdjson_result<bool> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::is_integer() noexcept {
+  if (error()) { return error(); }
+  return first.is_integer();
+}
+simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::number> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::get_number() noexcept {
+  if (error()) { return error(); }
+  return first.get_number();
+}
 #if SIMDJSON_EXCEPTIONS
 simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::operator SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::array() & noexcept(false) {
   if (error()) { throw simdjson_error(error()); }
@@ -27451,6 +27639,11 @@ simdjson_really_inline simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand
   return first;
 }
 #endif
+
+simdjson_really_inline simdjson_result<const char *> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::current_location() noexcept {
+  if (error()) { return error(); }
+  return first.current_location();
+}
 
 simdjson_really_inline simdjson_result<std::string_view> simdjson_result<SIMDJSON_BUILTIN_IMPLEMENTATION::ondemand::document_reference>::raw_json_token() noexcept {
   if (error()) { return error(); }
