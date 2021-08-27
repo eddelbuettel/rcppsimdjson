@@ -10,7 +10,7 @@ namespace matrix {
 struct Matrix_Diagnosis {
     bool                        has_nulls;
     bool                        is_homogeneous;
-    simdjson::ondemand::json_type common_element_type;
+    utils::complete_json_type common_element_type;
     rcpp_T                      common_R_type;
     std::size_t                 n_cols;
 };
@@ -133,30 +133,67 @@ inline Rcpp::NumericVector build_matrix_integer64_typed(simdjson::ondemand::arra
 
 template <utils::Int64_R_Type int64_opt>
 inline SEXP dispatch_typed(simdjson::ondemand::array        array,
-                           simdjson::ondemand::json_type element_type,
+                           utils::complete_json_type element_type,
                            const rcpp_T                R_Type,
                            const bool                  has_nulls,
                            const std::size_t           n_cols) {
     switch (element_type) {
-        case simdjson::ondemand::json_type::string:
+        case utils::complete_json_type::string_:
             return has_nulls
                        ? build_matrix_typed<STRSXP, std::string, rcpp_T::chr, HAS_NULLS>(array,
                                                                                          n_cols)
                        : build_matrix_typed<STRSXP, std::string, rcpp_T::chr, NO_NULLS>(array,
                                                                                         n_cols);
 
-        case simdjson::ondemand::json_type::number:
+        case utils::complete_json_type::double_:
             return has_nulls
                        ? build_matrix_typed<REALSXP, double, rcpp_T::dbl, HAS_NULLS>(array, n_cols)
                        : build_matrix_typed<REALSXP, double, rcpp_T::dbl, NO_NULLS>(array, n_cols);
 
-        case simdjson::ondemand::json_type::boolean:
+        case utils::complete_json_type::int64_: {
+            if (R_Type == rcpp_T::i32) {
+                return has_nulls
+                           ? build_matrix_typed<INTSXP, int64_t, rcpp_T::i32, HAS_NULLS>(array,
+                                                                                         n_cols)
+                           : build_matrix_typed<INTSXP, int64_t, rcpp_T::i32, NO_NULLS>(array,
+                                                                                        n_cols);
+            }
+
+            if constexpr (int64_opt == utils::Int64_R_Type::Double) {
+                return has_nulls
+                           ? build_matrix_typed<REALSXP, int64_t, rcpp_T::dbl, HAS_NULLS>(array,
+                                                                                          n_cols)
+                           : build_matrix_typed<REALSXP, int64_t, rcpp_T::dbl, NO_NULLS>(array,
+                                                                                         n_cols);
+            }
+
+            if constexpr (int64_opt == utils::Int64_R_Type::String) {
+                return has_nulls
+                           ? build_matrix_typed<STRSXP, int64_t, rcpp_T::chr, HAS_NULLS>(array,
+                                                                                         n_cols)
+                           : build_matrix_typed<STRSXP, int64_t, rcpp_T::chr, NO_NULLS>(array,
+                                                                                        n_cols);
+            }
+
+            if constexpr (int64_opt == utils::Int64_R_Type::Integer64 ||
+                          int64_opt == utils::Int64_R_Type::Always) {
+                return has_nulls ? build_matrix_integer64_typed<HAS_NULLS>(array, n_cols)
+                                 : build_matrix_integer64_typed<NO_NULLS>(array, n_cols);
+            }
+        }
+
+        case utils::complete_json_type::boolean_:
             return has_nulls
                        ? build_matrix_typed<LGLSXP, bool, rcpp_T::lgl, HAS_NULLS>(array, n_cols)
                        : build_matrix_typed<LGLSXP, bool, rcpp_T::lgl, NO_NULLS>(array, n_cols);
 
+        case utils::complete_json_type::uint64_:
+            return has_nulls
+                       ? build_matrix_typed<STRSXP, uint64_t, rcpp_T::chr, HAS_NULLS>(array, n_cols)
+                       : build_matrix_typed<STRSXP, uint64_t, rcpp_T::chr, NO_NULLS>(array, n_cols);
+
             // # nocov start
-        case simdjson::ondemand::json_type::null:
+        case utils::complete_json_type::null_:
             return Rcpp::LogicalVector(static_cast<R_xlen_t>(array.count_elements()), NA_LOGICAL);
 
         default:
@@ -218,7 +255,18 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
             if (element.get(val) == simdjson::SUCCESS) {
                 switch (val.type()) {
                     case simdjson::ondemand::json_type::number:
-                        stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                        {
+                            simdjson::ondemand::number num = val.get_number();
+                            simdjson::ondemand::number_type t = num.get_number_type();
+                            switch (t) {
+                                case simdjson::ondemand::number_type::signed_integer:
+                                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                    break;
+                                default:
+                                    stl_vec_int64[i + j] = NA_INTEGER64;
+                                    break;
+                            }
+                        }
                         break;
 
                     case simdjson::ondemand::json_type::boolean:
@@ -243,7 +291,18 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
             if (sub_element.get(val) == simdjson::SUCCESS) {
                 switch (sub_element.type()) {
                     case simdjson::ondemand::json_type::number:
-                        stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                        {
+                            simdjson::ondemand::number num = val.get_number();
+                            simdjson::ondemand::number_type t = num.get_number_type();
+                            switch (t) {
+                                case simdjson::ondemand::number_type::signed_integer:
+                                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                    break;
+                                default:
+                                    stl_vec_int64[i + j] = NA_INTEGER64;
+                                    break;
+                            }
+                        }
                         break;
 
                     case simdjson::ondemand::json_type::boolean:

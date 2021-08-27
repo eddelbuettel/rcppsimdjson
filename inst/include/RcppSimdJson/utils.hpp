@@ -35,6 +35,17 @@ enum class Int64_R_Type : int {
     Always    = 3,
 };
 
+enum class complete_json_type {
+    array_ = 0,     ///< ondemand::array
+    object_ = 1,    ///< ondemand::object
+    int64_ = 2,     ///< int64_t
+    uint64_ = 3,    ///< uint64_t: any integer that fits in uint64_t but *not* int64_t
+    double_ = 4,    ///< double: Any number with a "." or "e" that fits in double.
+    string_ = 5,    ///< std::string_view
+    boolean_ = 6,      ///< bool
+    null_ = 7 ///< null
+};
+
 
 // Convert `int64_t` to `bit64::integer64`.
 inline SEXP as_integer64(int64_t x) {

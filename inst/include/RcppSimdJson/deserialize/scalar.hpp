@@ -126,8 +126,21 @@ inline auto get_scalar_dispatch<STRSXP>(simdjson::ondemand::value element) noexc
             return get_scalar<std::string, rcpp_T::chr, NO_NULLS>(element);
 
         case simdjson::ondemand::json_type::number:
-            return get_scalar<double, rcpp_T::chr, NO_NULLS>(element);
-
+            {
+                simdjson::ondemand::number num = element.get_number();
+                simdjson::ondemand::number_type t = num.get_number_type();
+                switch (t) {
+                    case simdjson::ondemand::number_type::signed_integer:
+                        return get_scalar<int64_t, rcpp_T::chr, NO_NULLS>(element);
+                    case simdjson::ondemand::number_type::unsigned_integer:
+                        return get_scalar<uint64_t, rcpp_T::chr, NO_NULLS>(element);
+                    case simdjson::ondemand::number_type::floating_point_number:
+                        return get_scalar<double, rcpp_T::chr, NO_NULLS>(element);
+                    default:
+                        return Rcpp::String(NA_STRING);
+                }
+            }
+            break;
         case simdjson::ondemand::json_type::boolean:
             return get_scalar<bool, rcpp_T::chr, NO_NULLS>(element);
 
@@ -142,8 +155,19 @@ inline auto
 get_scalar_dispatch<REALSXP>(simdjson::ondemand::value element) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
     switch (element.type()) {
         case simdjson::ondemand::json_type::number:
-            return get_scalar<double, rcpp_T::dbl, NO_NULLS>(element);
-
+            {
+                simdjson::ondemand::number num = element.get_number();
+                simdjson::ondemand::number_type t = num.get_number_type();
+                switch (t) {
+                    case simdjson::ondemand::number_type::signed_integer:
+                        return get_scalar<int64_t, rcpp_T::dbl, NO_NULLS>(element);
+                    case simdjson::ondemand::number_type::floating_point_number:
+                        return get_scalar<double, rcpp_T::dbl, NO_NULLS>(element);
+                    default:
+                        return NA_REAL;
+                }
+            }
+            break;
         case simdjson::ondemand::json_type::boolean:
             return get_scalar<bool, rcpp_T::dbl, NO_NULLS>(element);
 
@@ -158,8 +182,15 @@ inline auto
 get_scalar_dispatch<INTSXP>(simdjson::ondemand::value element) noexcept(RCPPSIMDJSON_NO_EXCEPTIONS) {
     switch (element.type()) {
         case simdjson::ondemand::json_type::number:
-            return get_scalar<int64_t, rcpp_T::i32, NO_NULLS>(element);
-
+            {
+                simdjson::ondemand::number num = element.get_number();
+                if (num.get_number_type() == simdjson::ondemand::number_type::signed_integer) {
+                    return get_scalar<int64_t, rcpp_T::i32, NO_NULLS>(element);
+                } else {
+                    return NA_INTEGER;
+                }
+            }
+            break;
         case simdjson::ondemand::json_type::boolean:
             return get_scalar<bool, rcpp_T::i32, HAS_NULLS>(element);
 

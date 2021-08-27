@@ -46,7 +46,7 @@ class Type_Doctor {
 
     [[nodiscard]] constexpr auto common_R_type() const noexcept -> rcpp_T;
     [[nodiscard]] constexpr auto common_element_type() const noexcept
-        -> simdjson::ondemand::json_type;
+        -> utils::complete_json_type;
 
     [[nodiscard]] constexpr auto is_homogeneous() const noexcept -> bool;
     [[nodiscard]] constexpr auto is_vectorizable() const noexcept -> bool;
@@ -247,19 +247,19 @@ inline constexpr auto Type_Doctor<type_policy, int64_opt>::is_vectorizable() con
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline constexpr simdjson::ondemand::json_type Type_Doctor<type_policy, int64_opt>::common_element_type() const noexcept {
+inline constexpr utils::complete_json_type Type_Doctor<type_policy, int64_opt>::common_element_type() const noexcept {
 
-    using simdjson::ondemand::json_type;
+    using utils::complete_json_type;
 
     return ARRAY_
-               ? json_type::array
-               : OBJECT_ ? json_type::object
-                         : STRING_ ? json_type::string
-                                   : UINT64_ ? json_type::number
-                                             : DOUBLE_ ? json_type::number
-                                                       : INT64_ ? json_type::number
-                                                                : BOOL_ ? json_type::boolean
-                                                                        : json_type::null;
+               ? complete_json_type::array_
+               : OBJECT_ ? complete_json_type::object_
+                         : STRING_ ? complete_json_type::string_
+                                   : UINT64_ ? complete_json_type::uint64_
+                                             : DOUBLE_ ? complete_json_type::double_
+                                                       : INT64_ ? complete_json_type::int64_
+                                                                : BOOL_ ? complete_json_type::boolean_
+                                                                        : complete_json_type::null_;
 }
 
 
