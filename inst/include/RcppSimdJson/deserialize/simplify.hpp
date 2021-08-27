@@ -183,11 +183,11 @@ inline SEXP simplify_element(simdjson::ondemand::value element,
                 simdjson::ondemand::number_type t = num.get_number_type();
                 switch (t) {
                     case simdjson::ondemand::number_type::signed_integer:
-                        return utils::resolve_int64<int64_opt>(num.get_int64());
+                        return utils::resolve_int64<int64_opt>(int64_t(num));
                     case simdjson::ondemand::number_type::unsigned_integer:
-                        return Rcpp::wrap(std::to_string(num.get_uint64()));
+                        return Rcpp::wrap(std::to_string(uint64_t(num)));
                     case simdjson::ondemand::number_type::floating_point_number:
-                        return Rcpp::wrap(num.get_double());
+                        return Rcpp::wrap(double(num));
                 }
             }
             break;
@@ -209,7 +209,19 @@ inline SEXP simplify_scalar_document(simdjson::ondemand::document_reference doc,
                              SEXP                   single_null) {
     switch (doc.type()) {
         case simdjson::ondemand::json_type::number:
-            return Rcpp::wrap(double(doc));
+            {
+                simdjson::ondemand::number num = doc.get_number();
+                simdjson::ondemand::number_type t = num.get_number_type();
+                switch(t) {
+                    case simdjson::ondemand::number_type::signed_integer:
+                        return Rcpp::wrap(int64_t(num));
+                    case simdjson::ondemand::number_type::unsigned_integer:
+                        return Rcpp::wrap(std::to_string(uint64_t(num)));
+                    case simdjson::ondemand::number_type::floating_point_number:
+                        return Rcpp::wrap(double(num));
+                }
+            }
+            break;
 
         case simdjson::ondemand::json_type::boolean:
             return Rcpp::wrap(bool(doc));
