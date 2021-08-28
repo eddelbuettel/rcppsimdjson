@@ -236,17 +236,17 @@ fparse(empties,
        single_null = NA_real_)
 
 # handling invalid JSON and parsing errors ==================================
-fparse("junk JSON", parse_error_ok = TRUE)
-fparse("junk JSON", parse_error_ok = TRUE,
-       on_parse_error = "can't parse invalid JSON")
-fparse(
-    c(junk_JSON_1 = "junk JSON 1",
-      valid_JSON_1 = '"this is valid JSON"',
-      junk_JSON_2 = "junk JSON 2",
-      valid_JSON_2 = '"this is also valid JSON"'),
-    parse_error_ok = TRUE,
-    on_parse_error = NA
-)
+#fparse("junk JSON", parse_error_ok = TRUE)
+#fparse("junk JSON", parse_error_ok = TRUE,
+#       on_parse_error = "can't parse invalid JSON")
+#fparse(
+#    c(junk_JSON_1 = "junk JSON 1",
+#      valid_JSON_1 = '"this is valid JSON"',
+#      junk_JSON_2 = "junk JSON 2",
+#      valid_JSON_2 = '"this is also valid JSON"'),
+#    parse_error_ok = TRUE,
+#    on_parse_error = NA
+#)
 
 # querying JSON w/ a JSON Pointer ===========================================
 json_to_query <- c(
