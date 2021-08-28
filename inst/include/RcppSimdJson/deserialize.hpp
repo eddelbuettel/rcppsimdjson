@@ -420,6 +420,25 @@ inline auto deserialize(simdjson::ondemand::value parsed, const Parse_Opts& pars
     return R_NilValue; // # nocov
 }
 
+inline auto deserialize_scalar_document(simdjson::ondemand::document_reference parsed, const Parse_Opts& parse_opts) -> SEXP {
+    using Int64_R_Type = utils::Int64_R_Type;
+
+    auto& [simplify_to, type_policy, int64_opt, empty_array, empty_object, single_null] =
+        parse_opts;
+
+        switch (int64_opt) {
+            case Int64_R_Type::Double:
+                return simplify_scalar_document<Int64_R_Type::Double>(parsed, single_null);
+            case Int64_R_Type::String:
+                return simplify_scalar_document<Int64_R_Type::Double>(parsed, single_null);
+            case Int64_R_Type::Integer64:
+                return simplify_scalar_document<Int64_R_Type::Integer64>(parsed, single_null);
+            case Int64_R_Type::Always:
+                return simplify_scalar_document<Int64_R_Type::Always>(parsed, single_null);
+        }
+
+    return R_NilValue;
+}
 
 template <typename json_T, bool is_file>
 inline simdjson::padded_string get_padded( const json_T&            json) {
@@ -529,7 +548,7 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
                 return deserialize(parsed, parse_opts);
             }
             else if (doc.is_scalar()) {
-                return simplify_scalar_document(doc, parse_opts.single_null);
+                return deserialize_scalar_document(doc, parse_opts);
             }
         }
         return on_parse_error;
@@ -543,7 +562,7 @@ inline SEXP parse_and_deserialize(simdjson::ondemand::parser&                   
             Rcpp::stop(simdjson::error_message(error));
         }
         if (doc.is_scalar()) {
-            return simplify_scalar_document(doc, parse_opts.single_null);
+            return deserialize_scalar_document(doc, parse_opts);
         } else {
             error = doc.get_value().get(parsed);
             if (error != simdjson::SUCCESS) {

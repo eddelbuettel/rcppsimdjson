@@ -205,8 +205,9 @@ inline SEXP simplify_element(simdjson::ondemand::value element,
     return R_NilValue; // # nocov
 }
 
+template<utils::Int64_R_Type int64_opt>
 inline SEXP simplify_scalar_document(simdjson::ondemand::document_reference doc,
-                             SEXP                   single_null) {
+                                    SEXP                   single_null) {
     switch (doc.type()) {
         case simdjson::ondemand::json_type::number:
             {
@@ -214,7 +215,7 @@ inline SEXP simplify_scalar_document(simdjson::ondemand::document_reference doc,
                 simdjson::ondemand::number_type t = num.get_number_type();
                 switch(t) {
                     case simdjson::ondemand::number_type::signed_integer:
-                        return Rcpp::wrap(int64_t(num));
+                        return utils::resolve_int64<int64_opt>(int64_t(num));
                     case simdjson::ondemand::number_type::unsigned_integer:
                         return Rcpp::wrap(std::to_string(uint64_t(num)));
                     case simdjson::ondemand::number_type::floating_point_number:
