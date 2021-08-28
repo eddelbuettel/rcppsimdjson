@@ -168,6 +168,8 @@ expect_error(is_valid_json(1.0))
 expect_error(is_valid_json(FALSE))
 expect_error(is_valid_json(list(charToRaw('"VALID JSON"'), FALSE)))
 
-expect_false(any(is_valid_json(valid_utf8)))
+# Change to expect_true since valid json is only detected when parsed/accessed.
+#expect_false(any(is_valid_json(valid_utf8)))
+expect_true(any(is_valid_json(valid_utf8)))
 expect_false(any(is_valid_json(invalid_utf8)))
 
