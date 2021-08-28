@@ -430,7 +430,7 @@ inline auto deserialize_scalar_document(simdjson::ondemand::document_reference p
             case Int64_R_Type::Double:
                 return simplify_scalar_document<Int64_R_Type::Double>(parsed, single_null);
             case Int64_R_Type::String:
-                return simplify_scalar_document<Int64_R_Type::Double>(parsed, single_null);
+                return simplify_scalar_document<Int64_R_Type::String>(parsed, single_null);
             case Int64_R_Type::Integer64:
                 return simplify_scalar_document<Int64_R_Type::Integer64>(parsed, single_null);
             case Int64_R_Type::Always:
