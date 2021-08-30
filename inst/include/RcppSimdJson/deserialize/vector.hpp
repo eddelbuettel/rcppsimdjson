@@ -109,7 +109,18 @@ inline Rcpp::Vector<REALSXP> build_vector_integer64_mixed(simdjson::ondemand::ar
         if (element.get(val) == simdjson::SUCCESS) {
             switch (val.type()) {
                 case simdjson::ondemand::json_type::number:
-                    stl_vec_int64[i++] = get_scalar<int64_t, rcpp_T::i64, HAS_NULLS>(val);
+                    {
+                        simdjson::ondemand::number num = val.get_number();
+                        simdjson::ondemand::number_type t = num.get_number_type();
+                        switch(t) {
+                            case simdjson::ondemand::number_type::signed_integer:
+                                stl_vec_int64[i++] = int64_t(num);
+                                break;
+                            default:
+                                stl_vec_int64[i++] = NA_INTEGER64;
+                                break;
+                        }
+                    }
                     break;
 
                 case simdjson::ondemand::json_type::boolean:
