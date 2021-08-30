@@ -260,7 +260,7 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
                             simdjson::ondemand::number_type t = num.get_number_type();
                             switch (t) {
                                 case simdjson::ondemand::number_type::signed_integer:
-                                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                    stl_vec_int64[i + j] = int64_t(num);
                                     break;
                                 default:
                                     stl_vec_int64[i + j] = NA_INTEGER64;
@@ -296,7 +296,7 @@ inline Rcpp::NumericVector build_matrix_integer64_mixed(simdjson::ondemand::arra
                             simdjson::ondemand::number_type t = num.get_number_type();
                             switch (t) {
                                 case simdjson::ondemand::number_type::signed_integer:
-                                    stl_vec_int64[i + j] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                    stl_vec_int64[i + j] = int64_t(num);
                                     break;
                                 default:
                                     stl_vec_int64[i + j] = NA_INTEGER64;

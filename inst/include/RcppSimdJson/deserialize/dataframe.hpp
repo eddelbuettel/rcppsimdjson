@@ -153,7 +153,7 @@ inline auto build_col_integer64(simdjson::ondemand::array                      a
                             {
                                 simdjson::ondemand::number num = val.get_number();
                                 if(num.get_number_type() == simdjson::ondemand::number_type::signed_integer) {
-                                    stl_vec[i_row] = get_scalar<int64_t, rcpp_T::i64, NO_NULLS>(val);
+                                    stl_vec[i_row] = int64_t(num);
                                 }
                             }
                             break;
