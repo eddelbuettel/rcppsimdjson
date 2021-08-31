@@ -232,6 +232,8 @@ inline SEXP simplify_scalar_document(simdjson::ondemand::document_reference doc,
 
         case simdjson::ondemand::json_type::null:
             return single_null;
+        default:
+            return R_NilValue;
     }
 
     return R_NilValue; // # nocov
