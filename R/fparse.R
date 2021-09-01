@@ -181,7 +181,7 @@
 #'        single_null = NA_real_)
 #'
 #' # handling invalid JSON and parsing errors ==================================
-#' \dontrun {
+#' \dontrun{
 #' fparse("junk JSON", parse_error_ok = TRUE)
 #' fparse("junk JSON", parse_error_ok = TRUE,
 #'       on_parse_error = "can't parse invalid JSON")
