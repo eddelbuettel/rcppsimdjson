@@ -1,12 +1,12 @@
 2021-08-31  Nicolas Boyer  <nicolasjiaxin@gmail.com>
 
-	* inst/include/RcppSimdJson/utils.hpp : Update to On Demand.
-	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Update to On Demand.
-	* inst/include/RcppSimdJson/deserialize/vector.hpp: Update to On Demand.
+        * inst/include/RcppSimdJson/utils.hpp : Update to On Demand.
+        * inst/include/RcppSimdJson/deserialize/dataframe.hpp: Update to On Demand.
+        * inst/include/RcppSimdJson/deserialize/vector.hpp: Update to On Demand.
         * inst/include/RcppSimdJson/deserialize/matrix.hpp: Update to On Demand.
         * inst/include/RcppSimdJson/deserialize/scalar.hpp: Update to On Demand.
         * inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Update to On Demand.
-	* inst/include/RcppSimdJson/deserialize.hpp: Update to On Demand.
+        * inst/include/RcppSimdJson/deserialize.hpp: Update to On Demand.
         * inst/include/RcppSimdJson/common.hpp: Update to On Demand.
         * inst/include/simdjson.cpp: Update to On Demand.
         * inst/include/simdjson.h: Update to On Demand.
