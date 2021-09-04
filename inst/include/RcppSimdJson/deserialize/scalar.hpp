@@ -131,11 +131,11 @@ inline auto get_scalar_dispatch<STRSXP>(simdjson::ondemand::value element) noexc
                 simdjson::ondemand::number_type t = num.get_number_type();
                 switch (t) {
                     case simdjson::ondemand::number_type::signed_integer:
-                        return get_scalar<int64_t, rcpp_T::chr, NO_NULLS>(element);
+                        return Rcpp::String(std::to_string(int64_t(num)));
                     case simdjson::ondemand::number_type::unsigned_integer:
-                        return get_scalar<uint64_t, rcpp_T::chr, NO_NULLS>(element);
+                        return Rcpp::String(std::to_string(uint64_t(num)));
                     case simdjson::ondemand::number_type::floating_point_number:
-                        return get_scalar<double, rcpp_T::chr, NO_NULLS>(element);
+                        return Rcpp::String(std::to_string(double(num)));
                     default:
                         return Rcpp::String(NA_STRING);
                 }
@@ -160,9 +160,9 @@ get_scalar_dispatch<REALSXP>(simdjson::ondemand::value element) noexcept(RCPPSIM
                 simdjson::ondemand::number_type t = num.get_number_type();
                 switch (t) {
                     case simdjson::ondemand::number_type::signed_integer:
-                        return get_scalar<int64_t, rcpp_T::dbl, NO_NULLS>(element);
+                        return double(int64_t(num));
                     case simdjson::ondemand::number_type::floating_point_number:
-                        return get_scalar<double, rcpp_T::dbl, NO_NULLS>(element);
+                        return double(num);
                     default:
                         return NA_REAL;
                 }
@@ -185,7 +185,7 @@ get_scalar_dispatch<INTSXP>(simdjson::ondemand::value element) noexcept(RCPPSIMD
             {
                 simdjson::ondemand::number num = element.get_number();
                 if (num.get_number_type() == simdjson::ondemand::number_type::signed_integer) {
-                    return get_scalar<int64_t, rcpp_T::i32, NO_NULLS>(element);
+                    return static_cast<int>(int64_t(num));
                 } else {
                     return NA_INTEGER;
                 }
