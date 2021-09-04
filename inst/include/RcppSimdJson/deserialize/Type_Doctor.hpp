@@ -78,8 +78,7 @@ inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::ondemand::arra
 
             case simdjson::ondemand::json_type::number:
                 {
-                    simdjson::ondemand::number num = element.get_number();
-                    simdjson::ondemand::number_type t = num.get_number_type();
+                    simdjson::ondemand::number_type t = element.get_number_type();
                     switch (t) {
                     case simdjson::ondemand::number_type::signed_integer:
                         {
@@ -283,8 +282,7 @@ void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::ondemand::value 
 
         case simdjson::ondemand::json_type::number:
             {
-                simdjson::ondemand::number num = element.get_number();
-                simdjson::ondemand::number_type t = num.get_number_type();
+                simdjson::ondemand::number_type t = element.get_number_type();
                 switch (t) {
                     case simdjson::ondemand::number_type::signed_integer:
                         {
