@@ -1,4 +1,4 @@
-## RcppSimdJSON: Rcpp Bindings for the simdjson Header Library
+## RcppSimdJson: Rcpp Bindings for the simdjson Header Library
 
 [![Build Status](https://travis-ci.org/eddelbuettel/rcppsimdjson.svg)](https://travis-ci.org/eddelbuettel/rcppsimdjson)
 [![CI](https://github.com/eddelbuettel/rcppsimdjson/workflows/ci/badge.svg)](https://github.com/eddelbuettel/rcppsimdjson/actions?query=workflow%3Aci)
