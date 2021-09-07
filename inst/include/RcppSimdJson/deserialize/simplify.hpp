@@ -18,13 +18,11 @@ template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To si
 inline SEXP
 simplify_list(simdjson::dom::array array, SEXP empty_array, SEXP empty_object, SEXP single_null) {
     Rcpp::List out(r_length(array));
-
     auto i = R_xlen_t(0);
-    for (auto&& element : array) {
+    for (auto element : array) {
         out[i++] = simplify_element<type_policy, int64_opt, simplify_to>(
             element, empty_array, empty_object, single_null);
     }
-
     return out;
 }
 
@@ -39,7 +37,6 @@ simplify_vector(simdjson::dom::array array, SEXP empty_array, SEXP empty_object,
                          array, type_doctor.common_R_type(), type_doctor.has_null())
                    : vector::dispatch_mixed<int64_opt>(array, type_doctor.common_R_type());
     }
-
     return simplify_list<type_policy, int64_opt, simplify_to>(
         array, empty_array, empty_object, single_null);
 }
@@ -58,7 +55,6 @@ simplify_matrix(simdjson::dom::array array, SEXP empty_array, SEXP empty_object,
                    : matrix::dispatch_mixed<int64_opt>(
                          array, matrix->common_R_type, matrix->n_cols);
     }
-
     return simplify_vector<type_policy, int64_opt, simplify_to>(
         array, empty_array, empty_object, single_null);
 }
@@ -73,7 +69,6 @@ inline SEXP simplify_data_frame(simdjson::dom::array array,
         return build_data_frame<type_policy, int64_opt, simplify_to>(
             array, cols->schema, empty_array, empty_object, single_null);
     }
-
     return simplify_matrix<type_policy, int64_opt, simplify_to>(
         array, empty_array, empty_object, single_null);
 }
@@ -84,7 +79,6 @@ inline SEXP dispatch_simplify_array(simdjson::dom::array array,
                                     SEXP                 empty_array,
                                     SEXP                 empty_object,
                                     SEXP                 single_null) {
-
     if (std::size(array) == 0) {
         return empty_array;
     }
@@ -125,7 +119,7 @@ inline SEXP simplify_object(const simdjson::dom::object object,
     Rcpp::CharacterVector out_names(n);
 
     auto i = R_xlen_t(0L);
-    for (auto&& [key, value] : object) {
+    for (auto [key, value] : object) {
         out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
             value, empty_array, empty_object, single_null);
         out_names[i++] = Rcpp::String(std::string(key));
@@ -165,33 +159,32 @@ inline SEXP simplify_element(simdjson::dom::element element,
                              SEXP                   empty_array,
                              SEXP                   empty_object,
                              SEXP                   single_null) {
-
     switch (element.type()) {
         case simdjson::dom::element_type::ARRAY:
             return dispatch_simplify_array<type_policy, int64_opt, simplify_to>(
-                element.get<simdjson::dom::array>().first, empty_array, empty_object, single_null);
+                simdjson::dom::array(element), empty_array, empty_object, single_null);
 
         case simdjson::dom::element_type::OBJECT:
             return simplify_object<type_policy, int64_opt, simplify_to>(
-                element.get<simdjson::dom::object>().first, empty_array, empty_object, single_null);
+                simdjson::dom::object(element), empty_array, empty_object, single_null);
 
         case simdjson::dom::element_type::DOUBLE:
-            return Rcpp::wrap(element.get<double>().first);
+            return Rcpp::wrap(double(element));
 
         case simdjson::dom::element_type::INT64:
-            return utils::resolve_int64<int64_opt>(element.get<int64_t>().first);
+            return utils::resolve_int64<int64_opt>(int64_t(element));
 
         case simdjson::dom::element_type::BOOL:
-            return Rcpp::wrap(element.get<bool>().first);
+            return Rcpp::wrap(bool(element));
 
         case simdjson::dom::element_type::STRING:
-            return Rcpp::wrap(Rcpp::String(std::string(element.get<std::string_view>().first)));
+            return Rcpp::wrap(Rcpp::String(std::string(std::string_view(element))));
 
         case simdjson::dom::element_type::NULL_VALUE:
             return single_null;
 
         case simdjson::dom::element_type::UINT64:
-            return Rcpp::wrap(std::to_string(element.get<uint64_t>().first));
+            return Rcpp::wrap(std::to_string(uint64_t(element)));
     }
 
     return R_NilValue; // # nocov
