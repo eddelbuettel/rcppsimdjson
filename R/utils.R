@@ -71,9 +71,9 @@
                     method = .method,
                     destfile = .destfile,
                     quiet = !verbose,
-                    headers = .headers
+                    headers = .headers					# #nocov end
                 )
-            } else {
+            } else {							# #nocov start
                 for (i in seq_along(diagnosis$input[diagnosis$is_remote_file_url])) {
                     .url <- diagnosis$input[diagnosis$is_remote_file_url][[i]]
                     .destfile <- temp_files[diagnosis$is_remote_file_url][[i]]
