@@ -1,3 +1,21 @@
+2021-09-07  Dirk Eddelbuettel  <edd@debian.org>
+
+        * DESCRIPTION (Version, Date): Release 0.1.6
+
+2021-09-07  Daniel Lemire  <lemire@gmail.com>
+
+	* inst/include/simdjson.cpp: Updated to simdjson 1.0.0
+	* inst/include/simdjson.h: Idem
+	* inst/include/RcppSimdJson/deserialize.hpp: Adjusted for simdjson 1.0.0
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem
+	* src/exported-utils.cpp: Idem
+	* src/simdjson_example.cpp: Idem
+
 2021-08-16  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (SystemRequirements): Additional detail on (fully
