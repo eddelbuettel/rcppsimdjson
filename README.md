@@ -5,7 +5,7 @@
 [![CRAN](https://www.r-pkg.org/badges/version/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 [![Dependencies](https://tinyverse.netlify.com/badge/RcppSimdJson)](https://cran.r-project.org/package=RcppSimdJson)
 [![Downloads](https://cranlogs.r-pkg.org/badges/RcppSimdJson?color=brightgreen)](https://www.r-pkg.org/pkg/RcppSimdJson)
-[![Code Coverage](https://codecov.io/gh/eddelbuettel/RcppSimdJson/graph/badge.svg)](https://codecov.io/gh/eddelbuettel/RcppSimdJson)
+[![Code Coverage](https://app.codecov.io/gh/eddelbuettel/RcppSimdJson/graph/badge.svg)](https://app.codecov.io/gh/eddelbuettel/RcppSimdJson)
 [![Last Commit](https://img.shields.io/github/last-commit/eddelbuettel/rcppsimdjson)](https://github.com/eddelbuettel/rcppsimdjson)
 
 ### Motivation
@@ -82,7 +82,7 @@ For standard JSON work on R, as well as for other nicely done C++ libraries, con
   [JSON for Modern C++](https://github.com/nlohmann/json) library by [Niels
   Lohmann](https://github.com/nlohmann);
 - [RJSONIO](https://cran.r-project.org/package=RJSONIO) by [Duncan Temple
-  Lang](http://www.stat.ucdavis.edu/~duncan/) started all this but could use a little love.
+  Lang](https://www.stat.ucdavis.edu/~duncan/) started all this but could use a little love.
 
 ### Author
 
