@@ -1,5 +1,7 @@
 2022-02-18  Dirk Eddelbuettel  <edd@debian.org>
 
+	* DESCRIPTION (Version, Date): Release 0.1.7
+
 	* inst/tinytest/test_simdjson_utils.R: Set length-one test predicates
 
 	* README.md: Update two URLs
