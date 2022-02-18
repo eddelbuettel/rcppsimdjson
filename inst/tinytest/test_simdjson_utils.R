@@ -56,14 +56,14 @@ expect_identical(
 expect_true(
     all(is_valid_utf8(valid_utf8)) &&
     all(vapply(valid_utf8, function(.x) is_valid_utf8(charToRaw(.x)), logical(1L))) &&
-    is_valid_utf8(lapply(valid_utf8, charToRaw)) &&
+    all(is_valid_utf8(lapply(valid_utf8, charToRaw))) &&
     all(validUTF8(valid_utf8))
 )
 
 expect_false(
     any(is_valid_utf8(invalid_utf8)) ||
     any(vapply(invalid_utf8, function(.x) is_valid_utf8(charToRaw(.x)), logical(1L))) ||
-    is_valid_utf8(lapply(invalid_utf8, charToRaw)) ||
+    any(is_valid_utf8(lapply(invalid_utf8, charToRaw))) ||
     any(validUTF8(invalid_utf8))
 )
 
