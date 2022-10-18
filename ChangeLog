@@ -1,3 +1,10 @@
+2022-10-18  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.8
+
+	* inst/include/simdjson.h (mini_formatter::string): Correct booleans
+	operator on bools to appease clang-14
+
 2022-02-18  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.7

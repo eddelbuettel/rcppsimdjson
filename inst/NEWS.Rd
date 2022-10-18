@@ -3,6 +3,13 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.1.8 (2022-10-18)}{
+  \itemize{
+    \item Use the `||` operator instead of `|` on a set of booleans to
+    appease `clang-14`.
+  }
+}
+
 \section{Changes in version 0.1.7 (2022-02-18)}{
   \itemize{
     \item Two URLs were updated in `README.md`, and Travis artifacts and
