@@ -1,3 +1,8 @@
+2022-11-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .github/workflows/covr.yaml (jobs): Update to actions/checkout@v3
+	* .github/workflows/ci.yaml (jobs): Update to actions/checkout@v3
+
 2022-10-18  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.8
