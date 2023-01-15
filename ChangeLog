@@ -1,3 +1,7 @@
+2023-01-14  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Update URL for codecov.io badge
+
 2022-11-17  Dirk Eddelbuettel  <edd@debian.org>
 
 	* .github/workflows/covr.yaml (jobs): Update to actions/checkout@v3
