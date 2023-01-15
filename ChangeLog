@@ -2,6 +2,8 @@
 
 	* README.md: Update URL for codecov.io badge
 
+	* .github/workflows/ci.yaml (jobs): Adjust g++ matrix to 9, 10, 11
+
 2022-11-17  Dirk Eddelbuettel  <edd@debian.org>
 
 	* .github/workflows/covr.yaml (jobs): Update to actions/checkout@v3
