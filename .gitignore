@@ -2,8 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
 src/*.o
 src/*.so
 src/*.dll
+src/Makevars
 local/RcppSimdJson_*.tar.gz
 local/c++17.cpp

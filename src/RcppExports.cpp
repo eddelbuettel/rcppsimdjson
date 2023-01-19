@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // deserialize
 SEXP deserialize(SEXP json, SEXP query, SEXP empty_array, SEXP empty_object, SEXP single_null, const bool parse_error_ok, SEXP on_parse_error, const bool query_error_ok, SEXP on_query_error, const int simplify_to, const int type_policy, const int int64_r_type);
 RcppExport SEXP _RcppSimdJson_deserialize(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {

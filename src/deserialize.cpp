@@ -12,7 +12,7 @@ SEXP deserialize(SEXP       json,
                  SEXP       on_parse_error = R_NilValue,
                  const bool query_error_ok = false,
                  SEXP       on_query_error = R_NilValue,
-                 const int  simplify_to    = 0,
+                 const int  simplify_to    = 3,
                  const int  type_policy    = 0,
                  const int  int64_r_type   = 0) {
     using namespace rcppsimdjson;

@@ -1,4 +1,5 @@
 useDynLib(RcppSimdJson, .registration=TRUE)
 exportPattern("^[[:alpha:]]+")
+export(.deserialize_json)
 importFrom(Rcpp, evalCpp)
 importFrom(utils, download.file)
