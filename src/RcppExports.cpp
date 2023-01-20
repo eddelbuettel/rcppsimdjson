@@ -2,15 +2,21 @@
 // Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #include <Rcpp.h>
+#include <string>
+#include <set>
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // deserialize
 SEXP deserialize(SEXP json, SEXP query, SEXP empty_array, SEXP empty_object, SEXP single_null, const bool parse_error_ok, SEXP on_parse_error, const bool query_error_ok, SEXP on_query_error, const int simplify_to, const int type_policy, const int int64_r_type);
-RcppExport SEXP _RcppSimdJson_deserialize(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+static SEXP _RcppSimdJson_deserialize_try(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type json(jsonSEXP);
     Rcpp::traits::input_parameter< SEXP >::type query(querySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
@@ -25,14 +31,37 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type int64_r_type(int64_r_typeSEXP);
     rcpp_result_gen = Rcpp::wrap(deserialize(json, query, empty_array, empty_object, single_null, parse_error_ok, on_parse_error, query_error_ok, on_query_error, simplify_to, type_policy, int64_r_type));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _RcppSimdJson_deserialize(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_RcppSimdJson_deserialize_try(jsonSEXP, querySEXP, empty_arraySEXP, empty_objectSEXP, single_nullSEXP, parse_error_okSEXP, on_parse_errorSEXP, query_error_okSEXP, on_query_errorSEXP, simplify_toSEXP, type_policySEXP, int64_r_typeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // load
 SEXP load(const Rcpp::CharacterVector& json, SEXP query, SEXP empty_array, SEXP empty_object, SEXP single_null, const bool parse_error_ok, SEXP on_parse_error, const bool query_error_ok, SEXP on_query_error, const int simplify_to, const int type_policy, const int int64_r_type);
-RcppExport SEXP _RcppSimdJson_load(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+static SEXP _RcppSimdJson_load_try(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::CharacterVector& >::type json(jsonSEXP);
     Rcpp::traits::input_parameter< SEXP >::type query(querySEXP);
     Rcpp::traits::input_parameter< SEXP >::type empty_array(empty_arraySEXP);
@@ -47,17 +76,64 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type int64_r_type(int64_r_typeSEXP);
     rcpp_result_gen = Rcpp::wrap(load(json, query, empty_array, empty_object, single_null, parse_error_ok, on_parse_error, query_error_ok, on_query_error, simplify_to, type_policy, int64_r_type));
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _RcppSimdJson_load(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_RcppSimdJson_load_try(jsonSEXP, querySEXP, empty_arraySEXP, empty_objectSEXP, single_nullSEXP, parse_error_okSEXP, on_parse_errorSEXP, query_error_okSEXP, on_query_errorSEXP, simplify_toSEXP, type_policySEXP, int64_r_typeSEXP));
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // exceptions_enabled
 bool exceptions_enabled();
-RcppExport SEXP _RcppSimdJson_exceptions_enabled() {
+static SEXP _RcppSimdJson_exceptions_enabled_try() {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     rcpp_result_gen = Rcpp::wrap(exceptions_enabled());
     return rcpp_result_gen;
-END_RCPP
+END_RCPP_RETURN_ERROR
+}
+RcppExport SEXP _RcppSimdJson_exceptions_enabled() {
+    SEXP rcpp_result_gen;
+    {
+        Rcpp::RNGScope rcpp_rngScope_gen;
+        rcpp_result_gen = PROTECT(_RcppSimdJson_exceptions_enabled_try());
+    }
+    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
+    if (rcpp_isInterrupt_gen) {
+        UNPROTECT(1);
+        Rf_onintr();
+    }
+    bool rcpp_isLongjump_gen = Rcpp::internal::isLongjumpSentinel(rcpp_result_gen);
+    if (rcpp_isLongjump_gen) {
+        Rcpp::internal::resumeJump(rcpp_result_gen);
+    }
+    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
+    if (rcpp_isError_gen) {
+        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
+        UNPROTECT(1);
+        Rf_error(CHAR(rcpp_msgSEXP_gen));
+    }
+    UNPROTECT(1);
+    return rcpp_result_gen;
 }
 // dispatch_is_valid_json
 Rcpp::LogicalVector dispatch_is_valid_json(SEXP json);
@@ -176,6 +252,26 @@ BEGIN_RCPP
 END_RCPP
 }
 
+// validate (ensure exported C++ functions exist before calling them)
+static int _RcppSimdJson_RcppExport_validate(const char* sig) { 
+    static std::set<std::string> signatures;
+    if (signatures.empty()) {
+        signatures.insert("SEXP(*.deserialize_json)(SEXP,SEXP,SEXP,SEXP,SEXP,const bool,SEXP,const bool,SEXP,const int,const int,const int)");
+        signatures.insert("SEXP(*.load_json)(const Rcpp::CharacterVector&,SEXP,SEXP,SEXP,SEXP,const bool,SEXP,const bool,SEXP,const int,const int,const int)");
+        signatures.insert("bool(*.exceptions_enabled)()");
+    }
+    return signatures.find(sig) != signatures.end();
+}
+
+// registerCCallable (register entry points for exported C++ functions)
+RcppExport SEXP _RcppSimdJson_RcppExport_registerCCallable() { 
+    R_RegisterCCallable("RcppSimdJson", "_RcppSimdJson_.deserialize_json", (DL_FUNC)_RcppSimdJson_deserialize_try);
+    R_RegisterCCallable("RcppSimdJson", "_RcppSimdJson_.load_json", (DL_FUNC)_RcppSimdJson_load_try);
+    R_RegisterCCallable("RcppSimdJson", "_RcppSimdJson_.exceptions_enabled", (DL_FUNC)_RcppSimdJson_exceptions_enabled_try);
+    R_RegisterCCallable("RcppSimdJson", "_RcppSimdJson_RcppExport_validate", (DL_FUNC)_RcppSimdJson_RcppExport_validate);
+    return R_NilValue;
+}
+
 static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_deserialize", (DL_FUNC) &_RcppSimdJson_deserialize, 12},
     {"_RcppSimdJson_load", (DL_FUNC) &_RcppSimdJson_load, 12},
@@ -191,6 +287,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_parseExample", (DL_FUNC) &_RcppSimdJson_parseExample, 0},
     {"_RcppSimdJson_cppVersion", (DL_FUNC) &_RcppSimdJson_cppVersion, 0},
     {"_RcppSimdJson_unsupportedArchitecture", (DL_FUNC) &_RcppSimdJson_unsupportedArchitecture, 0},
+    {"_RcppSimdJson_RcppExport_registerCCallable", (DL_FUNC) &_RcppSimdJson_RcppExport_registerCCallable, 0},
     {NULL, NULL, 0}
 };
 
