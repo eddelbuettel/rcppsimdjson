@@ -10,6 +10,8 @@
     \item \pkg{simdjson} was upgraded to version 3.0.1 (Dirk in \ghpr{83}).
     \item The package now defaults to C++17 compilation; \code{configure} has
     been retired (Dirk closing \ghit{82}).
+    \item The three main R access functions now use a more compact argument
+    check via \code{stopifnot} (Dirk).
   }
 }
 
