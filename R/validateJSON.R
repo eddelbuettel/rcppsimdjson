@@ -12,8 +12,6 @@
 ##'     validateJSON(jsonfile)
 ##' }
 validateJSON <- function(jsonfile) {
-    if (!file.exists(jsonfile))
-        stop("No file '", jsonfile, "' found.", call.=FALSE)		# #nocov
-
+    stopifnot("The given file was not found" = file.exists(jsonfile))
     .validateJSON(Sys.glob(jsonfile))
 }

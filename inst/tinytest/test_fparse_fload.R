@@ -591,19 +591,19 @@ expect_error(fload("not a real file"))
 expect_error(
     fload("not-a-real-file.rcppsimdjson",
           temp_dir = "not/a/real/directory"),
-    "`temp_dir=` does not exist."
+    "'temp_dir=' does not exist."
 )
 
 expect_error(
     fload("not-a-real-file.rcppsimdjson",
           keep_temp_files = NA),
-    "`keep_temp_files=` must be either `TRUE` or `FALSE`."
+    "'keep_temp_files=' must be either 'TRUE' or 'FALSE'"
 )
 
 expect_error(
     fload("not-a-real-file.rcppsimdjson",
           verbose = NA),
-    "`verbose=` must be either `TRUE` or `FALSE`."
+    "'verbose=' must be either 'TRUE' or 'FALSE'"
 )
 
 .write_file('{"valid JSON":true}', test_file1)

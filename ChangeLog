@@ -13,6 +13,10 @@
 	* configure: Retired and removed
 	* src/Makevars: Moved from Makevars.in, C++17 now default
 
+	* R/validateJSON.R (validateJSON): Simplify with stopifnot()
+	* R/fload.R (fload): Idem
+	* R/fparse.R (fparse): Idem
+
 2023-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll minor version and date

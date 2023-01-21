@@ -253,26 +253,13 @@ fparse <- function(json,
                    always_list = FALSE) {
     # validate arguments =======================================================
     # types --------------------------------------------------------------------
-    if (!.is_valid_json_arg(json)) {
-        stop("`json=` must be a non-empty character vector, raw vector, or a list containing raw vectors.")
-    }
-    if (!.is_valid_query_arg(query)) {
-        stop("`query=` must be `NULL`, a non-empty character vector, or a list containing non-empty character vectors.")
-    }
+    stopifnot("'json=' must be a non-empty character vector, raw vector, or a list containing raw vectors" = .is_valid_json_arg(json),
+              "'query=' must be 'NULL', a non-empty character vector, or a list containing non-empty character vectors" = .is_valid_query_arg(query),
+              "'query=' is a list (nested query), but is not the same length as 'json='" = !is.list(query) || length(json) == length(query),
+              "'parse_error_ok=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(parse_error_ok),
+              "'query_error_ok=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(query_error_ok),
+              "'always_list=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(always_list))
 
-    if (is.list(query) && length(json) != length(query)) {
-        stop("`query=` is a list (nested query), but is not the same length as `json=`.")
-    }
-
-    if (!.is_scalar_lgl(parse_error_ok)) {
-        stop("`parse_error_ok=` must be either `TRUE` or `FALSE`.")
-    }
-    if (!.is_scalar_lgl(query_error_ok)) {
-        stop("`query_error_ok=` must be either `TRUE` or `FALSE`.")
-    }
-    if (!.is_scalar_lgl(always_list)) {
-        stop("`always_list=` must be either `TRUE` or `FALSE`.")
-    }
     # prep options =============================================================
     # max_simplify_lvl ---------------------------------------------------------
     if (is.character(max_simplify_lvl)) {
