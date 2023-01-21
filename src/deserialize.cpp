@@ -2,6 +2,8 @@
 #    include <RcppSimdJson.hpp>
 #endif
 
+// [[Rcpp::interfaces(r, cpp)]]
+
 // [[Rcpp::export(.deserialize_json)]]
 SEXP deserialize(SEXP       json,
                  SEXP       query          = R_NilValue,

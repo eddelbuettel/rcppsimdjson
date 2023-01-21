@@ -73,3 +73,7 @@ parseExample <- function() {
     .Call(`_RcppSimdJson_unsupportedArchitecture`)
 }
 
+# Register entry points for exported C++ functions
+methods::setLoadAction(function(ns) {
+    .Call('_RcppSimdJson_RcppExport_registerCCallable', PACKAGE = 'RcppSimdJson')
+})

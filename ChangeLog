@@ -1,3 +1,13 @@
+2023-01-20  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll minor version and date
+
+	* src/deserialize.cpp: Export for both C++ and R use
+	* src/RcppExports.cpp: Regenerated
+	* R/RcppExports.R: Idem
+	* inst/include/RcppSimdHson_RcppExports.h: Generated
+	* inst/include/RcppSimdHson.h: Idem
+
 2023-01-14  Dirk Eddelbuettel  <edd@debian.org>
 
 	* README.md: Update URL for codecov.io badge
