@@ -41,12 +41,12 @@ A [simple parsing benchmark](demo/simpleBenchmark.R) against four other R-access
 R> res
 Unit: milliseconds
      expr      min       lq     mean   median       uq       max neval  cld
- simdjson  1.87118  2.03252  2.24351  2.17228  2.27756   6.57145   100 a   
-  jsonify  8.91694  9.20124  9.58652  9.46077  9.73692  13.41707   100  b  
-  RJSONIO 10.49187 11.09410 11.69109 11.42555 11.95780  17.93653   100  b  
-   ndjson 27.04830 28.62251 31.44330 29.51343 32.05847 146.88221   100   c 
+ simdjson  1.87118  2.03252  2.24351  2.17228  2.27756   6.57145   100 a
+  jsonify  8.91694  9.20124  9.58652  9.46077  9.73692  13.41707   100  b
+  RJSONIO 10.49187 11.09410 11.69109 11.42555 11.95780  17.93653   100  b
+   ndjson 27.04830 28.62251 31.44330 29.51343 32.05847 146.88221   100   c
  jsonlite 34.93334 36.54784 38.67843 37.74890 40.19555  46.32444   100    d
-R> 
+R>
 ```
 
 Or in chart form:
@@ -55,9 +55,10 @@ Or in chart form:
 
 ### Status
 
-As of version 0.1.0, all three major OSs are supported, and JSON can be parsed from file and string
-under a variety of settings. Prefers a real C++17 compiler but can fall back to older
-compiler. Still subject to change.
+All three major OSs are supported, and JSON can be parsed from file and string under a variety of
+settings. A C++17 compiler is required for ease of setup (though the upstream can fall back to older
+compiler; one edit [src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars)
+accordingly if need be.
 
 ### Contributing
 

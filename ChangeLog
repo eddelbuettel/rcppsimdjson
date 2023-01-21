@@ -1,10 +1,17 @@
 2023-01-21  Dirk Eddelbuettel  <edd@debian.org>
 
+	* DESCRIPTION (Version, Date): Roll minor version and date
+
 	* inst/include/simdjson.cpp: Updated to simdjson 3.0.1
 	* inst/include/simdjson.h: Idem
 
 	* src/simdjson_example.cpp (unsupportedArchitecture): Update to use
 	'simdjson::get_active_implementation()->name()'
+
+	* .editorconfig: Added
+
+	* configure: Retired and removed
+	* src/Makevars: Moved from Makevars.in, C++17 now default
 
 2023-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
@@ -558,4 +565,3 @@
         * README.md: Added
 
         * .Rbuildignore: Exclude the largers example JSON files
-
