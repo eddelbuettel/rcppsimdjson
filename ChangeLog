@@ -17,6 +17,8 @@
 	* R/fload.R (fload): Idem
 	* R/fparse.R (fparse): Idem
 
+	* .github/workflows/ci.yaml (jobs): Adust g++ matrix to 10, 11 and 12
+
 2023-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll minor version and date

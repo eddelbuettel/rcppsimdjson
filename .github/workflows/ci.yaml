@@ -21,15 +21,18 @@ jobs:
           #- name: gcc-8
           #  cxx: g++-8
           #  cc: gcc-8
-          - name: gcc-9
-            cxx: g++-9
-            cc: gcc-9
+          #- name: gcc-9
+          #  cxx: g++-9
+          #  cc: gcc-9
           - name: gcc-10
             cxx: g++-10
             cc: gcc-10
           - name: gcc-11
             cxx: g++-11
             cc: gcc-11
+          - name: gcc-12
+            cxx: g++-12
+            cc: gcc-12
 
     steps:
       - uses: actions/checkout@v3
@@ -45,10 +48,9 @@ jobs:
           ./run.sh install_aptget ${{ matrix.cxx }}
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/${{ matrix.cc }} 60 --slave /usr/bin/g++ g++ /usr/bin/${{matrix.cxx }}
           g++ --version
-        
+
       - name: Dependencies
         run: ./run.sh install_all
 
       - name: Test
         run: ./run.sh run_tests
-        
