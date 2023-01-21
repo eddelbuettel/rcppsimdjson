@@ -1,3 +1,11 @@
+2023-01-21  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.cpp: Updated to simdjson 3.0.1
+	* inst/include/simdjson.h: Idem
+
+	* src/simdjson_example.cpp (unsupportedArchitecture): Update to use
+	'simdjson::get_active_implementation()->name()'
+
 2023-01-20  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll minor version and date

@@ -85,5 +85,7 @@ int cppVersion() {
 
 // [[Rcpp::export(.unsupportedArchitecture)]]
 bool unsupportedArchitecture() {
-  return (simdjson::active_implementation->name() == "unsupported");
+  std::stringstream s;
+  s << simdjson::get_active_implementation()->name();
+  return s.str() == "unsupported";
 }
