@@ -57,8 +57,8 @@ Or in chart form:
 
 All three major OSs are supported, and JSON can be parsed from file and string under a variety of
 settings. A C++17 compiler is required for ease of setup (though the upstream can fall back to older
-compiler; one edit [src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars)
-accordingly if need be.
+compiler; one can edit [src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars)
+accordingly if need be).
 
 ### Contributing
 
