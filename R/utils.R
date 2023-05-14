@@ -71,9 +71,9 @@
                     method = .method,
                     destfile = .destfile,
                     quiet = !verbose,
-                    headers = .headers					# #nocov end
+                    headers = .headers
                 )
-            } else {							# #nocov start
+            } else {
                 for (i in seq_along(diagnosis$input[diagnosis$is_remote_file_url])) {
                     .url <- diagnosis$input[diagnosis$is_remote_file_url][[i]]
                     .destfile <- temp_files[diagnosis$is_remote_file_url][[i]]
@@ -82,11 +82,11 @@
                         destfile = .destfile,
                         method = .method,
                         quiet = !verbose,
-                        headers = .headers				# #nocov end
+                        headers = .headers
                     )
                 }
             }
-        }
+        }                                                    # #nocov end
 
         diagnosis$input[diagnosis$is_from_url] <- temp_files[diagnosis$is_from_url]
     }
