@@ -1,3 +1,16 @@
+2023-05-14  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+	* inst/include/simdjson.cpp: Updated to simdjson 3.1.8
+	* inst/include/simdjson.h: Idem
+
+	* R/utils.R (.prep_input): Minor code coverage 'nocov' tweak
+
+2023-04-24  Dirk Eddelbuettel  <edd@debian.org>
+
+	* README.md: Minor edit to one paragraph
+
 2023-01-21  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.9
