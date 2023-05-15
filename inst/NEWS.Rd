@@ -3,6 +3,12 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.1.10 (2023-05-14)}{
+  \itemize{
+    \item \pkg{simdjson} was upgraded to version 3.1.8 (Dirk in \ghpr{85}).
+  }
+}
+
 \section{Changes in version 0.1.9 (2023-01-21)}{
   \itemize{
     \item The internal function {deseralize_json} is now exported at the C++
