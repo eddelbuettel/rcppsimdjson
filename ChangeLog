@@ -1,3 +1,9 @@
+2023-11-28  Dirk Eddelbuettel  <edd@debian.org>
+
+	* src/RcppExports.cpp: Regenerated under updated Rcpp to address
+	format string issue reported by R-devel
+	* R/RcppExports.R: Idem
+
 2023-05-14  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.10
