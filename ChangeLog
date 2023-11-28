@@ -8,6 +8,9 @@
 
 	* .codecov.yml: Added
 
+	* .github/workflows/ci.yaml (jobs): Use actions/checkout@v4
+	* .github/workflows/covr.yaml (jobs): Ditto
+
 2023-05-14  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.10

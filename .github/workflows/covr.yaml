@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Get Script
         run: curl -OLs https://eddelbuettel.github.io/r-ci/run.sh && chmod 0755 run.sh
@@ -27,4 +27,3 @@ jobs:
 
       - name: Coverage
         run: ./run.sh coverage
-        
