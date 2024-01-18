@@ -16,10 +16,13 @@ res <- microbenchmark::microbenchmark(jsonify = jsonify::validate_json(jsontxt),
                                       simdjson = RcppSimdJson::validateJSON(file),
                                       ndjson = ndjson::validate(file),
                                       RJSONIO = RJSONIO::isValidJSON(file),
-                                      yyjsonr = yyjsonr::read_json_file(file),
+                                      yyjsonr = yyjsonr::validate_json_file(file),
                                       times = 100L)
 
 res$expr <- with(res, reorder(expr, time, median))
 print(res)
 print(res, unit="relative")
-ggplot2::autoplot(res) + ggplot2::labs(title="Parsing JSON file (or string)", caption="See 'demo/simpeBenchmark.R' in package RcppSimdJson") + tinythemes::theme_ipsum_rc()
+p1 <- ggplot2::autoplot(res) +
+    ggplot2::labs(title="Validating JSON file (or string)", caption="See 'demo/simpeBenchmark.R' in package RcppSimdJson") +
+    tinythemes::theme_ipsum_rc()
+p1

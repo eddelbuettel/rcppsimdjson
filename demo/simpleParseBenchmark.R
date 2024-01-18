@@ -23,4 +23,6 @@ res <- microbenchmark::microbenchmark(jsonify = jsonify::from_json(json),
 res$expr <- with(res, reorder(expr, time, median))
 print(res)
 print(res, unit="relative")
-ggplot2::autoplot(res) + ggplot2::labs(title="Parsing JSON string", caption="See 'demo/simpeParseBenchmark.R' in package RcppSimdJson") + tinythemes::theme_ipsum_rc()
+p2 <- ggplot2::autoplot(res) +
+    ggplot2::labs(title="Parsing JSON string", caption="See 'demo/simpeParseBenchmark.R' in package RcppSimdJson") +
+    tinythemes::theme_ipsum_rc()
