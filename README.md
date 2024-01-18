@@ -77,15 +77,11 @@ an issue ticket.  See the file
 
 For standard JSON work on R, as well as for other nicely done C++ libraries, consider these:
 
-- [jsonlite](https://cran.r-project.org/package=jsonlite) by [Jeroen
-  Ooms](https://github.com/jeroen) is excellent, very versatile, and probably most-widely used;
-- [rapidjsonr](https://cran.r-project.org/package=rapidjsonr) and [jsonify](https://cran.r-project.org/package=jsonify) by [David
-  Cooley](https://github.com/dcooley) bringing [RapidJSON](https://rapidjson.org/) to R;
-- [ndjson](https://cran.r-project.org/package=ndjson) by [Bob Rudis](https://rud.is/b/) builds on the
-  [JSON for Modern C++](https://github.com/nlohmann/json) library by [Niels
-  Lohmann](https://github.com/nlohmann);
-- [RJSONIO](https://cran.r-project.org/package=RJSONIO) by [Duncan Temple
-  Lang](https://www.stat.ucdavis.edu/~duncan/) started all this but could use a little love.
+- [jsonlite](https://cran.r-project.org/package=jsonlite) by [Jeroen Ooms](https://github.com/jeroen) is excellent, very versatile, and probably most-widely used;
+- [rapidjsonr](https://cran.r-project.org/package=rapidjsonr) and [jsonify](https://cran.r-project.org/package=jsonify) by [David Cooley](https://github.com/dcooley) bringing [RapidJSON](https://rapidjson.org/) to R;
+- [ndjson](https://cran.r-project.org/package=ndjson) by [Bob Rudis](https://rud.is/b/) builds on the [JSON for Modern C++](https://github.com/nlohmann/json) library by [Niels Lohmann](https://github.com/nlohmann);
+- [RJSONIO](https://cran.r-project.org/package=RJSONIO) by [Duncan Temple Lang](https://www.stat.ucdavis.edu/~duncan/) started all this but could use a little love;
+- [yyjsonr](https://cran.r-project.org/package=yyjsonr) by [Mike Cheng](https://coolbutuseless.github.io/) is a more recent and performant addition based on [yyjson](https://github.com/ibireme/yyjson).
 
 ### Author
 
