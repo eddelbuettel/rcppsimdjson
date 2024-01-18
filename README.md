@@ -35,23 +35,25 @@ res <- fload(jsonfile)                  # parse a JSON file
 
 ### Comparison
 
-A [simple parsing benchmark](demo/simpleBenchmark.R) against four other R-accessible JSON parsers:
+A [simple file-oriented parsing benchmark](demo/simpleBenchmark.R) against the other R-accessible
+JSON parsers:
 
 ```r
-R> res
-Unit: milliseconds
-     expr      min       lq     mean   median       uq       max neval  cld
- simdjson  1.87118  2.03252  2.24351  2.17228  2.27756   6.57145   100 a
-  jsonify  8.91694  9.20124  9.58652  9.46077  9.73692  13.41707   100  b
-  RJSONIO 10.49187 11.09410 11.69109 11.42555 11.95780  17.93653   100  b
-   ndjson 27.04830 28.62251 31.44330 29.51343 32.05847 146.88221   100   c
- jsonlite 34.93334 36.54784 38.67843 37.74890 40.19555  46.32444   100    d
-R>
+> print(res)
+Unit: microseconds
+     expr       min        lq       mean    median        uq       max neval   cld
+ simdjson   279.651   311.028    347.192   332.916   370.018    721.52   100 a
+  yyjsonr  1716.109  1829.722   1966.880  1911.338  2003.459   6231.36   100 ab
+  jsonify  2791.985  2952.584   3110.254  3028.082  3237.061   4827.51   100  bc
+ jsonlite  4364.009  4535.436   4727.582  4637.322  4799.579   7427.36   100   c
+  RJSONIO  9102.826  9419.470   9990.286  9622.371  9911.310  20346.18   100    d
+   ndjson 95197.993 96559.521 100487.450 97583.962 99954.224 165033.93   100     e
+>
 ```
 
-Or in chart form:
+Or in chart form, also including the [second benchmark parsing strings](demo/simpleParseBenchmark.R):
 
-![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_parse_benchmark.png)
+![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_both_benchmarks.png)
 
 ### Status
 
