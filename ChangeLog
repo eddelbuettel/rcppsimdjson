@@ -1,3 +1,17 @@
+2024-07-06  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.12
+
+	* DESCRIPTION (Description): Use <doi:/> for arXiv link
+
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Updated for
+	one C++20 nag seen with g++-14
+
+2024-07-05  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.cpp: Updated to simdjson 3.9.5
+	* inst/include/simdjson.h: Idem
+
 2024-06-29  Dirk Eddelbuettel  <edd@debian.org>
 
 	* .github/workflows/ci.yaml (jobs): Update to r-ci-setup action
