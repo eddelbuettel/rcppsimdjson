@@ -1,6 +1,11 @@
+2024-07-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
 2024-07-17  Daniel Lemire  <daniel@lemire.me>
 
-	* inst/include/RcppSimdJson/deserialize/scalar.hpp: guarded a call to std::string::erase
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: guarded a call to
+	std::string::erase
 
 2024-07-06  Dirk Eddelbuettel  <edd@debian.org>
 
