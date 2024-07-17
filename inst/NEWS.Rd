@@ -3,9 +3,12 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
-\section{Changes in version 0.1.12 (unreleased)}{
+\section{Changes in version 0.1.12 (2024-07-05)}{
   \itemize{
     \item Updated benchmarks now include `yyjsonr`
+    \item \pkg{simdjson} was upgraded to version 3.95 (Daniel in \ghpr{92}
+    fixing \ghit{91})
+    \item Additional small update for C++20 compilation under g++-14
   }
 }
 

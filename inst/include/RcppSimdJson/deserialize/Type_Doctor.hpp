@@ -40,7 +40,7 @@ class Type_Doctor {
 
   public:
     Type_Doctor() = default;
-    explicit Type_Doctor<type_policy, int64_opt>(simdjson::dom::array) noexcept;
+    explicit Type_Doctor(simdjson::dom::array) noexcept;
 
     [[nodiscard]] constexpr auto has_null() const noexcept -> bool { return null_; };
 
