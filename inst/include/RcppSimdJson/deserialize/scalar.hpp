@@ -86,8 +86,6 @@ inline auto
 get_scalar_<int64_t, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::i32>()) {
     return static_cast<int>(int64_t(element));
 }
-
-
 // double ==========================================================================================
 // return Rcpp::String
 template <>
