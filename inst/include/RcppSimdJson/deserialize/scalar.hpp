@@ -97,7 +97,7 @@ get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt
     // This code effectively makes sure that we never end with more than one zero.
     // E.g., 1.2000 becomes 1.20, but 1.000333333 remains 1.000333333.
     // The problem of course, is that if you have 1.000333333, then you will
-    // do out.erase(10, std::string::npos) on a string of length 11.
+    // do out.erase(10+2, std::string::npos) on a string of length 11.
     // Per the C++ specification, you should get std::out_of_range if index > size().
     //
     // We need to be more careful.
