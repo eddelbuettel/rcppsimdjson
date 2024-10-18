@@ -3,8 +3,12 @@ Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
 Version: 0.1.12.1
 Date: 2024-07-17
-Author: Dirk Eddelbuettel, Brendan Knapp, Daniel Lemire
-Maintainer: Dirk Eddelbuettel <edd@debian.org>
+Authors@R: c(person("Dirk", "Eddelbuettel", role = c("aut", "cre"), email = "edd@debian.org",
+                    comment = c(ORCID = "0000-0001-6419-907X")),
+             person("Brendan", "Knapp", role = "aut",
+                    comment = c(ORCID = "0000-0003-3284-4972")),
+             person("Daniel", "Lemire", role = "aut",
+                    comment = c(ORCID = "0000-0003-3306-6922")))
 Description: The 'JSON' format is ubiquitous for data interchange, and the
  'simdjson' library written by Daniel Lemire (and many contributors) provides a
  high-performance parser for these files which by relying on parallel 'SIMD'
