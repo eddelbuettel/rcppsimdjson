@@ -2,7 +2,10 @@
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
 
-	* src/RcppExports.cpp: Regenerated under current Rcpp to aid with its
+	* inst/include/simdjson.h: Updated to simdjson 4.2.4 (plus 1 commit)
+	* inst/include/simdjson.cpp: Idem
+
+	* src/RcppExports.cpp: Regenerated under current Rcpp to aid its
 	issue 1402 and transition away from directly calling Rf_error()
 
 	* README.md: Replace gnu.org URL for GPL-2 with one at R-project.org
