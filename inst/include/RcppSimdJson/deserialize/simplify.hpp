@@ -185,6 +185,10 @@ inline SEXP simplify_element(simdjson::dom::element element,
 
         case simdjson::dom::element_type::UINT64:
             return Rcpp::wrap(std::to_string(uint64_t(element)));
+
+        case simdjson::dom::element_type::BIGINT:
+            Rcpp::stop("Cannot represent 'BIGINT' type.");
+            return R_NilValue; // not reached
     }
 
     return R_NilValue; // # nocov
