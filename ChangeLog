@@ -1,3 +1,12 @@
+2026-04-11  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.h: Sync with upstream release 4.6.1
+	* inst/include/simdjson.cpp: Idem
+
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Add a stop-gap
+	measure for BIGINT coverage, (at least for now) erroring out
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem (twice)
+
 2026-01-14  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.15
