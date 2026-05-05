@@ -1,8 +1,8 @@
 Package: RcppSimdJson
 Type: Package
 Title: 'Rcpp' Bindings for the 'simdjson' Header-Only Library for 'JSON' Parsing
-Version: 0.1.15.1
-Date: 2026-04-13
+Version: 0.1.15.2
+Date: 2026-05-05
 Authors@R: c(person("Dirk", "Eddelbuettel", role = c("aut", "cre"), email = "edd@debian.org",
                     comment = c(ORCID = "0000-0001-6419-907X")),
              person("Brendan", "Knapp", role = "aut",
