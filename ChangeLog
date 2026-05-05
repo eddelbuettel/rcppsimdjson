@@ -1,3 +1,8 @@
+2026-05-05  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.h: Sync with upstream release 4.6.3
+	* inst/include/simdjson.cpp: Idem
+
 2026-04-13  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
