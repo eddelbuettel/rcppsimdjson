@@ -9,7 +9,6 @@ echo "*** Configuring for ${os} on ${mach}"
 if [ "${os}" = "Darwin" ] && [ "${mach}" = "x86_64" ]; then
    echo "*** Selecting C++17 as compilation standard"
    sed -e 's|@CXX_STD@|CXX_STD=CXX17|' src/Makevars.in > src/Makevars
-   cat src/Makevars
 else
    # Defaults are fine elsewhere
    sed -e 's|@CXX_STD@||' src/Makevars.in > src/Makevars
