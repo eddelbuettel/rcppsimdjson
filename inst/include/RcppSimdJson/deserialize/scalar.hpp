@@ -31,11 +31,11 @@ inline auto get_scalar(simdjson::dom::element element) noexcept(noxcpt<R_Type>()
 
 
 // bool ============================================================================================
-// return Rcpp::String
+// return CHARSXP
 template <>
 inline auto
 get_scalar_<bool, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return bool(element) ? Rcpp::String("TRUE") : Rcpp::String("FALSE");
+    return bool(element) ? Rf_mkCharLenCE("TRUE", 4, CE_UTF8) : Rf_mkCharLenCE("FALSE", 5, CE_UTF8);
 }
 // return double
 template <>
@@ -62,11 +62,11 @@ get_scalar_<bool, rcpp_T::lgl>(simdjson::dom::element element) noexcept(noxcpt<r
     return bool(element);
 }
 // int64_t =========================================================================================
-// return Rcpp::String
+// return CHARSXP
 template <>
 inline auto
 get_scalar_<int64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::to_string(int64_t(element)));
+    return make_charsxp(std::to_string(int64_t(element)));
 }
 // return double
 template <>
@@ -87,7 +87,7 @@ get_scalar_<int64_t, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcp
     return static_cast<int>(int64_t(element));
 }
 // double ==========================================================================================
-// return Rcpp::String
+// return CHARSXP
 template <>
 inline auto
 get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
@@ -109,7 +109,7 @@ get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt
         // just the one at found + 1
         out.erase(found + 2);
     }
-    return Rcpp::String(out);
+    return make_charsxp(out);
 }
 // return double
 template <>
@@ -118,18 +118,18 @@ get_scalar_<double, rcpp_T::dbl>(simdjson::dom::element element) noexcept(noxcpt
     return double(element);
 }
 // std::string (really std::string_view) ===========================================================
-// return Rcpp::String
+// return CHARSXP
 template <>
 inline auto get_scalar_<std::string, rcpp_T::chr>(simdjson::dom::element element) noexcept(
     noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::string(std::string_view(element)));
+    return make_charsxp_cached(std::string_view(element));
 }
 // uint64_t ========================================================================================
-// return Rcpp::String
+// return CHARSXP
 template <>
 inline auto
 get_scalar_<uint64_t, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    return Rcpp::String(std::to_string(uint64_t(element)));
+    return make_charsxp(std::to_string(uint64_t(element)));
 }
 // dispatchers =====================================================================================
 template <int RTYPE>
@@ -154,7 +154,7 @@ inline auto get_scalar_dispatch<STRSXP>(simdjson::dom::element element) noexcept
             return get_scalar<uint64_t, rcpp_T::chr, NO_NULLS>(element);
 
         default:
-            return Rcpp::String(NA_STRING);
+            return NA_STRING;
     }
 }
 

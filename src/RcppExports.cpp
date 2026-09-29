@@ -37,7 +37,6 @@ END_RCPP_RETURN_ERROR
 RcppExport SEXP _RcppSimdJson_deserialize(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
     SEXP rcpp_result_gen;
     {
-        Rcpp::RNGScope rcpp_rngScope_gen;
         rcpp_result_gen = PROTECT(_RcppSimdJson_deserialize_try(jsonSEXP, querySEXP, empty_arraySEXP, empty_objectSEXP, single_nullSEXP, parse_error_okSEXP, on_parse_errorSEXP, query_error_okSEXP, on_query_errorSEXP, simplify_toSEXP, type_policySEXP, int64_r_typeSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
@@ -82,7 +81,6 @@ END_RCPP_RETURN_ERROR
 RcppExport SEXP _RcppSimdJson_load(SEXP jsonSEXP, SEXP querySEXP, SEXP empty_arraySEXP, SEXP empty_objectSEXP, SEXP single_nullSEXP, SEXP parse_error_okSEXP, SEXP on_parse_errorSEXP, SEXP query_error_okSEXP, SEXP on_query_errorSEXP, SEXP simplify_toSEXP, SEXP type_policySEXP, SEXP int64_r_typeSEXP) {
     SEXP rcpp_result_gen;
     {
-        Rcpp::RNGScope rcpp_rngScope_gen;
         rcpp_result_gen = PROTECT(_RcppSimdJson_load_try(jsonSEXP, querySEXP, empty_arraySEXP, empty_objectSEXP, single_nullSEXP, parse_error_okSEXP, on_parse_errorSEXP, query_error_okSEXP, on_query_errorSEXP, simplify_toSEXP, type_policySEXP, int64_r_typeSEXP));
     }
     Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
@@ -174,7 +172,6 @@ bool is_valid_json_arg(SEXP json);
 RcppExport SEXP _RcppSimdJson_is_valid_json_arg(SEXP jsonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type json(jsonSEXP);
     rcpp_result_gen = Rcpp::wrap(is_valid_json_arg(json));
     return rcpp_result_gen;
@@ -185,7 +182,6 @@ bool is_valid_query_arg(SEXP query);
 RcppExport SEXP _RcppSimdJson_is_valid_query_arg(SEXP querySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< SEXP >::type query(querySEXP);
     rcpp_result_gen = Rcpp::wrap(is_valid_query_arg(query));
     return rcpp_result_gen;
