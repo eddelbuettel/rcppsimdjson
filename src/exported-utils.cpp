@@ -214,3 +214,25 @@ Rcpp::CharacterVector dispatch_fminify(SEXP json) {
                        "containing raw vectors.");
     }
 }
+
+
+//' Release Memory Kept Between Calls
+//'
+//' To parse faster, \code{fparse()} and \code{fload()} keep some memory between calls: a buffer
+//' holding a copy of the input (as large as the largest document parsed, and released after a
+//' call when larger than 64 MiB), and a small cache of short strings. \code{release_json_memory()}
+//' frees this memory now. It is allocated again as needed, so it is always safe to call.
+//'
+//' @return The number of bytes freed, invisibly.
+//'
+//' @examples
+//' x <- fparse('{"a": [1, 2, 3]}')
+//' release_json_memory()
+//'
+//' @export
+// [[Rcpp::export(release_json_memory, rng = false, invisible = true)]]
+double release_json_memory() {
+    const auto freed = rcppsimdjson::deserialize::Input_Buffer::release();
+    rcppsimdjson::Charsxp_Cache::shared().clear();
+    return static_cast<double>(freed);
+}

@@ -167,6 +167,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// release_json_memory
+double release_json_memory();
+RcppExport SEXP _RcppSimdJson_release_json_memory() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    rcpp_result_gen = Rcpp::wrap(release_json_memory());
+    return rcpp_result_gen;
+END_RCPP
+}
 // is_valid_json_arg
 bool is_valid_json_arg(SEXP json);
 RcppExport SEXP _RcppSimdJson_is_valid_json_arg(SEXP jsonSEXP) {
@@ -276,6 +285,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RcppSimdJson_dispatch_is_valid_json", (DL_FUNC) &_RcppSimdJson_dispatch_is_valid_json, 1},
     {"_RcppSimdJson_dispatch_is_valid_utf8", (DL_FUNC) &_RcppSimdJson_dispatch_is_valid_utf8, 1},
     {"_RcppSimdJson_dispatch_fminify", (DL_FUNC) &_RcppSimdJson_dispatch_fminify, 1},
+    {"_RcppSimdJson_release_json_memory", (DL_FUNC) &_RcppSimdJson_release_json_memory, 0},
     {"_RcppSimdJson_is_valid_json_arg", (DL_FUNC) &_RcppSimdJson_is_valid_json_arg, 1},
     {"_RcppSimdJson_is_valid_query_arg", (DL_FUNC) &_RcppSimdJson_is_valid_query_arg, 1},
     {"_RcppSimdJson_diagnose_input", (DL_FUNC) &_RcppSimdJson_diagnose_input, 1},

@@ -422,48 +422,48 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
 
 
 /*
- * The parser, and the padded buffer the input is copied into, are reused across calls: a fresh
- * dom::parser allocates (and page-faults) its tape and string buffers on every call, which
- * dominates for small documents. R calls us from a single thread. After an unusually large
- * document, the buffers are released rather than kept around.
+ * simdjson needs its input followed by some padding, so each document is copied into a padded
+ * buffer. That buffer is reused across documents and calls (allocating one per document costs
+ * 6-10% on small and medium documents). It holds as much as the largest document parsed, and is
+ * released at the end of a call if larger than 64 MiB, or by release_json_memory().
+ *
+ * (We do not keep the dom::parser itself across calls: that gained at most 2% and kept about five
+ * times the size of the largest document in memory.)
+ *
+ * R calls us from a single thread.
  */
-class Reused_Parser {
+class Input_Buffer {
     static inline constexpr std::size_t MAX_RETAINED_CAPACITY = std::size_t(64) << 20; // 64 MiB
-
-    static auto shared() -> simdjson::dom::parser& {
-        static simdjson::dom::parser parser;
-        return parser;
-    }
 
     struct Padded_Buffer {
         std::unique_ptr<char[]> data;
         std::size_t             capacity = 0; /* excluding padding */
     };
 
-    static auto shared_buffer() -> Padded_Buffer& {
+    static auto shared() -> Padded_Buffer& {
         static Padded_Buffer buffer;
         return buffer;
     }
 
   public:
-    Reused_Parser()                      = default;
-    Reused_Parser(const Reused_Parser&)  = delete;
-    Reused_Parser& operator=(const Reused_Parser&) = delete;
-    ~Reused_Parser() {
-        if (shared().capacity() > MAX_RETAINED_CAPACITY) {
-            shared() = simdjson::dom::parser();
+    /* For the duration of a call: releases an unusually large buffer at the end. */
+    class Scope {
+      public:
+        Scope()                        = default;
+        Scope(const Scope&)            = delete;
+        Scope& operator=(const Scope&) = delete;
+        ~Scope() {
+            if (shared().capacity > MAX_RETAINED_CAPACITY) {
+                release();
+            }
         }
-        if (shared_buffer().capacity > MAX_RETAINED_CAPACITY) {
-            shared_buffer() = Padded_Buffer();
-        }
-    }
-    operator simdjson::dom::parser&() noexcept { return shared(); }
+    };
 
     /* Like parser.parse(json), but copies `json` into the reused padded buffer. The DOM does not
      * refer to the input once parsed. */
     static auto parse(simdjson::dom::parser& parser, const std::string_view json)
         -> simdjson::simdjson_result<simdjson::dom::element> {
-        auto& buffer = shared_buffer();
+        auto& buffer = shared();
         if (!buffer.data || std::size(json) > buffer.capacity) {
             buffer.data     = std::make_unique<char[]>(std::size(json) + simdjson::SIMDJSON_PADDING);
             buffer.capacity = std::size(json);
@@ -471,6 +471,14 @@ class Reused_Parser {
         std::memcpy(buffer.data.get(), std::data(json), std::size(json));
         std::memset(buffer.data.get() + std::size(json), 0, simdjson::SIMDJSON_PADDING);
         return parser.parse(buffer.data.get(), std::size(json), false);
+    }
+
+    /* Frees the buffer. Returns the number of bytes freed. */
+    static auto release() noexcept -> std::size_t {
+        auto&      buffer = shared();
+        const auto freed  = buffer.data ? buffer.capacity + simdjson::SIMDJSON_PADDING : 0;
+        buffer            = Padded_Buffer();
+        return freed;
     }
 };
 
@@ -480,7 +488,7 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
                                                                const json_T&          json) {
     if constexpr (utils::resembles_vec_raw<json_T>()) {
         /* if `json` is a raw (unsigned char) vector, we can cheat */
-        return Reused_Parser::parse(
+        return Input_Buffer::parse(
             parser, std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
     }
 
@@ -500,7 +508,7 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
             return parser.load(std::string(json)); /* otherwise, just `parser::load()` the file */
         } else {
             /* if not file, just parse the string */
-            return Reused_Parser::parse(parser, std::string_view(json));
+            return Input_Buffer::parse(parser, std::string_view(json));
         }
     }
 }
@@ -602,8 +610,8 @@ template <typename json_T,
 inline SEXP no_query(const json_T&                                json,
                      SEXP                                         on_parse_error,
                      const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-    Reused_Parser          reused_parser;
-    simdjson::dom::parser& parser = reused_parser;
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         return parse_and_deserialize<json_T, is_file, parse_error_ok>(
@@ -635,8 +643,8 @@ inline SEXP flat_query(const json_T&                                json,
                        SEXP                                         on_parse_error,
                        SEXP                                         on_query_error,
                        const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-    Reused_Parser          reused_parser;
-    simdjson::dom::parser& parser = reused_parser;
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         if constexpr (is_single_query) {
@@ -725,8 +733,8 @@ inline SEXP nested_query(const json_T&                                json,
                          const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
     const R_xlen_t         n = std::size(json); /* query already checked to be the same size */
     Rcpp::List             out(n);
-    Reused_Parser          reused_parser;
-    simdjson::dom::parser& parser = reused_parser;
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         if constexpr (parse_error_ok) {

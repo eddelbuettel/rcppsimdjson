@@ -241,6 +241,16 @@ class Charsxp_Cache {
         return charsxp;
     }
 
+    /* Forgets every entry, letting R reclaim the CHARSXPs. */
+    inline void clear() noexcept {
+        if (keep_alive != nullptr) {
+            R_ReleaseObject(keep_alive);
+            keep_alive = nullptr;
+        }
+        slots  = {};
+        values = {};
+    }
+
     static auto shared() -> Charsxp_Cache& {
         static Charsxp_Cache cache;
         return cache;

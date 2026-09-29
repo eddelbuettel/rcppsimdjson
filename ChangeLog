@@ -1,3 +1,17 @@
+2026-09-29  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/RcppSimdJson/deserialize.hpp (Input_Buffer): No longer
+	keep the dom::parser between calls (at most 2% faster, while keeping
+	about five times the largest document in memory); keep reusing the
+	padded input buffer (6-10% faster)
+	* inst/include/RcppSimdJson/common.hpp (Charsxp_Cache::clear): Added
+	* src/exported-utils.cpp (release_json_memory): Added, to free the
+	memory kept between calls
+	* src/RcppExports.cpp: Regenerated
+	* R/RcppExports.R: Idem
+	* man/release_json_memory.Rd: Added
+	* inst/tinytest/test_misc.R: Add tests
+
 2026-09-28  Daniel Lemire  <daniel@lemire.me>
 
 	* inst/include/simdjson.h: Sync with upstream release 5.0.1
