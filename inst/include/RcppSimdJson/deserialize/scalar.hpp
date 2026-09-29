@@ -91,8 +91,24 @@ get_scalar_<int64_t, rcpp_T::i32>(simdjson::dom::element element) noexcept(noxcp
 template <>
 inline auto
 get_scalar_<double, rcpp_T::chr>(simdjson::dom::element element) noexcept(noxcpt<rcpp_T::chr>()) {
-    auto out = std::to_string(double(element));
-    out.erase(out.find_last_not_of('0') + 2, std::string::npos);
+    std::string out = std::to_string(double(element));
+    // The previous code was as follows...
+    // out.erase(out.find_last_not_of('0') + 2, std::string::npos);
+    // This code effectively makes sure that we never end with more than one zero.
+    // E.g., 1.2000 becomes 1.20, but 1.000333333 remains 1.000333333.
+    // The problem of course, is that if you have 1.000333333, then you will
+    // do out.erase(10+2, std::string::npos) on a string of length 11.
+    // Per the C++ specification, you should get std::out_of_range if index > size().
+    //
+    // We need to be more careful.
+    auto found = out.find_last_not_of('0');
+    // check that a non-zero digit was found and that there are at least
+    // two zeros following it.
+    if (found != std::string::npos && found + 2 < out.size()) {
+        // at indexes found + 1, found + 2... are zeros, we keep
+        // just the one at found + 1
+        out.erase(found + 2);
+    }
     return Rcpp::String(out);
 }
 // return double

@@ -109,6 +109,10 @@ inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array arr
                 UINT64_ = true;
                 u64_    = true;
                 break;
+
+            case simdjson::dom::element_type::BIGINT:
+                Rcpp::stop("Cannot represent 'BIGINT' type.");
+                break; // not reached
         }
     }
 }
@@ -308,6 +312,11 @@ void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element ele
             UINT64_ = true;
             u64_    = true;
             break;
+
+        case simdjson::dom::element_type::BIGINT:
+            Rcpp::stop("Cannot represent 'BIGINT' type.");
+            break; // not reached
+
     }
 }
 

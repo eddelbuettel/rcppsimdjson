@@ -1,3 +1,86 @@
+2026-05-05  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+	* inst/include/simdjson.h: Sync with upstream release 4.6.3
+	* inst/include/simdjson.cpp: Idem
+
+2026-04-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+2026-04-11  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.h: Sync with upstream release 4.6.1
+	* inst/include/simdjson.cpp: Idem
+
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Add a stop-gap
+	measure for BIGINT coverage, (at least for now) erroring out
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Idem (twice)
+
+2026-01-14  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.15
+
+	* .github/workflows/ci.yaml: Remove gcc-{10,11} from matrix, roll
+	checkout action to v6
+
+2026-01-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+	* inst/include/simdjson.h: Updated to simdjson 4.2.4 (plus 1 commit)
+	* inst/include/simdjson.cpp: Idem
+
+	* src/RcppExports.cpp: Regenerated under current Rcpp to aid its
+	issue 1402 and transition away from directly calling Rf_error()
+
+	* README.md: Replace gnu.org URL for GPL-2 with one at R-project.org
+
+	* src/Makevars: Remove explicit setting for C++17
+	* src/Makevars.win: Idem
+	* DESCRIPTION: Idem
+
+2025-09-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.14
+
+2025-09-12  Dirk Eddelbuettel  <edd@debian.org>
+
+	* inst/include/simdjson.h: Updated to simdjson 4.0.0 (plus 1 commit)
+	* inst/include/simdjson.cpp: Idem
+
+	* .github/workflows/covr.yaml (jobs): Pass CODECOV_TOKEN
+
+2025-03-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.13
+
+	* inst/examples/*: Moved from demo/ to not add eight new Suggests
+
+2025-03-06  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+	* .github/workflows/ci.yaml: Expand the compiler matrix to g++ 13 and
+	14, simplify to r-ci setup with embedded bootstrap step
+
+	* inst/include/simdjson.h: Updated to simdjson 3.9.5 (plus 2 commits)
+	* inst/include/simdjson.cpp: Idem
+
+2024-10-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Authors@R): Added
+
+2024-07-17  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Roll micro version and date
+
+2024-07-17  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Guarded a call to
+	std::string::erase
+
 2024-07-06  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Release 0.1.12

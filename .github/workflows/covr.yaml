@@ -27,3 +27,5 @@ jobs:
 
       - name: Coverage
         run: ./run.sh coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
