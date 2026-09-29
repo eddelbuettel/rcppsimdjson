@@ -731,20 +731,19 @@ inline SEXP nested_query(const json_T&                                json,
     if constexpr (is_single_json) {
         if constexpr (parse_error_ok) {
             simdjson::dom::element parsed;
-            if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(parsed)) {
-                for (R_xlen_t i = 0; i < n; ++i) {
-                    const R_xlen_t n_queries = std::size(query[i]);
-                    Rcpp::List     res(n_queries);
-                    for (R_xlen_t j = 0; j < n_queries; ++j) {
-                        res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
-                    }
-                    res.attr("names") = query[i].attr("names");
-                    out[i]            = res;
-                }
+            if(simdjson::SUCCESS != parse<json_T, is_file>(parser, json).get(parsed)) {
+                return on_parse_error;
             }
-
-            return on_parse_error;
+            for (R_xlen_t i = 0; i < n; ++i) {
+                const R_xlen_t n_queries = std::size(query[i]);
+                Rcpp::List     res(n_queries);
+                for (R_xlen_t j = 0; j < n_queries; ++j) {
+                    res[j] = query_and_deserialize<query_error_ok>(
+                        parsed, query[i][j], on_query_error, parse_opts);
+                }
+                res.attr("names") = query[i].attr("names");
+                out[i]            = res;
+            }
 
         } else { /* !parse_error_ok */
             simdjson::dom::element parsed;
@@ -770,15 +769,16 @@ inline SEXP nested_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 simdjson::dom::element parsed;
                 if(simdjson::SUCCESS == parse<decltype(json[i]), is_file>(parser, json[i]).get(parsed)) {
-                    Rcpp::List res(n_queries);						// #nocov start
+                    Rcpp::List res(n_queries);
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
                     }
                     res.attr("names") = query[i].attr("names");
-                    out[i]            = res;						// #nocov end
+                    out[i]            = res;
+                } else {
+                    out[i] = on_parse_error;
                 }
-                out[i] = on_parse_error;
 
             } else { /* !parse_error_ok */
                 simdjson::dom::element parsed;

@@ -28,6 +28,13 @@
 	match.arg() and stopifnot() on the fast path
 	* R/utils.R (.match_choice): Added
 
+	* inst/include/RcppSimdJson/deserialize.hpp (nested_query): With
+	parse_error_ok, return the query results for valid JSON rather than
+	on_parse_error
+	* R/fload.R: Validate a numeric type_policy (not max_simplify_lvl)
+	* inst/tinytest/test_query.R: Add tests
+	* inst/tinytest/test_fparse_fload.R: Idem
+
 2026-05-05  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
