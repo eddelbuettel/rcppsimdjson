@@ -1,3 +1,8 @@
+2026-09-28  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with upstream release 5.0.1
+	* inst/include/simdjson.cpp: Idem
+
 2026-05-05  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
