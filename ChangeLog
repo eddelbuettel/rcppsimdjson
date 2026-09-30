@@ -1,3 +1,8 @@
+2026-09-30  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with upstream release 5.0.2
+	* inst/include/simdjson.cpp: Idem
+
 2026-09-29  Daniel Lemire  <daniel@lemire.me>
 
 	* inst/include/RcppSimdJson/deserialize.hpp (Input_Buffer): No longer
