@@ -1,3 +1,9 @@
+2026-10-04  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with regenerated upstream 5.0.2
+	(simdjson/simdjson#2902)
+	* inst/include/simdjson.cpp: Idem
+
 2026-10-01  Daniel Lemire  <daniel@lemire.me>
 
 	* inst/include/simdjson.h: Sync with regenerated upstream 5.0.2
