@@ -421,13 +421,75 @@ inline auto deserialize(simdjson::dom::element parsed, const Parse_Opts& parse_o
 }
 
 
+/*
+ * simdjson needs its input followed by some padding, so each document is copied into a padded
+ * buffer. That buffer is reused across documents and calls (allocating one per document costs
+ * 6-10% on small and medium documents). It holds as much as the largest document parsed, and is
+ * released at the end of a call if larger than 64 MiB, or by release_json_memory().
+ *
+ * (We do not keep the dom::parser itself across calls: that gained at most 2% and kept about five
+ * times the size of the largest document in memory.)
+ *
+ * R calls us from a single thread.
+ */
+class Input_Buffer {
+    static inline constexpr std::size_t MAX_RETAINED_CAPACITY = std::size_t(64) << 20; // 64 MiB
+
+    struct Padded_Buffer {
+        std::unique_ptr<char[]> data;
+        std::size_t             capacity = 0; /* excluding padding */
+    };
+
+    static auto shared() -> Padded_Buffer& {
+        static Padded_Buffer buffer;
+        return buffer;
+    }
+
+  public:
+    /* For the duration of a call: releases an unusually large buffer at the end. */
+    class Scope {
+      public:
+        Scope()                        = default;
+        Scope(const Scope&)            = delete;
+        Scope& operator=(const Scope&) = delete;
+        ~Scope() {
+            if (shared().capacity > MAX_RETAINED_CAPACITY) {
+                release();
+            }
+        }
+    };
+
+    /* Like parser.parse(json), but copies `json` into the reused padded buffer. The DOM does not
+     * refer to the input once parsed. */
+    static auto parse(simdjson::dom::parser& parser, const std::string_view json)
+        -> simdjson::simdjson_result<simdjson::dom::element> {
+        auto& buffer = shared();
+        if (!buffer.data || std::size(json) > buffer.capacity) {
+            buffer.data     = std::make_unique<char[]>(std::size(json) + simdjson::SIMDJSON_PADDING);
+            buffer.capacity = std::size(json);
+        }
+        std::memcpy(buffer.data.get(), std::data(json), std::size(json));
+        std::memset(buffer.data.get() + std::size(json), 0, simdjson::SIMDJSON_PADDING);
+        return parser.parse(buffer.data.get(), std::size(json), false);
+    }
+
+    /* Frees the buffer. Returns the number of bytes freed. */
+    static auto release() noexcept -> std::size_t {
+        auto&      buffer = shared();
+        const auto freed  = buffer.data ? buffer.capacity + simdjson::SIMDJSON_PADDING : 0;
+        buffer            = Padded_Buffer();
+        return freed;
+    }
+};
+
+
 template <typename json_T, bool is_file>
 inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::parser& parser,
                                                                const json_T&          json) {
     if constexpr (utils::resembles_vec_raw<json_T>()) {
         /* if `json` is a raw (unsigned char) vector, we can cheat */
-        return parser.parse(
-            std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
+        return Input_Buffer::parse(
+            parser, std::string_view(reinterpret_cast<const char*>(&(json[0])), std::size(json)));
     }
 
     if constexpr (utils::resembles_vec_chr<json_T>()) {
@@ -445,7 +507,8 @@ inline simdjson::simdjson_result<simdjson::dom::element> parse(simdjson::dom::pa
             }
             return parser.load(std::string(json)); /* otherwise, just `parser::load()` the file */
         } else {
-            return parser.parse(std::string_view(json)); /* if not file, just parse the string */
+            /* if not file, just parse the string */
+            return Input_Buffer::parse(parser, std::string_view(json));
         }
     }
 }
@@ -547,7 +610,8 @@ template <typename json_T,
 inline SEXP no_query(const json_T&                                json,
                      SEXP                                         on_parse_error,
                      const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-    simdjson::dom::parser parser;
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         return parse_and_deserialize<json_T, is_file, parse_error_ok>(
@@ -579,7 +643,8 @@ inline SEXP flat_query(const json_T&                                json,
                        SEXP                                         on_parse_error,
                        SEXP                                         on_query_error,
                        const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-    simdjson::dom::parser parser;
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         if constexpr (is_single_query) {
@@ -666,27 +731,27 @@ inline SEXP nested_query(const json_T&                                json,
                          SEXP                                         on_parse_error,
                          SEXP                                         on_query_error,
                          const rcppsimdjson::deserialize::Parse_Opts& parse_opts) {
-    const R_xlen_t        n = std::size(json); /* query already checked to be the same size */
-    Rcpp::List            out(n);
-    simdjson::dom::parser parser;
+    const R_xlen_t         n = std::size(json); /* query already checked to be the same size */
+    Rcpp::List             out(n);
+    Input_Buffer::Scope    input_buffer_scope;
+    simdjson::dom::parser  parser;
 
     if constexpr (is_single_json) {
         if constexpr (parse_error_ok) {
             simdjson::dom::element parsed;
-            if(simdjson::SUCCESS == parse<json_T, is_file>(parser, json).get(parsed)) {
-                for (R_xlen_t i = 0; i < n; ++i) {
-                    const R_xlen_t n_queries = std::size(query[i]);
-                    Rcpp::List     res(n_queries);
-                    for (R_xlen_t j = 0; j < n_queries; ++j) {
-                        res[j] = query_and_deserialize<query_error_ok>(
-                            parsed, query[i][j], on_query_error, parse_opts);
-                    }
-                    res.attr("names") = query[i].attr("names");
-                    out[i]            = res;
-                }
+            if(simdjson::SUCCESS != parse<json_T, is_file>(parser, json).get(parsed)) {
+                return on_parse_error;
             }
-
-            return on_parse_error;
+            for (R_xlen_t i = 0; i < n; ++i) {
+                const R_xlen_t n_queries = std::size(query[i]);
+                Rcpp::List     res(n_queries);
+                for (R_xlen_t j = 0; j < n_queries; ++j) {
+                    res[j] = query_and_deserialize<query_error_ok>(
+                        parsed, query[i][j], on_query_error, parse_opts);
+                }
+                res.attr("names") = query[i].attr("names");
+                out[i]            = res;
+            }
 
         } else { /* !parse_error_ok */
             simdjson::dom::element parsed;
@@ -712,15 +777,16 @@ inline SEXP nested_query(const json_T&                                json,
             if constexpr (parse_error_ok) {
                 simdjson::dom::element parsed;
                 if(simdjson::SUCCESS == parse<decltype(json[i]), is_file>(parser, json[i]).get(parsed)) {
-                    Rcpp::List res(n_queries);						// #nocov start
+                    Rcpp::List res(n_queries);
                     for (R_xlen_t j = 0; j < n_queries; ++j) {
                         res[j] = query_and_deserialize<query_error_ok>(
                             parsed, query[i][j], on_query_error, parse_opts);
                     }
                     res.attr("names") = query[i].attr("names");
-                    out[i]            = res;						// #nocov end
+                    out[i]            = res;
+                } else {
+                    out[i] = on_parse_error;
                 }
-                out[i] = on_parse_error;
 
             } else { /* !parse_error_ok */
                 simdjson::dom::element parsed;

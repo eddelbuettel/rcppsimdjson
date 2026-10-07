@@ -17,11 +17,11 @@ namespace deserialize {
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt, Simplify_To simplify_to>
 inline SEXP
 simplify_list(simdjson::dom::array array, SEXP empty_array, SEXP empty_object, SEXP single_null) {
-    Rcpp::List out(r_length(array));
+    Rcpp::Shield<SEXP> out(Rf_allocVector(VECSXP, r_length(array)));
     auto i = R_xlen_t(0);
     for (auto element : array) {
-        out[i++] = simplify_element<type_policy, int64_opt, simplify_to>(
-            element, empty_array, empty_object, single_null);
+        SET_VECTOR_ELT(out, i++, simplify_element<type_policy, int64_opt, simplify_to>(
+                                     element, empty_array, empty_object, single_null));
     }
     return out;
 }
@@ -67,7 +67,7 @@ inline SEXP simplify_data_frame(simdjson::dom::array array,
                                 SEXP                 single_null) {
     if (const auto cols = diagnose_data_frame<type_policy, int64_opt>(array)) {
         return build_data_frame<type_policy, int64_opt, simplify_to>(
-            array, cols->schema, empty_array, empty_object, single_null);
+            array, *cols, empty_array, empty_object, single_null);
     }
     return simplify_matrix<type_policy, int64_opt, simplify_to>(
         array, empty_array, empty_object, single_null);
@@ -115,17 +115,17 @@ inline SEXP simplify_object(const simdjson::dom::object object,
         return empty_object;
     }
 
-    Rcpp::List            out(n);
-    Rcpp::CharacterVector out_names(n);
+    Rcpp::Shield<SEXP> out(Rf_allocVector(VECSXP, n));
+    Rcpp::Shield<SEXP> out_names(Rf_allocVector(STRSXP, n));
 
     auto i = R_xlen_t(0L);
     for (auto [key, value] : object) {
-        out[i] = simplify_element<type_policy, int64_opt, simplify_to>(
-            value, empty_array, empty_object, single_null);
-        out_names[i++] = Rcpp::String(std::string(key));
+        SET_VECTOR_ELT(out, i, simplify_element<type_policy, int64_opt, simplify_to>(
+                                   value, empty_array, empty_object, single_null));
+        SET_STRING_ELT(out_names, i++, make_charsxp_cached(key));
     }
 
-    out.attr("names") = out_names;
+    Rf_setAttrib(out, R_NamesSymbol, out_names);
     return out;
 }
 
@@ -178,7 +178,7 @@ inline SEXP simplify_element(simdjson::dom::element element,
             return Rcpp::wrap(bool(element));
 
         case simdjson::dom::element_type::STRING:
-            return Rcpp::wrap(Rcpp::String(std::string(std::string_view(element))));
+            return Rf_ScalarString(make_charsxp_cached(std::string_view(element)));
 
         case simdjson::dom::element_type::NULL_VALUE:
             return single_null;

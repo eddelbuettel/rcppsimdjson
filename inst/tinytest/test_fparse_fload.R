@@ -235,6 +235,7 @@ expect_error(fload("1", type_policy = NA_character_))
 expect_error(fload("1", type_policy = 10L))
 expect_error(fload("1", type_policy = NA_integer_))
 expect_error(fload("1", type_policy = (not_chr_or_num <- TRUE)))
+expect_error(fload(test_file1, type_policy = 10L)) # a real file, so only the policy is invalid
 
 #* valid -----------------------------------------------------------------------
 test <- '[

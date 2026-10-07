@@ -4,7 +4,7 @@
 
 // [[Rcpp::interfaces(r, cpp)]]
 
-// [[Rcpp::export(.deserialize_json)]]
+// [[Rcpp::export(.deserialize_json, rng = false)]]
 SEXP deserialize(SEXP       json,
                  SEXP       query          = R_NilValue,
                  SEXP       empty_array    = R_NilValue,
@@ -83,7 +83,7 @@ SEXP deserialize(SEXP       json,
 }
 
 
-// [[Rcpp::export(.load_json)]]
+// [[Rcpp::export(.load_json, rng = false)]]
 SEXP load(const Rcpp::CharacterVector& json,
           SEXP                         query          = R_NilValue,
           SEXP                         empty_array    = R_NilValue,

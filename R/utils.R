@@ -2,6 +2,21 @@
     length(x) == 1L && is.logical(x) && (na_ok || !is.na(x))
 }
 
+# Position of `arg` in `choices`, as `match(match.arg(arg, choices), choices)` but without
+# `match.arg()`'s overhead in the common cases (the default, or one possibly abbreviated choice).
+.match_choice <- function(arg, choices) {
+    if (identical(arg, choices)) {
+        return(1L)
+    }
+    if (is.character(arg) && length(arg) == 1L && !is.na(arg)) {
+        i <- pmatch(arg, choices)
+        if (!is.na(i)) {
+            return(i)
+        }
+    }
+    match(match.arg(arg, choices), choices) # errors as before
+}
+
 .is_scalar_chr <- function(x, na_ok = FALSE) {
     length(x) == 1L && is.character(x) && (na_ok || !is.na(x)) 		# #nocov
 }

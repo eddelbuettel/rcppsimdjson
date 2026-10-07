@@ -201,3 +201,19 @@ expect_identical(
     list(a = list(a1 = 1:2, a2 = 3:4), b = list(b1 = 5:6, b2 = 7:8))
 )
 
+
+# nested queries with `parse_error_ok = TRUE` return results for valid JSON ====
+expect_identical(
+    fparse('{"a":1,"b":2}', query = list(c(A = "/a", B = "/b")), parse_error_ok = TRUE),
+    list(list(A = 1L, B = 2L))
+)
+expect_identical(
+    fparse(c(x = '{"a":1}', y = '{"a":2}'), query = list(c(q = "/a"), c(q = "/a")),
+           parse_error_ok = TRUE),
+    list(x = list(q = 1L), y = list(q = 2L))
+)
+expect_identical(
+    fparse(c(x = '{"a":1}', y = "junk"), query = list(c(q = "/a"), c(q = "/a")),
+           parse_error_ok = TRUE, on_parse_error = NA),
+    list(x = list(q = 1L), y = NA)
+)

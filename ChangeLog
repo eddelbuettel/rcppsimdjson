@@ -1,3 +1,71 @@
+2026-10-04  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with regenerated upstream 5.0.2
+	(simdjson/simdjson#2902)
+	* inst/include/simdjson.cpp: Idem
+
+2026-10-01  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with regenerated upstream 5.0.2
+	(simdjson/simdjson#2900)
+	* inst/include/simdjson.cpp: Idem
+
+2026-09-30  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with upstream release 5.0.2
+	* inst/include/simdjson.cpp: Idem
+
+2026-09-29  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/RcppSimdJson/deserialize.hpp (Input_Buffer): No longer
+	keep the dom::parser between calls (at most 2% faster, while keeping
+	about five times the largest document in memory); keep reusing the
+	padded input buffer (6-10% faster)
+	* inst/include/RcppSimdJson/common.hpp (Charsxp_Cache::clear): Added
+	* src/exported-utils.cpp (release_json_memory): Added, to free the
+	memory kept between calls
+	* src/RcppExports.cpp: Regenerated
+	* R/RcppExports.R: Idem
+	* man/release_json_memory.Rd: Added
+	* inst/tinytest/test_misc.R: Add tests
+
+2026-09-28  Daniel Lemire  <daniel@lemire.me>
+
+	* inst/include/simdjson.h: Sync with upstream release 5.0.1
+	* inst/include/simdjson.cpp: Idem
+
+	* inst/include/RcppSimdJson/deserialize/dataframe.hpp: Build data
+	frames in a single pass over the rows instead of one at_key() lookup
+	per row and column; skip key matching when all rows share the same
+	keys in the same order; use compact row names
+	* inst/include/RcppSimdJson/common.hpp: Add make_charsxp() and a
+	cache of CHARSXPs for short strings; add flatten/noinline macros
+	* inst/include/RcppSimdJson/deserialize/scalar.hpp: Return CHARSXPs
+	rather than Rcpp::String
+	* inst/include/RcppSimdJson/deserialize/simplify.hpp: Idem, and use
+	protected SEXPs rather than Rcpp::List for lists and objects
+	* inst/include/RcppSimdJson/deserialize/vector.hpp: Idem for vectors
+	* inst/include/RcppSimdJson/deserialize/matrix.hpp: Avoid a hash set
+	when checking matrix shape
+	* inst/include/RcppSimdJson/deserialize/Type_Doctor.hpp: Flatten
+	* inst/include/RcppSimdJson/deserialize.hpp: Reuse the parser and the
+	padded input buffer across calls
+	* src/Makevars: Use CXX_VISIBILITY, drop obsolete computed-goto flag
+	* src/Makevars.win: Idem
+	* src/deserialize.cpp: Do not set up the RNG in exported functions
+	* src/internal-utils.cpp: Idem
+	* src/RcppExports.cpp: Regenerated
+	* R/fparse.R: Skip checks of arguments left at their defaults, avoid
+	match.arg() and stopifnot() on the fast path
+	* R/utils.R (.match_choice): Added
+
+	* inst/include/RcppSimdJson/deserialize.hpp (nested_query): With
+	parse_error_ok, return the query results for valid JSON rather than
+	on_parse_error
+	* R/fload.R: Validate a numeric type_policy (not max_simplify_lvl)
+	* inst/tinytest/test_query.R: Add tests
+	* inst/tinytest/test_fparse_fload.R: Idem
+
 2026-05-05  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date

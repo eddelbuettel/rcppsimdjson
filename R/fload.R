@@ -103,7 +103,7 @@ fload <- function(json,
                               strict = 2L,
                               stop("Unknown `type_policy=`."))
     } else if (is.numeric(type_policy)) {
-        stopifnot(max_simplify_lvl %in% 0:2)
+        stopifnot(type_policy %in% 0:2)
     } else {
         stop("`type_policy=` must be of type `character` or `numeric`.")
     }

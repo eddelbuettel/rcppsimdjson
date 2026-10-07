@@ -253,55 +253,49 @@ fparse <- function(json,
                    always_list = FALSE) {
     # validate arguments =======================================================
     # types --------------------------------------------------------------------
-    stopifnot("'json=' must be a non-empty character vector, raw vector, or a list containing raw vectors" = .is_valid_json_arg(json),
-              "'query=' must be 'NULL', a non-empty character vector, or a list containing non-empty character vectors" = .is_valid_query_arg(query),
-              "'query=' is a list (nested query), but is not the same length as 'json='" = !is.list(query) || length(json) == length(query),
-              "'parse_error_ok=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(parse_error_ok),
-              "'query_error_ok=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(query_error_ok),
-              "'always_list=' must be either 'TRUE' or 'FALSE'" = .is_scalar_lgl(always_list))
+    # (plain `if`s rather than `stopifnot()`, and arguments left at their defaults are not checked:
+    # argument checking is a large share of the time spent on small documents)
+    if (!.is_valid_json_arg(json))
+        stop("'json=' must be a non-empty character vector, raw vector, or a list containing raw vectors")
+    if (!missing(query)) {
+        if (!.is_valid_query_arg(query))
+            stop("'query=' must be 'NULL', a non-empty character vector, or a list containing non-empty character vectors")
+        if (!(!is.list(query) || length(json) == length(query)))
+            stop("'query=' is a list (nested query), but is not the same length as 'json='")
+    }
+    if (!missing(parse_error_ok) && !.is_scalar_lgl(parse_error_ok))
+        stop("'parse_error_ok=' must be either 'TRUE' or 'FALSE'")
+    if (!missing(query_error_ok) && !.is_scalar_lgl(query_error_ok))
+        stop("'query_error_ok=' must be either 'TRUE' or 'FALSE'")
+    if (!missing(always_list) && !.is_scalar_lgl(always_list))
+        stop("'always_list=' must be either 'TRUE' or 'FALSE'")
 
     # prep options =============================================================
     # max_simplify_lvl ---------------------------------------------------------
-    if (is.character(max_simplify_lvl)) {
-        max_simplify_lvl <- switch(
-            match.arg(max_simplify_lvl, c("data_frame", "matrix", "vector", "list")),
-            data_frame = 0L,
-            matrix = 1L,
-            vector = 2L,
-            list = 3L,
-            stop("Unknown `max_simplify_lvl=`.")
-        )
+    if (missing(max_simplify_lvl)) {
+        max_simplify_lvl <- 0L
+    } else if (is.character(max_simplify_lvl)) {
+        max_simplify_lvl <- .match_choice(max_simplify_lvl, c("data_frame", "matrix", "vector", "list")) - 1L
     } else if (is.numeric(max_simplify_lvl)) {
         stopifnot(max_simplify_lvl %in% 0:3)
     } else {
         stop("`max_simplify_lvl=` must be of type `character` or `numeric`.")
     }
     # type_policy --------------------------------------------------------------
-    if (is.character(type_policy)) {
-        type_policy <- switch(
-            match.arg(type_policy, c(
-                "anything_goes", "numbers", "strict"
-            )),
-            anything_goes = 0L,
-            numbers = 1L,
-            strict = 2L,
-            stop("Unknown `type_policy=`.")
-        )
+    if (missing(type_policy)) {
+        type_policy <- 0L
+    } else if (is.character(type_policy)) {
+        type_policy <- .match_choice(type_policy, c("anything_goes", "numbers", "strict")) - 1L
     } else if (is.numeric(type_policy)) {
         stopifnot(type_policy %in% 0:2)
     } else {
         stop("`type_policy=` must be of type `character` or `numeric`.")
     }
     # int64_policy -------------------------------------------------------------
-    if (is.character(int64_policy)) {
-        int64_policy <- switch(
-            match.arg(int64_policy, c("double", "string", "integer64", "always")),
-            double = 0L,
-            string = 1L,
-            integer64 = 2L,
-            always = 3L,
-            stop("Unknown `int64_policy=`.")
-        )
+    if (missing(int64_policy)) {
+        int64_policy <- 0L
+    } else if (is.character(int64_policy)) {
+        int64_policy <- .match_choice(int64_policy, c("double", "string", "integer64", "always")) - 1L
     } else if (is.numeric(int64_policy)) {
         stopifnot(int64_policy %in% 0:3)
     } else {

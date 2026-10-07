@@ -1,6 +1,6 @@
 #include <RcppSimdJson/utils.hpp>
 
-// [[Rcpp::export(.is_valid_json_arg)]]
+// [[Rcpp::export(.is_valid_json_arg, rng = false)]]
 bool is_valid_json_arg(SEXP json) {
     switch (TYPEOF(json)) {
         case STRSXP:
@@ -21,7 +21,7 @@ bool is_valid_json_arg(SEXP json) {
 }
 
 
-// [[Rcpp::export(.is_valid_query_arg)]]
+// [[Rcpp::export(.is_valid_query_arg, rng = false)]]
 bool is_valid_query_arg(SEXP query) {
     switch (TYPEOF(query)) {
         case NILSXP:

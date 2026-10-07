@@ -58,7 +58,8 @@ class Type_Doctor {
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(simdjson::dom::array array) noexcept {
+RCPPSIMDJSON_FLATTEN inline Type_Doctor<type_policy, int64_opt>::Type_Doctor(
+    simdjson::dom::array array) noexcept {
     for (auto element : array) {
         switch (element.type()) {
             case simdjson::dom::element_type::ARRAY:
@@ -262,7 +263,8 @@ Type_Doctor<type_policy, int64_opt>::common_element_type() const noexcept {
 
 
 template <Type_Policy type_policy, utils::Int64_R_Type int64_opt>
-void Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element element) noexcept {
+RCPPSIMDJSON_FLATTEN inline void
+Type_Doctor<type_policy, int64_opt>::add_element(simdjson::dom::element element) noexcept {
     switch (element.type()) {
         case simdjson::dom::element_type::ARRAY:
             ARRAY_ = true;

@@ -5,6 +5,10 @@
 #define STRICT_R_HEADERS
 #include <Rcpp.h>
 
+#include <array>
+#include <cstdint>
+#include <cstring>
+#include <memory>
 #include <optional>
 
 
@@ -144,6 +148,120 @@ enum class Simplify_To : int {
 
 #include "../simdjson.h"
 #include "utils.hpp"
+
+
+/*
+ * simdjson's DOM accessors (element::type(), object/array iteration, ...) are plain `inline`
+ * functions that compilers tend to leave out of line at -O2. On the tight, non-recursive loops that
+ * visit every value, we ask for everything to be inlined.
+ */
+#if defined(__GNUC__) || defined(__clang__)
+#    define RCPPSIMDJSON_FLATTEN __attribute__((flatten))
+#    define RCPPSIMDJSON_NOINLINE __attribute__((noinline))
+#else
+#    define RCPPSIMDJSON_FLATTEN
+#    define RCPPSIMDJSON_NOINLINE
+#endif
+
+
+namespace rcppsimdjson {
+
+/**
+ * @brief Make a UTF-8 CHARSXP directly from a view, skipping the std::string and Rcpp::String
+ * temporaries (Rcpp::String also preserves/releases its SEXP, which is costly in hot loops).
+ *
+ * Like Rcpp::String, throws on an embedded nul.
+ */
+inline SEXP make_charsxp(std::string_view sv) {
+    if (std::memchr(sv.data(), '\0', sv.size()) != nullptr) {
+        throw Rcpp::embedded_nul_in_string();
+    }
+    return Rf_mkCharLenCE(sv.data(), static_cast<int>(sv.size()), CE_UTF8);
+}
+
+
+/*
+ * JSON documents repeat the same short strings over and over (object keys, categories, flags...),
+ * and looking each one up in R's global CHARSXP table is comparatively slow. We keep a small
+ * direct-mapped cache of the CHARSXPs we made for short strings. The cache copies the bytes (the
+ * parser's string buffer is overwritten by the next document) and keeps its CHARSXPs alive in a
+ * preserved list, so an entry stays valid across calls. R calls us from a single thread.
+ */
+class Charsxp_Cache {
+    static inline constexpr std::size_t N_SLOTS        = 1024;
+    static inline constexpr std::size_t MAX_KEY_LENGTH = 24;
+
+    struct Slot {
+        unsigned char length = 0;
+        char          bytes[MAX_KEY_LENGTH];
+    };
+
+    std::array<Slot, N_SLOTS> slots{};
+    std::array<SEXP, N_SLOTS> values{};
+    SEXP                      keep_alive = nullptr; /* VECSXP holding `values` */
+
+    static inline auto hash(const std::string_view sv) noexcept -> std::size_t {
+        auto h = std::uint32_t(2166136261U) ^ static_cast<std::uint32_t>(std::size(sv));
+        for (const char c : sv) {
+            h = (h ^ static_cast<unsigned char>(c)) * 16777619U;
+        }
+        return (h ^ (h >> 16)) % N_SLOTS;
+    }
+
+    static inline auto same(const Slot& slot, const std::string_view sv) noexcept -> bool {
+        if (slot.length != std::size(sv)) {
+            return false;
+        }
+        for (std::size_t i = 0; i < std::size(sv); ++i) {
+            if (slot.bytes[i] != sv[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+  public:
+    inline auto get(const std::string_view sv) -> SEXP {
+        if (std::size(sv) > MAX_KEY_LENGTH) {
+            return make_charsxp(sv);
+        }
+        const auto i = hash(sv);
+        if (values[i] != nullptr && same(slots[i], sv)) {
+            return values[i];
+        }
+        if (keep_alive == nullptr) {
+            keep_alive = Rf_allocVector(VECSXP, N_SLOTS);
+            R_PreserveObject(keep_alive);
+        }
+        SEXP charsxp = make_charsxp(sv);
+        SET_VECTOR_ELT(keep_alive, static_cast<R_xlen_t>(i), charsxp);
+        values[i]        = charsxp;
+        slots[i].length  = static_cast<unsigned char>(std::size(sv));
+        std::memcpy(slots[i].bytes, std::data(sv), std::size(sv));
+        return charsxp;
+    }
+
+    /* Forgets every entry, letting R reclaim the CHARSXPs. */
+    inline void clear() noexcept {
+        if (keep_alive != nullptr) {
+            R_ReleaseObject(keep_alive);
+            keep_alive = nullptr;
+        }
+        slots  = {};
+        values = {};
+    }
+
+    static auto shared() -> Charsxp_Cache& {
+        static Charsxp_Cache cache;
+        return cache;
+    }
+};
+
+
+/* Like make_charsxp(), through the shared Charsxp_Cache. */
+inline SEXP make_charsxp_cached(std::string_view sv) { return Charsxp_Cache::shared().get(sv); }
+
+} // namespace rcppsimdjson
 
 
 namespace rcppsimdjson {
