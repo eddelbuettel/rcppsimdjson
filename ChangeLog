@@ -1,3 +1,8 @@
+2026-10-07  Dirk Eddelbuettel  <edd@debian.org>
+
+	* .github/workflows/ci.yaml (jobs): Switch runs-on to ubuntu-26.04,
+	add gcc versions 15 and 16, update checkout action
+
 2026-10-06  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
