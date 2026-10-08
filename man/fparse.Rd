@@ -132,6 +132,9 @@ the downloaded document, default: \code{FALSE}}
 \item{...}{Optional arguments which can be use \emph{e.g.} to pass additional
 header settings}
 }
+\value{
+A string with the parsed result.
+}
 \description{
 Parse JSON strings and files to R objects.
 }

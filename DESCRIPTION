@@ -22,5 +22,5 @@ LinkingTo: Rcpp
 Suggests: bit64, tinytest
 URL: https://github.com/eddelbuettel/rcppsimdjson/
 BugReports: https://github.com/eddelbuettel/rcppsimdjson/issues
-RoxygenNote: 7.1.1
 Encoding: UTF-8
+Config/roxygen2/version: 8.1.0

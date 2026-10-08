@@ -77,6 +77,7 @@
 #' @param always_list Whether a \code{list} should always be returned, even when \code{length(json) == 1L}.
 #'   default: \code{FALSE}.
 #'
+#' @return A string with the parsed result.
 #'
 #' @details
 #' \itemize{

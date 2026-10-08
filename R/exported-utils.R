@@ -6,6 +6,7 @@
 #'
 #' @param json JSON string(s), or raw vectors representing JSON string(s)
 #'
+#' @return The predicates return a boolean, and \code{fminify} returns a string
 #' @examples
 #' prettified_json <-
 #'     '[
@@ -126,7 +127,3 @@
 #' fminify(example_text$not_utf8)
 #' fminify(iconv(example_text$not_utf8, from = "latin1", to = "UTF-8"))
 NULL
-
-
-
-

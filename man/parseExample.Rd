@@ -6,13 +6,17 @@
 \usage{
 parseExample()
 }
-\description{
+\value{
+Nothing is returned, the function is invoked for its side effect.
+
 This example is adapted from a blogpost announcing an earlier \sQuote{simdjson}
 release. It is of interest mostly for the elegance and conciseness of its C++
 code rather than for any functionality exported to R.
-}
-\details{
+
 The function takes no argument and returns nothing.
+}
+\description{
+Simple JSON Parsing Example
 }
 \examples{
 parseExample()
