@@ -33,7 +33,6 @@ namespace RcppSimdJson {
         }
         RObject rcpp_result_gen;
         {
-            RNGScope RCPP_rngScope_gen;
             rcpp_result_gen = p__deserialize_json(Shield<SEXP>(Rcpp::wrap(json)), Shield<SEXP>(Rcpp::wrap(query)), Shield<SEXP>(Rcpp::wrap(empty_array)), Shield<SEXP>(Rcpp::wrap(empty_object)), Shield<SEXP>(Rcpp::wrap(single_null)), Shield<SEXP>(Rcpp::wrap(parse_error_ok)), Shield<SEXP>(Rcpp::wrap(on_parse_error)), Shield<SEXP>(Rcpp::wrap(query_error_ok)), Shield<SEXP>(Rcpp::wrap(on_query_error)), Shield<SEXP>(Rcpp::wrap(simplify_to)), Shield<SEXP>(Rcpp::wrap(type_policy)), Shield<SEXP>(Rcpp::wrap(int64_r_type)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))
@@ -54,7 +53,6 @@ namespace RcppSimdJson {
         }
         RObject rcpp_result_gen;
         {
-            RNGScope RCPP_rngScope_gen;
             rcpp_result_gen = p__load_json(Shield<SEXP>(Rcpp::wrap(json)), Shield<SEXP>(Rcpp::wrap(query)), Shield<SEXP>(Rcpp::wrap(empty_array)), Shield<SEXP>(Rcpp::wrap(empty_object)), Shield<SEXP>(Rcpp::wrap(single_null)), Shield<SEXP>(Rcpp::wrap(parse_error_ok)), Shield<SEXP>(Rcpp::wrap(on_parse_error)), Shield<SEXP>(Rcpp::wrap(query_error_ok)), Shield<SEXP>(Rcpp::wrap(on_query_error)), Shield<SEXP>(Rcpp::wrap(simplify_to)), Shield<SEXP>(Rcpp::wrap(type_policy)), Shield<SEXP>(Rcpp::wrap(int64_r_type)));
         }
         if (rcpp_result_gen.inherits("interrupted-error"))

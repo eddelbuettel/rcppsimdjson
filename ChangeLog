@@ -1,5 +1,15 @@
 2026-10-08  Dirk Eddelbuettel  <edd@debian.org>
 
+	* R/exported-utils.R: Add a @return tag
+	* R/fparse.R: Idem
+	* src/simdjson_example.cpp: Idem
+
+	* man/fparse.Rd: Regenerated
+	* man/parseExample.Rd: Idem
+	* man/simdjson-utilities.Rd: Idem
+	* R/RcppExports.R: Idem
+	* inst/include/RcppSimdJson_RcppExports.h: Idem
+
 	* DESCRIPTION (Version, Date): Roll micro version and date
 
 2026-10-07  Dirk Eddelbuettel  <edd@debian.org>

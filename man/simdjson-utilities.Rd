@@ -18,6 +18,9 @@ fminify(json)
 
 \item{x}{String(s), or raw vectors representing string(s).}
 }
+\value{
+The predicates return a boolean, and \code{fminify} returns a string
+}
 \description{
 simdjson Utilities
 }
