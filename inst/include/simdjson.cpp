@@ -1302,12 +1302,12 @@ using std::operator<<;
 // Clang, GNUC, MSVC warning suppression macros:
 
 #if defined(__clang__)
-# pragma clang diagnostic ignored "-Wreserved-user-defined-literal"
+//# pragma clang diagnostic ignored "-Wreserved-user-defined-literal"
 # pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wuser-defined-literals"
+//# pragma clang diagnostic ignored "-Wuser-defined-literals"
 #elif nssv_COMPILER_GNUC_VERSION >= 480
 #  pragma  GCC  diagnostic push
-#  pragma  GCC  diagnostic ignored "-Wliteral-suffix"
+//#  pragma  GCC  diagnostic ignored "-Wliteral-suffix"
 #endif // __clang__
 
 #if nssv_COMPILER_MSVC_VERSION >= 140
@@ -9436,10 +9436,10 @@ simdjson_fastfloat_really_inline bool rounds_to_nearest() noexcept {
 //  https://stackoverflow.com/questions/46079446/is-there-a-warning-for-floating-point-equality-checking-in-visual-studio-2013
 #elif defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wfloat-equal"
+//#pragma clang diagnostic ignored "-Wfloat-equal"
 #elif defined(__GNUC__)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wfloat-equal"
+//#pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
   return (fmini + 1.0f == 1.0f - fmini);
 #ifdef SIMDJSON_FASTFLOAT_VISUAL_STUDIO
@@ -9680,7 +9680,7 @@ from_chars_float_advanced(UC const *first, UC const *last, T &value,
 #ifdef __clang__
 #pragma clang diagnostic push
 #if (!defined(__APPLE_CC__) && __clang_major__ >= 10) || (__clang_major__ >= 13)
-#pragma clang diagnostic ignored "-Wc++20-extensions"
+//#pragma clang diagnostic ignored "-Wc++20-extensions"
 #endif
 #endif
   if simdjson_fastfloat_unlikely (pns.too_many_digits) {
