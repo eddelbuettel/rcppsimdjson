@@ -1,3 +1,7 @@
+2026-10-09  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Date): Release 0.1.16
+
 2026-10-08  Dirk Eddelbuettel  <edd@debian.org>
 
 	* R/exported-utils.R: Add a @return tag
