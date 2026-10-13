@@ -1,3 +1,10 @@
+2026-10-13  Dirk Eddelbuettel  <edd@debian.org>
+
+	* configure: Add an explicit C++20 feature test
+	* src/Makevars.in: Reflect feature test outcome in C++ standard
+	* src/Makevars: Moved and extended as src/Makevars.in
+	* cleanup: Remove generated src/Makevars
+
 2026-10-09  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Date): Release 0.1.16

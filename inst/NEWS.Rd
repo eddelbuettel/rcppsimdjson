@@ -8,8 +8,8 @@
     \item \pkg{simdjson} was upgraded to versions 4.6.1 and 4.6.3 (Dirk in
     \ghpr{100} and \ghpr{102} fixing \ghit{99} and \ghit{101})
     \item \pkg{simdjson} was upgraded to version 5.0.2 (Daniel in \ghpr{104})
-    \item A number of small tweaks to the \pkg{Rcpp} were made too (Daniel in
-    \ghpr{104})
+    \item A number of small tweaks to the \pkg{Rcpp} interface were made too
+    (Daniel in \ghpr{104})
     \item Diagnostics for \code{gcc} and \code{clang} are not suppressed per
     CRAN Policy (Dirk in \ghpr{106} closing \ghit{105})
     \item The continuous integration matrix was extended to \code{g++}
