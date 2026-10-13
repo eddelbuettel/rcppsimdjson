@@ -1,0 +1,73 @@
+#!/bin/sh
+
+set -u
+
+## Check that we are on Unix
+if ! [ -x $(command -v uname) ]; then
+    echo "You do not have 'uname' so this is unlikely to be a Unix system. Exiting."
+    exit 1
+fi
+
+: ${R_HOME=$(R RHOME)}
+sysname=$(uname)
+arch=$(uname -m)
+osname=$(${R_HOME}/bin/Rscript -e 'cat(R.version$os)')
+echo "** configuring for ${sysname} on ${arch} and ${osname}"
+
+## Switch to /tmp and test-compile a C++20 file with std::format
+cwd=$(pwd)
+cd /tmp
+
+echo '
+#include <algorithm>
+#include <array>
+#include <iostream>
+#include <format>
+#include <ranges>
+#include <version>
+
+// C++20 concepts use in specifying type constraint
+template <std::integral T>
+void print_number(T x) {
+    std::cout << std::format("{}", x) << std::endl;
+}
+
+int main() {
+    std::array<int,5> numbers = { 1, 2, 3, 4, 5 };
+
+    std::ranges::reverse(numbers);
+    std::ranges::for_each(numbers, [](int n) {
+        std::cout << std::format("{} ", n);
+    });
+    std::cout << std::endl;
+
+    // cf https://cppreference.com/cpp/feature_test to test
+    // note that this displays to console but does not fail
+#if defined(__cpp_lib_ranges) && __cpp_lib_ranges >= 201911L
+    std::cout << "Minimal ranges" << std::endl;
+#endif
+#if defined(__cpp_concepts) && __cpp_concepts >= 201907L
+    std::cout << "Minimal concepts" << std::endl;
+#endif
+
+    // But here we test if compilation succeeds or fails so we
+    // add explicit use via the concepts-enhance function above
+    print_number<int>(numbers[0]);
+}
+' > ranges_concept_test$$.cpp
+
+
+PKG_CXXFLAGS="--std=c++20" ${R_HOME}/bin/R CMD COMPILE ranges_concept_test$$.cpp >/dev/null 2>&1
+res=$?
+
+## Clean up and return
+rm -f ranges_concept_test$$.*
+cd ${cwd}
+
+if [ "${res}" -eq 0 ]; then
+   echo "** checking for C++20, std::ranges and concepts: good"
+   sed -e 's|@CXX_STD@|CXX_STD=CXX20|' src/Makevars.in > src/Makevars
+else
+   echo "** checking for C++20, std::ranges and concepts insufficient, using C++17"
+   sed -e 's|@CXX_STD@|CXX_STD=CXX17|' src/Makevars.in > src/Makevars
+fi
