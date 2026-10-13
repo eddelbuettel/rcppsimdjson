@@ -14,3 +14,4 @@
 ^\.github
 ^\.editorconfig
 ^\.codecov.yml
+^inst/examples/bothPlots.R$

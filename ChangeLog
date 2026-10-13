@@ -5,6 +5,10 @@
 	* src/Makevars: Moved and extended as src/Makevars.in
 	* cleanup: Remove generated src/Makevars
 
+	* inst/examples/simpleBenchmark.R: Correct path in caption
+	* inst/examples/simpleParseBenchmark.R: Idem
+	* README.md: Reference new plot location, correct one URL
+
 2026-10-09  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Date): Release 0.1.16

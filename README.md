@@ -51,9 +51,9 @@ Unit: microseconds
 >
 ```
 
-Or in chart form, also including the [second benchmark parsing strings][simpleParseBenchmark.R]:
+Or in chart form, also including the [second benchmark parsing strings][simpleParseBenchmark]:
 
-![](https://eddelbuettel.github.io/rcppsimdjson/rcppsimdjson_both_benchmarks.png)
+![](https://eddelbuettel.github.io/images/2026-10-13/rcppsimdjson_both_benchmarks.png)
 
 ### Status
 

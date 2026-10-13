@@ -23,6 +23,6 @@ res$expr <- with(res, reorder(expr, time, median))
 print(res)
 print(res, unit="relative")
 p1 <- ggplot2::autoplot(res) +
-    ggplot2::labs(title="Validating JSON file (or string)", caption="See 'demo/simpeBenchmark.R' in package RcppSimdJson") +
+    ggplot2::labs(title="Validating JSON file (or string)", caption="See 'examples/simpleBenchmark.R' in package RcppSimdJson") +
     tinythemes::theme_ipsum_rc()
 p1
