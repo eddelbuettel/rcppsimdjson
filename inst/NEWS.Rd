@@ -3,6 +3,14 @@
 \newcommand{\ghpr}{\href{https://github.com/eddelbuettel/rcppsimdjson/pull/#1}{##1}}
 \newcommand{\ghit}{\href{https://github.com/eddelbuettel/rcppsimdjson/issues/#1}{##1}}
 
+\section{Changes in version 0.1.17 [unreleased] (2026-10-xx)}{
+  \itemize{
+    \item Compilation starts with C++20 feature test; if this fails C++17 is
+    used (Dirk in \ghpr{111} fixing \ghit{110})
+    \item \pkg{simdjson} was upgraded to version 5.0.5 (Daniel in \ghpr{112})
+  }
+}
+
 \section{Changes in version 0.1.16 (2026-10-09)}{
   \itemize{
     \item \pkg{simdjson} was upgraded to versions 4.6.1 and 4.6.3 (Dirk in
