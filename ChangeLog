@@ -1,3 +1,9 @@
+2026-10-16  Dirk Eddelbuettel  <edd@debian.org>
+
+	* DESCRIPTION (Version, Date): Release 0.1.17
+
+	* README.md: Minor edit
+
 2026-10-15  Dirk Eddelbuettel  <edd@debian.org>
 
 	* DESCRIPTION (Version, Date): Roll micro version and date
@@ -22,7 +28,7 @@
 
 2026-10-09  Dirk Eddelbuettel  <edd@debian.org>
 
-	* DESCRIPTION (Date): Release 0.1.16
+	* DESCRIPTION (Version, Date): Release 0.1.16
 
 2026-10-08  Dirk Eddelbuettel  <edd@debian.org>
 
