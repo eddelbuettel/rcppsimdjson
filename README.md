@@ -70,8 +70,8 @@ Or in chart form, also including the [second benchmark parsing strings][simplePa
 All three major OSs are supported, and JSON can be parsed from file and
 string under a variety of settings. A C++20 compiler is required (though the
 upstream can fall back to older compiler; one can edit / override
-[src/Makevars](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars.in)
-accordingly if need be).
+[src/Makevars.in](https://github.com/eddelbuettel/rcppsimdjson/blob/master/src/Makevars.in)
+accordingly if need be, and we test at package build and dial-down as needed).
 
 ### Contributing
 
